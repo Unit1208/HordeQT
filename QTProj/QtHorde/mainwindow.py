@@ -310,8 +310,10 @@ class MainWindow(QMainWindow):
         self.ui.pseudonymousCheckBox.setChecked(j["pseudonymous"])
         self.ui.accountAgeLineEdit.setText(str(j["account_age"]) + " seconds")
         self.ui.accountAgeLineEdit.setText(
-            (datetime.datetime.fromtimestamp(time.time())
-            - datetime.timedelta(seconds=j["account_age"])).isoformat()
+            (
+                datetime.datetime.fromtimestamp(time.time())
+                - datetime.timedelta(seconds=j["account_age"])
+            ).isoformat()
         )
         records = j["records"]
         usage = records["usage"]
