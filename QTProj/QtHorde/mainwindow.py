@@ -5,6 +5,11 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtCore import QThread, Signal, Slot, QObject
 from queue import Queue
 
+import horde_sdk.ai_horde_api
+import horde_sdk.ai_horde_api.ai_horde_clients
+import horde_sdk.ai_horde_api.apimodels
+import horde_sdk.ai_horde_api.consts
+
 # Important:
 # You need to run the following command to generate the ui_form.py file
 #     pyside6-uic form.ui -o ui_form.py, or
@@ -13,6 +18,7 @@ from ui_form import Ui_MainWindow
 
 import keyring
 import requests
+import horde_sdk
 from http import HTTPStatus
 
 ANON_API_KEY = "0000000000"
@@ -31,15 +37,67 @@ class APIManager:
     current_requests = []
 
     def __init__(self, api_key: str, max_requests: int) -> None:
+        self.client = (
+            horde_sdk.ai_horde_api.ai_horde_clients.AIHordeAPIAsyncSimpleClient()
+        )
         self.max_requests = max_requests
         self.api_key = api_key
         self.current_requests = []
         self.job_queue = Queue()
 
-    def add_job(self, job):
-        self.job_queue.put(job)
+    def add_job(
+        self,
+        prompt,
+        model,
+        payload: horde_sdk.ai_horde_api.apimodels.ImageGenerationInputPayload,
+    ):
+        image_generate_async_request = (
+            horde_sdk.ai_horde_api.apimodels.ImageGenerateAsyncRequest(
+                apikey=self.api_key,
+                prompt=prompt,
+                models=[model],
+                params=payload,
+            )
+        )
+        self.job_queue.put(image_generate_async_request)
+
+    def construct_job(
+        self,
+        prompt: str,
+        model: str,
+        steps: int,
+        width: int,
+        height: int,
+        sampler: horde_sdk.ai_horde_api.consts.KNOWN_SAMPLERS,
+        clip_skip: int,
+        cfg: float,
+        seed: int | None,
+    ):
+        image_generate_async_request = (
+            horde_sdk.ai_horde_api.apimodels.ImageGenerateAsyncRequest(
+                apikey=self.api_key,
+                prompt=prompt,
+                models=[model],
+                params=horde_sdk.ai_horde_api.apimodels.ImageGenerationInputPayload(
+                    width=width,
+                    height=height,
+                    sampler_name=sampler,
+                    clip_skip=clip_skip,
+                    n=1,
+                    cfg_scale=cfg,
+                    steps=steps,
+                    seed=seed,
+                ),
+            )
+        )
 
     def handle_queue(self):
+        if len(self.current_requests) < self.max_requests:
+            pass
+        for job in self.current_requests:
+            pass
+
+    def done_jobs(self):
         pass
 
 
@@ -56,8 +114,8 @@ class MainWindow(QMainWindow):
 
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
-        self.clipboard=app.clipboard()
-        
+        self.clipboard = app.clipboard()
+
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
         if (k := keyring.get_password("QTHorde", "QTHordeUser")) != None:
@@ -67,6 +125,7 @@ class MainWindow(QMainWindow):
         self.ui.apiKeyEntry.returnPressed.connect(self.save_api_key)
         self.ui.saveAPIkey.clicked.connect(self.save_api_key)
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
+
     def on_generate_click(self):
         self.show_info("Generate was clicked!")
 
@@ -74,9 +133,11 @@ class MainWindow(QMainWindow):
         self.api_key = self.ui.apiKeyEntry.text()
         keyring.set_password("QTHorde", "QTHordeUser", self.api_key)
         self.show_info("API Key saved!")
+
     def copy_api_key(self):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
         self.clipboard.setText(self.api_key)
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
