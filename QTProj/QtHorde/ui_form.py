@@ -19,10 +19,10 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
 from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QCheckBox, QComboBox,
     QDoubleSpinBox, QFormLayout, QFrame, QGridLayout,
     QGroupBox, QHBoxLayout, QHeaderView, QLabel,
-    QLineEdit, QMainWindow, QMenuBar, QPushButton,
-    QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
-    QTabWidget, QTableWidget, QTableWidgetItem, QTextEdit,
-    QTreeView, QVBoxLayout, QWidget)
+    QLineEdit, QMainWindow, QMenuBar, QProgressBar,
+    QPushButton, QScrollArea, QSizePolicy, QSpacerItem,
+    QSpinBox, QTabWidget, QTableWidget, QTableWidgetItem,
+    QTextEdit, QTreeView, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -43,7 +43,8 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
         self.tabWidget.setSizePolicy(sizePolicy)
         self.tabWidget.setDocumentMode(False)
-        self.tabWidget.setMovable(False)
+        self.tabWidget.setTabsClosable(False)
+        self.tabWidget.setMovable(True)
         self.tabWidget.setTabBarAutoHide(False)
         self.create_tab = QWidget()
         self.create_tab.setObjectName(u"create_tab")
@@ -57,19 +58,21 @@ class Ui_MainWindow(object):
         self.NegativePromptBox.setTabChangesFocus(True)
         self.frame = QFrame(self.create_tab)
         self.frame.setObjectName(u"frame")
-        self.frame.setGeometry(QRect(20, 220, 731, 461))
+        self.frame.setGeometry(QRect(20, 220, 731, 531))
         self.scrollArea = QScrollArea(self.frame)
         self.scrollArea.setObjectName(u"scrollArea")
-        self.scrollArea.setGeometry(QRect(0, 10, 731, 451))
+        self.scrollArea.setGeometry(QRect(0, 10, 731, 541))
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 729, 449))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 729, 539))
         self.gridLayoutWidget = QWidget(self.scrollAreaWidgetContents)
         self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayoutWidget.setGeometry(QRect(0, 0, 721, 571))
+        self.gridLayoutWidget.setGeometry(QRect(0, 0, 721, 511))
         self.formLayout = QFormLayout(self.gridLayoutWidget)
         self.formLayout.setObjectName(u"formLayout")
+        self.formLayout.setFormAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
+        self.formLayout.setVerticalSpacing(6)
         self.formLayout.setContentsMargins(0, 0, 0, 0)
         self.imagesLabel = QLabel(self.gridLayoutWidget)
         self.imagesLabel.setObjectName(u"imagesLabel")
@@ -100,6 +103,32 @@ class Ui_MainWindow(object):
         self.modelLabel.setObjectName(u"modelLabel")
 
         self.formLayout.setWidget(2, QFormLayout.LabelRole, self.modelLabel)
+
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.modelComboBox = QComboBox(self.gridLayoutWidget)
+        self.modelComboBox.addItem("")
+        self.modelComboBox.setObjectName(u"modelComboBox")
+        self.modelComboBox.setEnabled(True)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.modelComboBox.sizePolicy().hasHeightForWidth())
+        self.modelComboBox.setSizePolicy(sizePolicy1)
+        self.modelComboBox.setEditable(True)
+
+        self.horizontalLayout_2.addWidget(self.modelComboBox)
+
+        self.modelDetailsButton = QPushButton(self.gridLayoutWidget)
+        self.modelDetailsButton.setObjectName(u"modelDetailsButton")
+        icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.SystemSearch))
+        self.modelDetailsButton.setIcon(icon)
+        self.modelDetailsButton.setFlat(False)
+
+        self.horizontalLayout_2.addWidget(self.modelDetailsButton)
+
+
+        self.formLayout.setLayout(2, QFormLayout.FieldRole, self.horizontalLayout_2)
 
         self.presetLabel = QLabel(self.gridLayoutWidget)
         self.presetLabel.setObjectName(u"presetLabel")
@@ -210,37 +239,26 @@ class Ui_MainWindow(object):
 
         self.formLayout.setWidget(9, QFormLayout.FieldRole, self.clipSkipSpinBox)
 
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.modelComboBox = QComboBox(self.gridLayoutWidget)
-        self.modelComboBox.addItem("")
-        self.modelComboBox.setObjectName(u"modelComboBox")
-        self.modelComboBox.setEnabled(True)
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.modelComboBox.sizePolicy().hasHeightForWidth())
-        self.modelComboBox.setSizePolicy(sizePolicy1)
-        self.modelComboBox.setEditable(True)
-
-        self.horizontalLayout_2.addWidget(self.modelComboBox)
-
-        self.modelDetailsButton = QPushButton(self.gridLayoutWidget)
-        self.modelDetailsButton.setObjectName(u"modelDetailsButton")
-        icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.SystemSearch))
-        self.modelDetailsButton.setIcon(icon)
-
-        self.horizontalLayout_2.addWidget(self.modelDetailsButton)
-
-
-        self.formLayout.setLayout(2, QFormLayout.FieldRole, self.horizontalLayout_2)
-
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.GenerateButton = QPushButton(self.create_tab)
         self.GenerateButton.setObjectName(u"GenerateButton")
         self.GenerateButton.setGeometry(QRect(600, 190, 151, 31))
         icon1 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.InsertImage))
         self.GenerateButton.setIcon(icon1)
+        self.horizontalLayoutWidget = QWidget(self.create_tab)
+        self.horizontalLayoutWidget.setObjectName(u"horizontalLayoutWidget")
+        self.horizontalLayoutWidget.setGeometry(QRect(20, 769, 721, 41))
+        self.horizontalLayout_3 = QHBoxLayout(self.horizontalLayoutWidget)
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.progressBar = QProgressBar(self.horizontalLayoutWidget)
+        self.progressBar.setObjectName(u"progressBar")
+        self.progressBar.setValue(0)
+        self.progressBar.setTextVisible(True)
+        self.progressBar.setInvertedAppearance(False)
+
+        self.horizontalLayout_3.addWidget(self.progressBar)
+
         icon2 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.ListAdd))
         self.tabWidget.addTab(self.create_tab, icon2, "")
         self.curr_items_tab = QWidget()
@@ -401,7 +419,7 @@ class Ui_MainWindow(object):
 
         self.trustedCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.trustedCheckBox.setObjectName(u"trustedCheckBox")
-        self.trustedCheckBox.setEnabled(True)
+        self.trustedCheckBox.setEnabled(False)
         self.trustedCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.trustedCheckBox.setCheckable(True)
 
@@ -427,7 +445,7 @@ class Ui_MainWindow(object):
 
         self.moderatorCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.moderatorCheckBox.setObjectName(u"moderatorCheckBox")
-        self.moderatorCheckBox.setEnabled(True)
+        self.moderatorCheckBox.setEnabled(False)
         self.moderatorCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.moderatorCheckBox.setCheckable(True)
 
@@ -460,7 +478,7 @@ class Ui_MainWindow(object):
 
         self.flaggedCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.flaggedCheckBox.setObjectName(u"flaggedCheckBox")
-        self.flaggedCheckBox.setEnabled(True)
+        self.flaggedCheckBox.setEnabled(False)
         self.flaggedCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.flaggedCheckBox.setCheckable(True)
         self.flaggedCheckBox.setChecked(False)
@@ -474,7 +492,7 @@ class Ui_MainWindow(object):
 
         self.VPNCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.VPNCheckBox.setObjectName(u"VPNCheckBox")
-        self.VPNCheckBox.setEnabled(True)
+        self.VPNCheckBox.setEnabled(False)
         self.VPNCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.VPNCheckBox.setCheckable(True)
         self.VPNCheckBox.setChecked(False)
@@ -488,7 +506,7 @@ class Ui_MainWindow(object):
 
         self.serviceCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.serviceCheckBox.setObjectName(u"serviceCheckBox")
-        self.serviceCheckBox.setEnabled(True)
+        self.serviceCheckBox.setEnabled(False)
         self.serviceCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.serviceCheckBox.setCheckable(True)
         self.serviceCheckBox.setChecked(False)
@@ -502,7 +520,7 @@ class Ui_MainWindow(object):
 
         self.educationCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.educationCheckBox.setObjectName(u"educationCheckBox")
-        self.educationCheckBox.setEnabled(True)
+        self.educationCheckBox.setEnabled(False)
         self.educationCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.educationCheckBox.setCheckable(True)
         self.educationCheckBox.setChecked(False)
@@ -516,7 +534,7 @@ class Ui_MainWindow(object):
 
         self.customizerCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.customizerCheckBox.setObjectName(u"customizerCheckBox")
-        self.customizerCheckBox.setEnabled(True)
+        self.customizerCheckBox.setEnabled(False)
         self.customizerCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.customizerCheckBox.setCheckable(True)
         self.customizerCheckBox.setChecked(False)
@@ -530,7 +548,7 @@ class Ui_MainWindow(object):
 
         self.specialCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.specialCheckBox.setObjectName(u"specialCheckBox")
-        self.specialCheckBox.setEnabled(True)
+        self.specialCheckBox.setEnabled(False)
         self.specialCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.specialCheckBox.setCheckable(True)
         self.specialCheckBox.setChecked(False)
@@ -544,7 +562,7 @@ class Ui_MainWindow(object):
 
         self.pseudonymousCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.pseudonymousCheckBox.setObjectName(u"pseudonymousCheckBox")
-        self.pseudonymousCheckBox.setEnabled(True)
+        self.pseudonymousCheckBox.setEnabled(False)
         self.pseudonymousCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.pseudonymousCheckBox.setCheckable(True)
         self.pseudonymousCheckBox.setChecked(False)
@@ -697,6 +715,9 @@ class Ui_MainWindow(object):
         self.megapixelstepsRequestedDoubleSpinBox.setEnabled(True)
         self.megapixelstepsRequestedDoubleSpinBox.setReadOnly(True)
         self.megapixelstepsRequestedDoubleSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.megapixelstepsRequestedDoubleSpinBox.setMaximum(2147483647.000000000000000)
+        self.megapixelstepsRequestedDoubleSpinBox.setSingleStep(0.000000000000000)
+        self.megapixelstepsRequestedDoubleSpinBox.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
 
         self.formLayout_2.setWidget(28, QFormLayout.FieldRole, self.megapixelstepsRequestedDoubleSpinBox)
 
@@ -723,6 +744,9 @@ class Ui_MainWindow(object):
         self.megapixelstepsGeneratedDoubleSpinBox.setEnabled(True)
         self.megapixelstepsGeneratedDoubleSpinBox.setReadOnly(True)
         self.megapixelstepsGeneratedDoubleSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.megapixelstepsGeneratedDoubleSpinBox.setMaximum(2147483647.000000000000000)
+        self.megapixelstepsGeneratedDoubleSpinBox.setSingleStep(0.000000000000000)
+        self.megapixelstepsGeneratedDoubleSpinBox.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
 
         self.formLayout_2.setWidget(31, QFormLayout.FieldRole, self.megapixelstepsGeneratedDoubleSpinBox)
 
@@ -746,7 +770,7 @@ class Ui_MainWindow(object):
         self.Stats_Tab.setObjectName(u"Stats_Tab")
         self.localStats = QTreeView(self.Stats_Tab)
         self.localStats.setObjectName(u"localStats")
-        self.localStats.setGeometry(QRect(0, 30, 771, 781))
+        self.localStats.setGeometry(QRect(0, 10, 771, 801))
         icon9 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
         self.tabWidget.addTab(self.Stats_Tab, icon9, "")
         self.About_tab = QWidget()
@@ -775,7 +799,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(4)
+        self.tabWidget.setCurrentIndex(0)
         self.modelComboBox.setCurrentIndex(0)
 
 
@@ -790,6 +814,11 @@ class Ui_MainWindow(object):
         self.imagesLabel.setText(QCoreApplication.translate("MainWindow", u"Images", None))
         self.stepsLabel.setText(QCoreApplication.translate("MainWindow", u"Steps", None))
         self.modelLabel.setText(QCoreApplication.translate("MainWindow", u"Model", None))
+        self.modelComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Loading...", None))
+
+        self.modelComboBox.setCurrentText(QCoreApplication.translate("MainWindow", u"Loading...", None))
+        self.modelComboBox.setPlaceholderText("")
+        self.modelDetailsButton.setText(QCoreApplication.translate("MainWindow", u"Model Details ", None))
         self.presetLabel.setText(QCoreApplication.translate("MainWindow", u"Preset", None))
         self.presetComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Custom", None))
         self.presetComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Portrait", None))
@@ -826,11 +855,6 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(statustip)
         self.guidenceLabel.setText(QCoreApplication.translate("MainWindow", u"Guidence", None))
         self.clipSkipLabel.setText(QCoreApplication.translate("MainWindow", u"Clip Skip", None))
-        self.modelComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Placeholder", None))
-
-        self.modelComboBox.setCurrentText(QCoreApplication.translate("MainWindow", u"Placeholder", None))
-        self.modelComboBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"NOT IMPLEMENTED YET", None))
-        self.modelDetailsButton.setText(QCoreApplication.translate("MainWindow", u"Model Details ", None))
 #if QT_CONFIG(tooltip)
         self.GenerateButton.setToolTip(QCoreApplication.translate("MainWindow", u"Shortcut Ctrl + Enter", None))
 #endif // QT_CONFIG(tooltip)

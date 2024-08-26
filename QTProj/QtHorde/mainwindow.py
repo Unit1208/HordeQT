@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QLineEdit,
 )
+from PySide6.QtCore import QObject, QThread, Signal, QTimer
 from queue import Queue
 
 
@@ -260,6 +261,24 @@ class ModelPopup(QDialog):
         self.ui.requirementsLineEdit.setText(req_str)
 
 
+class Worker(QObject):
+    progress = Signal(int)
+    model_info = Signal(requests.Response)
+    user_info = Signal(requests.Response)
+
+    def run(self, api_key):
+        self.user_info.emit(
+            requests.get(BASE_URL + "find_user", headers=get_headers(api_key))
+        )
+        self.progress.emit(50)
+        self.model_info.emit(
+            requests.get(
+                "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/main/stable_diffusion.json"
+            )
+        )
+        self.progress.emit(100)
+
+
 class MainWindow(QMainWindow):
     def show_error(self, message):
         QMessageBox.critical(self, "Error", message)
@@ -271,15 +290,33 @@ class MainWindow(QMainWindow):
 
         QMessageBox.information(self, "Info", message)
 
+    def on_fully_loaded(self):
+        self.ui.GenerateButton.setEnabled(True)
+        QTimer.singleShot(150, lambda: self.ui.progressBar.hide())
+        
+        
+
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
         self.clipboard = app.clipboard()
         self.model_dict: Dict[str, Model] = {}
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
-        if (k := keyring.get_password("HordeQT", "HordeQTUser")) != None:
+        self.mythread = QThread()
+        self.worker = Worker()
+        self.show()
+        if (k := keyring.get_password("HordeQT", "HordeQTUser")) is not None:
             self.ui.apiKeyEntry.setText(k)
             self.api_key = k
+        else:
+            self.api_key = None
+        # Connect signals
+        self.worker.progress.connect(self.update_progress)
+        self.worker.model_info.connect(self.construct_model_dict)
+        self.worker.user_info.connect(self.update_user_info)
+        self.worker.moveToThread(self.mythread)
+        self.mythread.started.connect(lambda: self.worker.run(self.api_key))
+
         self.ui.GenerateButton.clicked.connect(self.on_generate_click)
         self.ui.modelDetailsButton.clicked.connect(self.on_model_open_click)
 
@@ -287,11 +324,16 @@ class MainWindow(QMainWindow):
         self.ui.saveAPIkey.clicked.connect(self.save_api_key)
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
-        self.construct_model_dict()
-        self.update_user_info()
+        self.ui.progressBar.setValue(0)
+        QTimer.singleShot(0, self.mythread.start)
 
-    def update_user_info(self):
-        r = requests.get(BASE_URL + "find_user", headers=get_headers(self.api_key))
+    def update_progress(self, value):
+        self.ui.progressBar.setValue(value)
+        if value == 100:
+            self.mythread.quit()
+            self.on_fully_loaded()
+
+    def update_user_info(self, r: requests.Response):
         if r.status_code == 404:
             self.show_error("Invalid API key; User could not be found.")
             return
@@ -309,7 +351,7 @@ class MainWindow(QMainWindow):
         self.ui.specialCheckBox.setChecked(j["special"])
         self.ui.pseudonymousCheckBox.setChecked(j["pseudonymous"])
         self.ui.accountAgeLineEdit.setText(str(j["account_age"]) + " seconds")
-        self.ui.accountAgeLineEdit.setText(
+        self.ui.accountCreatedLineEdit.setText(
             (
                 datetime.datetime.fromtimestamp(time.time())
                 - datetime.timedelta(seconds=j["account_age"])
@@ -392,10 +434,9 @@ class MainWindow(QMainWindow):
         )
         return job
 
-    def construct_model_dict(self):
+    def construct_model_dict(self, sd_mod_ref):
         self.ui.modelComboBox.clear()
-        r = "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/main/stable_diffusion.json"
-        sd_mod_ref = requests.get(r)
+
         sd_mod_ref.raise_for_status()
         mod = sd_mod_ref.json()
         models: List[Model] = self.get_available_models()

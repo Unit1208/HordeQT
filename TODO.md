@@ -5,7 +5,7 @@
 - [ ] Gallery View
 - [ ] Model Download
 - [ ] Queued items view
-- [ ] User Info
+- [x] User Info
 - [ ] Persistent Storage of settings
 - [ ] About Page
 - [ ] Toggle for Shared images
