@@ -1,4 +1,9 @@
 PySide6
 keyring
 requests
+horde-sdk
+
 black
+cx_freeze
+ordered-set
+zstandard

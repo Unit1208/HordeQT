@@ -283,13 +283,20 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.apiKeyEntry)
 
-        self.pushButton = QPushButton(self.formLayoutWidget)
-        self.pushButton.setObjectName(u"pushButton")
-        icon4 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditCopy))
-        self.pushButton.setIcon(icon4)
-        self.pushButton.setFlat(False)
+        self.saveAPIkey = QPushButton(self.formLayoutWidget)
+        self.saveAPIkey.setObjectName(u"saveAPIkey")
+        icon4 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentSave))
+        self.saveAPIkey.setIcon(icon4)
 
-        self.horizontalLayout.addWidget(self.pushButton)
+        self.horizontalLayout.addWidget(self.saveAPIkey)
+
+        self.copyAPIkey = QPushButton(self.formLayoutWidget)
+        self.copyAPIkey.setObjectName(u"copyAPIkey")
+        icon5 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditCopy))
+        self.copyAPIkey.setIcon(icon5)
+        self.copyAPIkey.setFlat(False)
+
+        self.horizontalLayout.addWidget(self.copyAPIkey)
 
 
         self.settingsLayout.setLayout(0, QFormLayout.FieldRole, self.horizontalLayout)
@@ -320,6 +327,8 @@ class Ui_MainWindow(object):
 
         self.SelectDataDir = QPushButton(self.formLayoutWidget)
         self.SelectDataDir.setObjectName(u"SelectDataDir")
+        icon6 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditFind))
+        self.SelectDataDir.setIcon(icon6)
 
         self.horizontalLayout_2.addWidget(self.SelectDataDir)
 
@@ -332,17 +341,20 @@ class Ui_MainWindow(object):
         self.settingsLayout.setWidget(4, QFormLayout.FieldRole, self.allowAdvancedSettingsCheckBox)
 
         self.tabWidget.addTab(self.settings_tab, icon2, "")
-        self.FAQ_tab = QWidget()
-        self.FAQ_tab.setObjectName(u"FAQ_tab")
-        icon5 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
-        self.tabWidget.addTab(self.FAQ_tab, icon5, "")
         self.userInfoPage = QWidget()
         self.userInfoPage.setObjectName(u"userInfoPage")
         self.treeView = QTreeView(self.userInfoPage)
         self.treeView.setObjectName(u"treeView")
         self.treeView.setGeometry(QRect(5, 31, 771, 491))
-        icon6 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.UserOffline))
-        self.tabWidget.addTab(self.userInfoPage, icon6, "")
+        icon7 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.UserOffline))
+        self.tabWidget.addTab(self.userInfoPage, icon7, "")
+        self.Stats_Tab = QWidget()
+        self.Stats_Tab.setObjectName(u"Stats_Tab")
+        self.localStats = QTreeView(self.Stats_Tab)
+        self.localStats.setObjectName(u"localStats")
+        self.localStats.setGeometry(QRect(0, 30, 771, 651))
+        icon8 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
+        self.tabWidget.addTab(self.Stats_Tab, icon8, "")
         self.About_tab = QWidget()
         self.About_tab.setObjectName(u"About_tab")
         self.verticalLayoutWidget = QWidget(self.About_tab)
@@ -355,9 +367,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addItem(self.horizontalSpacer)
 
-        icon7 = QIcon()
-        icon7.addFile(u"../../../Pictures/QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget.addTab(self.About_tab, icon7, "")
+        icon9 = QIcon()
+        icon9.addFile(u"../../../Pictures/QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget.addTab(self.About_tab, icon9, "")
 
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
 
@@ -369,9 +381,9 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         self.checkBox.toggled.connect(self.NegativePromptBox.setVisible)
-        self.pushButton.clicked.connect(self.apiKeyEntry.copy)
+        self.copyAPIkey.clicked.connect(self.apiKeyEntry.copy)
 
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(5)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -440,7 +452,7 @@ class Ui_MainWindow(object):
         ___qtablewidgetitem3 = self.tableWidget.horizontalHeaderItem(3)
         ___qtablewidgetitem3.setText(QCoreApplication.translate("MainWindow", u"Model", None));
         ___qtablewidgetitem4 = self.tableWidget.horizontalHeaderItem(4)
-        ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"Steps", None));
+        ___qtablewidgetitem4.setText(QCoreApplication.translate("MainWindow", u"ETA", None));
         ___qtablewidgetitem5 = self.tableWidget.verticalHeaderItem(0)
         ___qtablewidgetitem5.setText(QCoreApplication.translate("MainWindow", u"Example 1", None));
         self.label_4.setText(QCoreApplication.translate("MainWindow", u"Current In-progress items", None))
@@ -448,7 +460,8 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.gallery_tab), QCoreApplication.translate("MainWindow", u"Gallery", None))
         self.APIKeyLabel.setText(QCoreApplication.translate("MainWindow", u"API Key", None))
         self.apiKeyEntry.setPlaceholderText(QCoreApplication.translate("MainWindow", u"API Key", None))
-        self.pushButton.setText(QCoreApplication.translate("MainWindow", u"Copy API Key", None))
+        self.saveAPIkey.setText(QCoreApplication.translate("MainWindow", u"Save API Key", None))
+        self.copyAPIkey.setText(QCoreApplication.translate("MainWindow", u"Copy API Key", None))
         self.NSFWLabel.setText(QCoreApplication.translate("MainWindow", u"NSFW", None))
 #if QT_CONFIG(tooltip)
         self.NSFWCheckBox.setToolTip(QCoreApplication.translate("MainWindow", u"Whether to allow the generation of NSFW content. Accidental NSFW content will be censored by workers.", None))
@@ -457,8 +470,8 @@ class Ui_MainWindow(object):
         self.dataDirLabel.setText(QCoreApplication.translate("MainWindow", u"DataDir", None))
         self.SelectDataDir.setText(QCoreApplication.translate("MainWindow", u"Select Data Dir", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), QCoreApplication.translate("MainWindow", u"Settings", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.FAQ_tab), QCoreApplication.translate("MainWindow", u"FAQ", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.userInfoPage), QCoreApplication.translate("MainWindow", u"User Info", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.Stats_Tab), QCoreApplication.translate("MainWindow", u"Stats", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.About_tab), QCoreApplication.translate("MainWindow", u"About", None))
     # retranslateUi
 

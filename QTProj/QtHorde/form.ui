@@ -24,7 +24,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>5</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -496,7 +496,7 @@
          </column>
          <column>
           <property name="text">
-           <string>Steps</string>
+           <string>ETA</string>
           </property>
          </column>
         </widget>
@@ -566,7 +566,17 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton">
+            <widget class="QPushButton" name="saveAPIkey">
+             <property name="text">
+              <string>Save API Key</string>
+             </property>
+             <property name="icon">
+              <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="copyAPIkey">
              <property name="text">
               <string>Copy API Key</string>
              </property>
@@ -621,6 +631,9 @@
              <property name="text">
               <string>Select Data Dir</string>
              </property>
+             <property name="icon">
+              <iconset theme="QIcon::ThemeIcon::EditFind"/>
+             </property>
             </widget>
            </item>
           </layout>
@@ -630,14 +643,6 @@
          </item>
         </layout>
        </widget>
-      </widget>
-      <widget class="QWidget" name="FAQ_tab">
-       <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::HelpAbout"/>
-       </attribute>
-       <attribute name="title">
-        <string>FAQ</string>
-       </attribute>
       </widget>
       <widget class="QWidget" name="userInfoPage">
        <attribute name="icon">
@@ -653,6 +658,24 @@
           <y>31</y>
           <width>771</width>
           <height>491</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="Stats_Tab">
+       <attribute name="icon">
+        <iconset theme="QIcon::ThemeIcon::HelpAbout"/>
+       </attribute>
+       <attribute name="title">
+        <string>Stats</string>
+       </attribute>
+       <widget class="QTreeView" name="localStats">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>30</y>
+          <width>771</width>
+          <height>651</height>
          </rect>
         </property>
        </widget>
@@ -730,7 +753,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>pushButton</sender>
+   <sender>copyAPIkey</sender>
    <signal>clicked()</signal>
    <receiver>apiKeyEntry</receiver>
    <slot>copy()</slot>
