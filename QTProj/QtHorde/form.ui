@@ -24,7 +24,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -593,6 +593,16 @@
              </property>
              <property name="clearButtonEnabled">
               <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="showAPIKey">
+             <property name="text">
+              <string>Show API Key</string>
+             </property>
+             <property name="icon">
+              <iconset theme="QIcon::ThemeIcon::EditFind"/>
              </property>
             </widget>
            </item>

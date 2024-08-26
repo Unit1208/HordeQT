@@ -6,15 +6,19 @@ import sys
 import time
 from typing import List, Dict
 
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PySide6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QMessageBox,
+    QDialog,
+    QMessageBox,
+    QLineEdit,
+)
 from queue import Queue
 
 
-# Important:
-# You need to run the following command to generate the ui_form.py file
-#     pyside6-uic form.ui -o ui_form.py, or
-#     pyside2-uic form.ui -o ui_form.py
 from ui_form import Ui_MainWindow
+from ui_modelinfo import Ui_Dialog
 
 import keyring
 import requests
@@ -38,6 +42,7 @@ class Model:
     type: str
     name: str
     count: int
+    details: dict
 
     def get(self, name, default=None):
         if hasattr(self, name):
@@ -232,6 +237,28 @@ class APIManager:
         return dj
 
 
+class ModelPopup(QDialog):
+
+    def __init__(self, data: dict, parent=None):
+        super().__init__(parent)
+
+        self.ui: Ui_Dialog = Ui_Dialog()
+        self.ui.setupUi(self)
+        self.ui.baselineLineEdit.setText(data.get("baseline"))
+        self.ui.nameLineEdit.setText(data.get("name"))
+        self.ui.inpaintingCheckBox.setChecked(data.get("inpainting"))
+        self.ui.descriptionBox.setText(data.get("description"))
+        self.ui.versionLineEdit.setText(data.get("version"))
+        self.ui.styleLineEdit.setText(data.get("style"))
+        self.ui.nsfwCheckBox.setChecked(data.get("nsfw"))
+        self.ui.unsupportedFeaturesLineEdit.setText(
+            ", ".join(data.get("features_not_supported", []))
+        )
+        req: dict = data.get("requirements", {})
+        req_str = ", ".join(" = ".join([str(y) for y in x]) for x in list(req.items()))
+        self.ui.requirementsLineEdit.setText(req_str)
+
+
 class MainWindow(QMainWindow):
     def show_error(self, message):
         QMessageBox.critical(self, "Error", message)
@@ -246,17 +273,29 @@ class MainWindow(QMainWindow):
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
         self.clipboard = app.clipboard()
-
+        self.model_dict: Dict[str, Model] = {}
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
         if (k := keyring.get_password("QTHorde", "QTHordeUser")) != None:
             self.ui.apiKeyEntry.setText(k)
 
         self.ui.GenerateButton.clicked.connect(self.on_generate_click)
+        self.ui.modelDetailsButton.clicked.connect(self.on_model_open_click)
+
         self.ui.apiKeyEntry.returnPressed.connect(self.save_api_key)
         self.ui.saveAPIkey.clicked.connect(self.save_api_key)
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
+        self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
         self.construct_model_dict()
+
+    def toggle_api_key_visibility(self):
+        visible = self.ui.apiKeyEntry.echoMode() == QLineEdit.EchoMode.Normal
+        if visible:
+            self.ui.showAPIKey.setText("Show API Key")
+            self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Password)
+        else:
+            self.ui.showAPIKey.setText("Hide API Key")
+            self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Normal)
 
     def create_job(self):
         prompt = self.ui.PromptBox.toPlainText()
@@ -298,13 +337,29 @@ class MainWindow(QMainWindow):
 
     def construct_model_dict(self):
         self.ui.modelComboBox.clear()
+        r = "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/main/stable_diffusion.json"
+        sd_mod_ref = requests.get(r)
+        sd_mod_ref.raise_for_status()
+        mod = sd_mod_ref.json()
         models: List[Model] = self.get_available_models()
         models.sort(key=lambda k: k["count"], reverse=True)
+        model_dict: Dict[str, Model] = {}
         for n in models:
             name = n.get("name", "Unknown")
             count = n.get("count", 0)
-            self.ui.modelComboBox.addItem(f"{name} ({count})")
+            self.ui.modelComboBox.addItem(k := f"{name} ({count})")
+            m = Model()
+            m.count = count
+            m.eta = n.get("eta", 0)
+            m.jobs = n.get("jobs", 0)
+            m.name = name
+            m.performance = n.get("performance", 0)
+            m.queued = n.get("queued", 0)
+            m.type = "image"
+            m.details = mod[m.name]
+            model_dict[k] = m
         self.ui.modelComboBox.setCurrentIndex(0)
+        self.model_dict = model_dict
 
     def get_available_models(self) -> List[Model]:
         r = requests.get(
@@ -317,7 +372,11 @@ class MainWindow(QMainWindow):
     def get_model_details(self, available_models: List[Model] | None):
         if available_models == None:
             available_models = self.get_available_models()
-        r = "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/main/stable_diffusion.json"
+
+    def on_model_open_click(self):
+        curr_model = self.model_dict[self.ui.modelComboBox.currentText()]
+        print(json.dumps(curr_model.details))
+        ModelPopup(curr_model.details)
 
     def on_generate_click(self):
         self.show_info("Generate was clicked!")

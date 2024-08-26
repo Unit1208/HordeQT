@@ -96,6 +96,11 @@ class Ui_MainWindow(object):
 
         self.formLayout.setWidget(1, QFormLayout.FieldRole, self.stepsSpinBox)
 
+        self.modelLabel = QLabel(self.gridLayoutWidget)
+        self.modelLabel.setObjectName(u"modelLabel")
+
+        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.modelLabel)
+
         self.presetLabel = QLabel(self.gridLayoutWidget)
         self.presetLabel.setObjectName(u"presetLabel")
 
@@ -205,27 +210,39 @@ class Ui_MainWindow(object):
 
         self.formLayout.setWidget(9, QFormLayout.FieldRole, self.clipSkipSpinBox)
 
-        self.modelLabel = QLabel(self.gridLayoutWidget)
-        self.modelLabel.setObjectName(u"modelLabel")
-
-        self.formLayout.setWidget(2, QFormLayout.LabelRole, self.modelLabel)
-
+        self.horizontalLayout_2 = QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.modelComboBox = QComboBox(self.gridLayoutWidget)
         self.modelComboBox.addItem("")
         self.modelComboBox.setObjectName(u"modelComboBox")
         self.modelComboBox.setEnabled(True)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.modelComboBox.sizePolicy().hasHeightForWidth())
+        self.modelComboBox.setSizePolicy(sizePolicy1)
         self.modelComboBox.setEditable(True)
 
-        self.formLayout.setWidget(2, QFormLayout.FieldRole, self.modelComboBox)
+        self.horizontalLayout_2.addWidget(self.modelComboBox)
+
+        self.modelDetailsButton = QPushButton(self.gridLayoutWidget)
+        self.modelDetailsButton.setObjectName(u"modelDetailsButton")
+        icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.SystemSearch))
+        self.modelDetailsButton.setIcon(icon)
+
+        self.horizontalLayout_2.addWidget(self.modelDetailsButton)
+
+
+        self.formLayout.setLayout(2, QFormLayout.FieldRole, self.horizontalLayout_2)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.GenerateButton = QPushButton(self.create_tab)
         self.GenerateButton.setObjectName(u"GenerateButton")
         self.GenerateButton.setGeometry(QRect(600, 190, 151, 31))
-        icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.InsertImage))
-        self.GenerateButton.setIcon(icon)
-        icon1 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.ListAdd))
-        self.tabWidget.addTab(self.create_tab, icon1, "")
+        icon1 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.InsertImage))
+        self.GenerateButton.setIcon(icon1)
+        icon2 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.ListAdd))
+        self.tabWidget.addTab(self.create_tab, icon2, "")
         self.curr_items_tab = QWidget()
         self.curr_items_tab.setObjectName(u"curr_items_tab")
         self.groupBox_2 = QGroupBox(self.curr_items_tab)
@@ -253,12 +270,12 @@ class Ui_MainWindow(object):
         self.label_4 = QLabel(self.curr_items_tab)
         self.label_4.setObjectName(u"label_4")
         self.label_4.setGeometry(QRect(10, 10, 211, 16))
-        icon2 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentProperties))
-        self.tabWidget.addTab(self.curr_items_tab, icon2, "")
+        icon3 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentProperties))
+        self.tabWidget.addTab(self.curr_items_tab, icon3, "")
         self.gallery_tab = QWidget()
         self.gallery_tab.setObjectName(u"gallery_tab")
-        icon3 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentPrintPreview))
-        self.tabWidget.addTab(self.gallery_tab, icon3, "")
+        icon4 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentPrintPreview))
+        self.tabWidget.addTab(self.gallery_tab, icon4, "")
         self.settings_tab = QWidget()
         self.settings_tab.setObjectName(u"settings_tab")
         self.formLayoutWidget = QWidget(self.settings_tab)
@@ -282,17 +299,24 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout.addWidget(self.apiKeyEntry)
 
+        self.showAPIKey = QPushButton(self.formLayoutWidget)
+        self.showAPIKey.setObjectName(u"showAPIKey")
+        icon5 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditFind))
+        self.showAPIKey.setIcon(icon5)
+
+        self.horizontalLayout.addWidget(self.showAPIKey)
+
         self.saveAPIkey = QPushButton(self.formLayoutWidget)
         self.saveAPIkey.setObjectName(u"saveAPIkey")
-        icon4 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentSave))
-        self.saveAPIkey.setIcon(icon4)
+        icon6 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentSave))
+        self.saveAPIkey.setIcon(icon6)
 
         self.horizontalLayout.addWidget(self.saveAPIkey)
 
         self.copyAPIkey = QPushButton(self.formLayoutWidget)
         self.copyAPIkey.setObjectName(u"copyAPIkey")
-        icon5 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditCopy))
-        self.copyAPIkey.setIcon(icon5)
+        icon7 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditCopy))
+        self.copyAPIkey.setIcon(icon7)
         self.copyAPIkey.setFlat(False)
 
         self.horizontalLayout.addWidget(self.copyAPIkey)
@@ -324,21 +348,21 @@ class Ui_MainWindow(object):
 
         self.settingsLayout.setWidget(2, QFormLayout.FieldRole, self.maxJobsSpinBox)
 
-        self.tabWidget.addTab(self.settings_tab, icon2, "")
+        self.tabWidget.addTab(self.settings_tab, icon3, "")
         self.userInfoPage = QWidget()
         self.userInfoPage.setObjectName(u"userInfoPage")
         self.treeView = QTreeView(self.userInfoPage)
         self.treeView.setObjectName(u"treeView")
         self.treeView.setGeometry(QRect(5, 31, 771, 491))
-        icon6 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.UserOffline))
-        self.tabWidget.addTab(self.userInfoPage, icon6, "")
+        icon8 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.UserOffline))
+        self.tabWidget.addTab(self.userInfoPage, icon8, "")
         self.Stats_Tab = QWidget()
         self.Stats_Tab.setObjectName(u"Stats_Tab")
         self.localStats = QTreeView(self.Stats_Tab)
         self.localStats.setObjectName(u"localStats")
         self.localStats.setGeometry(QRect(0, 30, 771, 651))
-        icon7 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
-        self.tabWidget.addTab(self.Stats_Tab, icon7, "")
+        icon9 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
+        self.tabWidget.addTab(self.Stats_Tab, icon9, "")
         self.About_tab = QWidget()
         self.About_tab.setObjectName(u"About_tab")
         self.verticalLayoutWidget = QWidget(self.About_tab)
@@ -351,9 +375,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addItem(self.horizontalSpacer)
 
-        icon8 = QIcon()
-        icon8.addFile(u"../../../Pictures/QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget.addTab(self.About_tab, icon8, "")
+        icon10 = QIcon()
+        icon10.addFile(u"../../../Pictures/QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget.addTab(self.About_tab, icon10, "")
 
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
 
@@ -365,7 +389,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
         self.modelComboBox.setCurrentIndex(0)
 
 
@@ -379,6 +403,7 @@ class Ui_MainWindow(object):
         self.NegativePromptBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Negative Prompt", None))
         self.imagesLabel.setText(QCoreApplication.translate("MainWindow", u"Images", None))
         self.stepsLabel.setText(QCoreApplication.translate("MainWindow", u"Steps", None))
+        self.modelLabel.setText(QCoreApplication.translate("MainWindow", u"Model", None))
         self.presetLabel.setText(QCoreApplication.translate("MainWindow", u"Preset", None))
         self.presetComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Custom", None))
         self.presetComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"Portrait", None))
@@ -415,11 +440,11 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(statustip)
         self.guidenceLabel.setText(QCoreApplication.translate("MainWindow", u"Guidence", None))
         self.clipSkipLabel.setText(QCoreApplication.translate("MainWindow", u"Clip Skip", None))
-        self.modelLabel.setText(QCoreApplication.translate("MainWindow", u"Model", None))
         self.modelComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Placeholder", None))
 
         self.modelComboBox.setCurrentText(QCoreApplication.translate("MainWindow", u"Placeholder", None))
         self.modelComboBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"NOT IMPLEMENTED YET", None))
+        self.modelDetailsButton.setText(QCoreApplication.translate("MainWindow", u"Model Details ", None))
 #if QT_CONFIG(tooltip)
         self.GenerateButton.setToolTip(QCoreApplication.translate("MainWindow", u"Shortcut Ctrl + Enter", None))
 #endif // QT_CONFIG(tooltip)
@@ -446,6 +471,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.gallery_tab), QCoreApplication.translate("MainWindow", u"Gallery", None))
         self.APIKeyLabel.setText(QCoreApplication.translate("MainWindow", u"API Key", None))
         self.apiKeyEntry.setPlaceholderText(QCoreApplication.translate("MainWindow", u"API Key", None))
+        self.showAPIKey.setText(QCoreApplication.translate("MainWindow", u"Show API Key", None))
         self.saveAPIkey.setText(QCoreApplication.translate("MainWindow", u"Save API Key", None))
         self.copyAPIkey.setText(QCoreApplication.translate("MainWindow", u"Copy API Key", None))
         self.NSFWLabel.setText(QCoreApplication.translate("MainWindow", u"NSFW", None))
