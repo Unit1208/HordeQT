@@ -281,9 +281,11 @@ class Worker(QObject):
 
 class MainWindow(QMainWindow):
     def show_error(self, message):
+        
         QMessageBox.critical(self, "Error", message)
 
     def show_warn(self, message):
+        
         QMessageBox.warning(self, "Warning", message)
 
     def show_info(self, message):
@@ -293,8 +295,6 @@ class MainWindow(QMainWindow):
     def on_fully_loaded(self):
         self.ui.GenerateButton.setEnabled(True)
         QTimer.singleShot(150, lambda: self.ui.progressBar.hide())
-        
-        
 
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
@@ -302,7 +302,7 @@ class MainWindow(QMainWindow):
         self.model_dict: Dict[str, Model] = {}
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
-        self.mythread = QThread()
+        self.loading_thread = QThread()
         self.worker = Worker()
         self.show()
         if (k := keyring.get_password("HordeQT", "HordeQTUser")) is not None:
@@ -314,8 +314,8 @@ class MainWindow(QMainWindow):
         self.worker.progress.connect(self.update_progress)
         self.worker.model_info.connect(self.construct_model_dict)
         self.worker.user_info.connect(self.update_user_info)
-        self.worker.moveToThread(self.mythread)
-        self.mythread.started.connect(lambda: self.worker.run(self.api_key))
+        self.worker.moveToThread(self.loading_thread)
+        self.loading_thread.started.connect(lambda: self.worker.run(self.api_key))
 
         self.ui.GenerateButton.clicked.connect(self.on_generate_click)
         self.ui.modelDetailsButton.clicked.connect(self.on_model_open_click)
@@ -325,12 +325,12 @@ class MainWindow(QMainWindow):
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
         self.ui.progressBar.setValue(0)
-        QTimer.singleShot(0, self.mythread.start)
+        QTimer.singleShot(0, self.loading_thread.start)
 
     def update_progress(self, value):
         self.ui.progressBar.setValue(value)
         if value == 100:
-            self.mythread.quit()
+            self.loading_thread.quit()
             self.on_fully_loaded()
 
     def update_user_info(self, r: requests.Response):
