@@ -8,3 +8,4 @@
 - [ ] User Info
 - [ ] Persistent Storage of settings
 - [ ] About Page
+- [ ] Toggle for Shared images

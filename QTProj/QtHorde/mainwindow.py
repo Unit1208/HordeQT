@@ -32,6 +32,49 @@ def get_headers(api_key: str):
     }
 
 
+class Job:
+    prompt: str
+    sampler_name: str
+    cfg_scale: float
+    seed: int
+    width: int
+    height: int
+    karras: bool = True
+    hires_fix: bool = True
+    clip_skip: int
+    steps: int
+    model: str
+    allow_nsfw: bool = False
+
+
+    def to_json(self):
+        return {
+            "prompt": self.prompt,
+            "params": {
+                "sampler_name": self.sampler_name,
+                "cfg_scale": self.cfg_scale,
+                "seed": self.seed,
+                "height": self.height,
+                "width": self.width,
+                "post_processing": [],
+                "karras": self.karras,
+                "hires_fix": self.hires_fix,
+                "clip_skip": self.clip_skip,
+                "steps": self.steps,
+                "n": 1,
+            },
+            "nsfw": self.allow_nsfw,
+            "trusted_workers": False,
+            "slow_workers": True,
+            "censor_nsfw": not self.allow_nsfw,
+            "models": ["string"],
+            "r2": True,
+            "shared": False,
+            "replacement_filter": True,
+        }
+
+
+
 class APIManager:
     max_requests = 10
     current_requests = []
@@ -45,55 +88,10 @@ class APIManager:
         self.current_requests = []
         self.job_queue = Queue()
 
-    def add_job(
-        self,
-        prompt,
-        model,
-        payload: horde_sdk.ai_horde_api.apimodels.ImageGenerationInputPayload,
-    ):
-        image_generate_async_request = (
-            horde_sdk.ai_horde_api.apimodels.ImageGenerateAsyncRequest(
-                apikey=self.api_key,
-                prompt=prompt,
-                models=[model],
-                params=payload,
-            )
-        )
-        self.job_queue.put(image_generate_async_request)
-
-    def construct_job(
-        self,
-        prompt: str,
-        model: str,
-        steps: int,
-        width: int,
-        height: int,
-        sampler: horde_sdk.ai_horde_api.consts.KNOWN_SAMPLERS,
-        clip_skip: int,
-        cfg: float,
-        seed: int | None,
-    ):
-        image_generate_async_request = (
-            horde_sdk.ai_horde_api.apimodels.ImageGenerateAsyncRequest(
-                apikey=self.api_key,
-                prompt=prompt,
-                models=[model],
-                params=horde_sdk.ai_horde_api.apimodels.ImageGenerationInputPayload(
-                    width=width,
-                    height=height,
-                    sampler_name=sampler,
-                    clip_skip=clip_skip,
-                    n=1,
-                    cfg_scale=cfg,
-                    steps=steps,
-                    seed=seed,
-                ),
-            )
-        )
-
     def handle_queue(self):
         if len(self.current_requests) < self.max_requests:
-            pass
+            nj = self.job_queue.get()
+
         for job in self.current_requests:
             pass
 
