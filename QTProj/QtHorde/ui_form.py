@@ -16,19 +16,19 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDoubleSpinBox,
-    QFormLayout, QFrame, QGridLayout, QGroupBox,
-    QHBoxLayout, QHeaderView, QLabel, QLineEdit,
-    QMainWindow, QMenuBar, QPushButton, QScrollArea,
-    QSizePolicy, QSpacerItem, QSpinBox, QTabWidget,
-    QTableWidget, QTableWidgetItem, QTextEdit, QTreeView,
-    QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QCheckBox, QComboBox,
+    QDoubleSpinBox, QFormLayout, QFrame, QGridLayout,
+    QGroupBox, QHBoxLayout, QHeaderView, QLabel,
+    QLineEdit, QMainWindow, QMenuBar, QPushButton,
+    QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
+    QTabWidget, QTableWidget, QTableWidgetItem, QTextEdit,
+    QTreeView, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(788, 755)
+        MainWindow.resize(792, 879)
         self.actionSave = QAction(MainWindow)
         self.actionSave.setObjectName(u"actionSave")
         self.centralwidget = QWidget(MainWindow)
@@ -67,7 +67,7 @@ class Ui_MainWindow(object):
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 729, 449))
         self.gridLayoutWidget = QWidget(self.scrollAreaWidgetContents)
         self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayoutWidget.setGeometry(QRect(0, 0, 721, 451))
+        self.gridLayoutWidget.setGeometry(QRect(0, 0, 721, 571))
         self.formLayout = QFormLayout(self.gridLayoutWidget)
         self.formLayout.setObjectName(u"formLayout")
         self.formLayout.setContentsMargins(0, 0, 0, 0)
@@ -247,7 +247,7 @@ class Ui_MainWindow(object):
         self.curr_items_tab.setObjectName(u"curr_items_tab")
         self.groupBox_2 = QGroupBox(self.curr_items_tab)
         self.groupBox_2.setObjectName(u"groupBox_2")
-        self.groupBox_2.setGeometry(QRect(10, 30, 761, 481))
+        self.groupBox_2.setGeometry(QRect(10, 30, 761, 771))
         self.tableWidget = QTableWidget(self.groupBox_2)
         if (self.tableWidget.columnCount() < 5):
             self.tableWidget.setColumnCount(5)
@@ -266,7 +266,7 @@ class Ui_MainWindow(object):
         __qtablewidgetitem5 = QTableWidgetItem()
         self.tableWidget.setVerticalHeaderItem(0, __qtablewidgetitem5)
         self.tableWidget.setObjectName(u"tableWidget")
-        self.tableWidget.setGeometry(QRect(0, 0, 771, 491))
+        self.tableWidget.setGeometry(QRect(0, 0, 771, 771))
         self.label_4 = QLabel(self.curr_items_tab)
         self.label_4.setObjectName(u"label_4")
         self.label_4.setGeometry(QRect(10, 10, 211, 16))
@@ -280,7 +280,7 @@ class Ui_MainWindow(object):
         self.settings_tab.setObjectName(u"settings_tab")
         self.formLayoutWidget = QWidget(self.settings_tab)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(0, 10, 761, 671))
+        self.formLayoutWidget.setGeometry(QRect(0, 10, 761, 801))
         self.settingsLayout = QFormLayout(self.formLayoutWidget)
         self.settingsLayout.setObjectName(u"settingsLayout")
         self.settingsLayout.setContentsMargins(0, 0, 0, 0)
@@ -351,16 +351,402 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.settings_tab, icon3, "")
         self.userInfoPage = QWidget()
         self.userInfoPage.setObjectName(u"userInfoPage")
-        self.treeView = QTreeView(self.userInfoPage)
-        self.treeView.setObjectName(u"treeView")
-        self.treeView.setGeometry(QRect(5, 31, 771, 491))
+        self.formLayoutWidget_2 = QWidget(self.userInfoPage)
+        self.formLayoutWidget_2.setObjectName(u"formLayoutWidget_2")
+        self.formLayoutWidget_2.setGeometry(QRect(-1, 9, 771, 801))
+        self.formLayout_2 = QFormLayout(self.formLayoutWidget_2)
+        self.formLayout_2.setObjectName(u"formLayout_2")
+        self.formLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.usernameLabel = QLabel(self.formLayoutWidget_2)
+        self.usernameLabel.setObjectName(u"usernameLabel")
+
+        self.formLayout_2.setWidget(0, QFormLayout.LabelRole, self.usernameLabel)
+
+        self.usernameLineEdit = QLineEdit(self.formLayoutWidget_2)
+        self.usernameLineEdit.setObjectName(u"usernameLineEdit")
+        self.usernameLineEdit.setEnabled(True)
+        self.usernameLineEdit.setReadOnly(True)
+
+        self.formLayout_2.setWidget(0, QFormLayout.FieldRole, self.usernameLineEdit)
+
+        self.idLabel = QLabel(self.formLayoutWidget_2)
+        self.idLabel.setObjectName(u"idLabel")
+
+        self.formLayout_2.setWidget(1, QFormLayout.LabelRole, self.idLabel)
+
+        self.idLineEdit = QLineEdit(self.formLayoutWidget_2)
+        self.idLineEdit.setObjectName(u"idLineEdit")
+        self.idLineEdit.setEnabled(True)
+        self.idLineEdit.setReadOnly(True)
+
+        self.formLayout_2.setWidget(1, QFormLayout.FieldRole, self.idLineEdit)
+
+        self.kudosLabel = QLabel(self.formLayoutWidget_2)
+        self.kudosLabel.setObjectName(u"kudosLabel")
+
+        self.formLayout_2.setWidget(2, QFormLayout.LabelRole, self.kudosLabel)
+
+        self.kudosSpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.kudosSpinBox.setObjectName(u"kudosSpinBox")
+        self.kudosSpinBox.setEnabled(True)
+        self.kudosSpinBox.setReadOnly(True)
+        self.kudosSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(2, QFormLayout.FieldRole, self.kudosSpinBox)
+
+        self.trustedLabel = QLabel(self.formLayoutWidget_2)
+        self.trustedLabel.setObjectName(u"trustedLabel")
+
+        self.formLayout_2.setWidget(3, QFormLayout.LabelRole, self.trustedLabel)
+
+        self.trustedCheckBox = QCheckBox(self.formLayoutWidget_2)
+        self.trustedCheckBox.setObjectName(u"trustedCheckBox")
+        self.trustedCheckBox.setEnabled(True)
+        self.trustedCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.trustedCheckBox.setCheckable(True)
+
+        self.formLayout_2.setWidget(3, QFormLayout.FieldRole, self.trustedCheckBox)
+
+        self.maximumConcurrencyLabel = QLabel(self.formLayoutWidget_2)
+        self.maximumConcurrencyLabel.setObjectName(u"maximumConcurrencyLabel")
+
+        self.formLayout_2.setWidget(4, QFormLayout.LabelRole, self.maximumConcurrencyLabel)
+
+        self.maxConcurrencySpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.maxConcurrencySpinBox.setObjectName(u"maxConcurrencySpinBox")
+        self.maxConcurrencySpinBox.setEnabled(True)
+        self.maxConcurrencySpinBox.setReadOnly(True)
+        self.maxConcurrencySpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(4, QFormLayout.FieldRole, self.maxConcurrencySpinBox)
+
+        self.moderatorLabel = QLabel(self.formLayoutWidget_2)
+        self.moderatorLabel.setObjectName(u"moderatorLabel")
+
+        self.formLayout_2.setWidget(5, QFormLayout.LabelRole, self.moderatorLabel)
+
+        self.moderatorCheckBox = QCheckBox(self.formLayoutWidget_2)
+        self.moderatorCheckBox.setObjectName(u"moderatorCheckBox")
+        self.moderatorCheckBox.setEnabled(True)
+        self.moderatorCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.moderatorCheckBox.setCheckable(True)
+
+        self.formLayout_2.setWidget(5, QFormLayout.FieldRole, self.moderatorCheckBox)
+
+        self.numberOfWorkersLabel = QLabel(self.formLayoutWidget_2)
+        self.numberOfWorkersLabel.setObjectName(u"numberOfWorkersLabel")
+
+        self.formLayout_2.setWidget(6, QFormLayout.LabelRole, self.numberOfWorkersLabel)
+
+        self.numberOfWorkersSpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.numberOfWorkersSpinBox.setObjectName(u"numberOfWorkersSpinBox")
+        self.numberOfWorkersSpinBox.setEnabled(True)
+        self.numberOfWorkersSpinBox.setReadOnly(True)
+        self.numberOfWorkersSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(6, QFormLayout.FieldRole, self.numberOfWorkersSpinBox)
+
+        self.line_4 = QFrame(self.formLayoutWidget_2)
+        self.line_4.setObjectName(u"line_4")
+        self.line_4.setFrameShape(QFrame.Shape.HLine)
+        self.line_4.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.formLayout_2.setWidget(7, QFormLayout.LabelRole, self.line_4)
+
+        self.flaggedLabel = QLabel(self.formLayoutWidget_2)
+        self.flaggedLabel.setObjectName(u"flaggedLabel")
+
+        self.formLayout_2.setWidget(8, QFormLayout.LabelRole, self.flaggedLabel)
+
+        self.flaggedCheckBox = QCheckBox(self.formLayoutWidget_2)
+        self.flaggedCheckBox.setObjectName(u"flaggedCheckBox")
+        self.flaggedCheckBox.setEnabled(True)
+        self.flaggedCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.flaggedCheckBox.setCheckable(True)
+        self.flaggedCheckBox.setChecked(False)
+
+        self.formLayout_2.setWidget(8, QFormLayout.FieldRole, self.flaggedCheckBox)
+
+        self.VPNLabel = QLabel(self.formLayoutWidget_2)
+        self.VPNLabel.setObjectName(u"VPNLabel")
+
+        self.formLayout_2.setWidget(9, QFormLayout.LabelRole, self.VPNLabel)
+
+        self.VPNCheckBox = QCheckBox(self.formLayoutWidget_2)
+        self.VPNCheckBox.setObjectName(u"VPNCheckBox")
+        self.VPNCheckBox.setEnabled(True)
+        self.VPNCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.VPNCheckBox.setCheckable(True)
+        self.VPNCheckBox.setChecked(False)
+
+        self.formLayout_2.setWidget(9, QFormLayout.FieldRole, self.VPNCheckBox)
+
+        self.serviceLabel = QLabel(self.formLayoutWidget_2)
+        self.serviceLabel.setObjectName(u"serviceLabel")
+
+        self.formLayout_2.setWidget(10, QFormLayout.LabelRole, self.serviceLabel)
+
+        self.serviceCheckBox = QCheckBox(self.formLayoutWidget_2)
+        self.serviceCheckBox.setObjectName(u"serviceCheckBox")
+        self.serviceCheckBox.setEnabled(True)
+        self.serviceCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.serviceCheckBox.setCheckable(True)
+        self.serviceCheckBox.setChecked(False)
+
+        self.formLayout_2.setWidget(10, QFormLayout.FieldRole, self.serviceCheckBox)
+
+        self.educationLabel = QLabel(self.formLayoutWidget_2)
+        self.educationLabel.setObjectName(u"educationLabel")
+
+        self.formLayout_2.setWidget(11, QFormLayout.LabelRole, self.educationLabel)
+
+        self.educationCheckBox = QCheckBox(self.formLayoutWidget_2)
+        self.educationCheckBox.setObjectName(u"educationCheckBox")
+        self.educationCheckBox.setEnabled(True)
+        self.educationCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.educationCheckBox.setCheckable(True)
+        self.educationCheckBox.setChecked(False)
+
+        self.formLayout_2.setWidget(11, QFormLayout.FieldRole, self.educationCheckBox)
+
+        self.customizerLabel = QLabel(self.formLayoutWidget_2)
+        self.customizerLabel.setObjectName(u"customizerLabel")
+
+        self.formLayout_2.setWidget(12, QFormLayout.LabelRole, self.customizerLabel)
+
+        self.customizerCheckBox = QCheckBox(self.formLayoutWidget_2)
+        self.customizerCheckBox.setObjectName(u"customizerCheckBox")
+        self.customizerCheckBox.setEnabled(True)
+        self.customizerCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.customizerCheckBox.setCheckable(True)
+        self.customizerCheckBox.setChecked(False)
+
+        self.formLayout_2.setWidget(12, QFormLayout.FieldRole, self.customizerCheckBox)
+
+        self.specialLabel = QLabel(self.formLayoutWidget_2)
+        self.specialLabel.setObjectName(u"specialLabel")
+
+        self.formLayout_2.setWidget(13, QFormLayout.LabelRole, self.specialLabel)
+
+        self.specialCheckBox = QCheckBox(self.formLayoutWidget_2)
+        self.specialCheckBox.setObjectName(u"specialCheckBox")
+        self.specialCheckBox.setEnabled(True)
+        self.specialCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.specialCheckBox.setCheckable(True)
+        self.specialCheckBox.setChecked(False)
+
+        self.formLayout_2.setWidget(13, QFormLayout.FieldRole, self.specialCheckBox)
+
+        self.pseudonymousLabel = QLabel(self.formLayoutWidget_2)
+        self.pseudonymousLabel.setObjectName(u"pseudonymousLabel")
+
+        self.formLayout_2.setWidget(14, QFormLayout.LabelRole, self.pseudonymousLabel)
+
+        self.pseudonymousCheckBox = QCheckBox(self.formLayoutWidget_2)
+        self.pseudonymousCheckBox.setObjectName(u"pseudonymousCheckBox")
+        self.pseudonymousCheckBox.setEnabled(True)
+        self.pseudonymousCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.pseudonymousCheckBox.setCheckable(True)
+        self.pseudonymousCheckBox.setChecked(False)
+
+        self.formLayout_2.setWidget(14, QFormLayout.FieldRole, self.pseudonymousCheckBox)
+
+        self.line_3 = QFrame(self.formLayoutWidget_2)
+        self.line_3.setObjectName(u"line_3")
+        self.line_3.setFrameShape(QFrame.Shape.HLine)
+        self.line_3.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.formLayout_2.setWidget(15, QFormLayout.LabelRole, self.line_3)
+
+        self.accountAgeLabel = QLabel(self.formLayoutWidget_2)
+        self.accountAgeLabel.setObjectName(u"accountAgeLabel")
+
+        self.formLayout_2.setWidget(16, QFormLayout.LabelRole, self.accountAgeLabel)
+
+        self.accountAgeLineEdit = QLineEdit(self.formLayoutWidget_2)
+        self.accountAgeLineEdit.setObjectName(u"accountAgeLineEdit")
+        self.accountAgeLineEdit.setEnabled(True)
+        self.accountAgeLineEdit.setReadOnly(True)
+
+        self.formLayout_2.setWidget(16, QFormLayout.FieldRole, self.accountAgeLineEdit)
+
+        self.accountCreatedLabel = QLabel(self.formLayoutWidget_2)
+        self.accountCreatedLabel.setObjectName(u"accountCreatedLabel")
+
+        self.formLayout_2.setWidget(17, QFormLayout.LabelRole, self.accountCreatedLabel)
+
+        self.accountCreatedLineEdit = QLineEdit(self.formLayoutWidget_2)
+        self.accountCreatedLineEdit.setObjectName(u"accountCreatedLineEdit")
+        self.accountCreatedLineEdit.setEnabled(True)
+        self.accountCreatedLineEdit.setReadOnly(True)
+
+        self.formLayout_2.setWidget(17, QFormLayout.FieldRole, self.accountCreatedLineEdit)
+
+        self.line_2 = QFrame(self.formLayoutWidget_2)
+        self.line_2.setObjectName(u"line_2")
+        self.line_2.setFrameShape(QFrame.Shape.HLine)
+        self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.formLayout_2.setWidget(18, QFormLayout.LabelRole, self.line_2)
+
+        self.textGeneratedLabel = QLabel(self.formLayoutWidget_2)
+        self.textGeneratedLabel.setObjectName(u"textGeneratedLabel")
+
+        self.formLayout_2.setWidget(19, QFormLayout.LabelRole, self.textGeneratedLabel)
+
+        self.textGeneratedSpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.textGeneratedSpinBox.setObjectName(u"textGeneratedSpinBox")
+        self.textGeneratedSpinBox.setEnabled(True)
+        self.textGeneratedSpinBox.setReadOnly(True)
+        self.textGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(19, QFormLayout.FieldRole, self.textGeneratedSpinBox)
+
+        self.imageGeneratedLabel = QLabel(self.formLayoutWidget_2)
+        self.imageGeneratedLabel.setObjectName(u"imageGeneratedLabel")
+
+        self.formLayout_2.setWidget(20, QFormLayout.LabelRole, self.imageGeneratedLabel)
+
+        self.imageGeneratedSpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.imageGeneratedSpinBox.setObjectName(u"imageGeneratedSpinBox")
+        self.imageGeneratedSpinBox.setEnabled(True)
+        self.imageGeneratedSpinBox.setReadOnly(True)
+        self.imageGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(20, QFormLayout.FieldRole, self.imageGeneratedSpinBox)
+
+        self.interrogationGeneratedLabel_2 = QLabel(self.formLayoutWidget_2)
+        self.interrogationGeneratedLabel_2.setObjectName(u"interrogationGeneratedLabel_2")
+
+        self.formLayout_2.setWidget(21, QFormLayout.LabelRole, self.interrogationGeneratedLabel_2)
+
+        self.interrogationGeneratedSpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.interrogationGeneratedSpinBox.setObjectName(u"interrogationGeneratedSpinBox")
+        self.interrogationGeneratedSpinBox.setEnabled(True)
+        self.interrogationGeneratedSpinBox.setReadOnly(True)
+        self.interrogationGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(21, QFormLayout.FieldRole, self.interrogationGeneratedSpinBox)
+
+        self.line = QFrame(self.formLayoutWidget_2)
+        self.line.setObjectName(u"line")
+        self.line.setFrameShape(QFrame.Shape.HLine)
+        self.line.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.formLayout_2.setWidget(22, QFormLayout.LabelRole, self.line)
+
+        self.textRequestedLabel = QLabel(self.formLayoutWidget_2)
+        self.textRequestedLabel.setObjectName(u"textRequestedLabel")
+
+        self.formLayout_2.setWidget(23, QFormLayout.LabelRole, self.textRequestedLabel)
+
+        self.textRequestedSpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.textRequestedSpinBox.setObjectName(u"textRequestedSpinBox")
+        self.textRequestedSpinBox.setEnabled(True)
+        self.textRequestedSpinBox.setReadOnly(True)
+        self.textRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(23, QFormLayout.FieldRole, self.textRequestedSpinBox)
+
+        self.imagesRequestedLabel = QLabel(self.formLayoutWidget_2)
+        self.imagesRequestedLabel.setObjectName(u"imagesRequestedLabel")
+
+        self.formLayout_2.setWidget(24, QFormLayout.LabelRole, self.imagesRequestedLabel)
+
+        self.imagesRequestedSpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.imagesRequestedSpinBox.setObjectName(u"imagesRequestedSpinBox")
+        self.imagesRequestedSpinBox.setEnabled(True)
+        self.imagesRequestedSpinBox.setReadOnly(True)
+        self.imagesRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(24, QFormLayout.FieldRole, self.imagesRequestedSpinBox)
+
+        self.interrogationRequestedLabel = QLabel(self.formLayoutWidget_2)
+        self.interrogationRequestedLabel.setObjectName(u"interrogationRequestedLabel")
+
+        self.formLayout_2.setWidget(25, QFormLayout.LabelRole, self.interrogationRequestedLabel)
+
+        self.interrogationRequestedSpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.interrogationRequestedSpinBox.setObjectName(u"interrogationRequestedSpinBox")
+        self.interrogationRequestedSpinBox.setEnabled(True)
+        self.interrogationRequestedSpinBox.setReadOnly(True)
+        self.interrogationRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(25, QFormLayout.FieldRole, self.interrogationRequestedSpinBox)
+
+        self.tokensRequestedLabel = QLabel(self.formLayoutWidget_2)
+        self.tokensRequestedLabel.setObjectName(u"tokensRequestedLabel")
+
+        self.formLayout_2.setWidget(27, QFormLayout.LabelRole, self.tokensRequestedLabel)
+
+        self.tokensRequestedSpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.tokensRequestedSpinBox.setObjectName(u"tokensRequestedSpinBox")
+        self.tokensRequestedSpinBox.setEnabled(True)
+        self.tokensRequestedSpinBox.setReadOnly(True)
+        self.tokensRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(27, QFormLayout.FieldRole, self.tokensRequestedSpinBox)
+
+        self.megapixelstepsRequestedLabel = QLabel(self.formLayoutWidget_2)
+        self.megapixelstepsRequestedLabel.setObjectName(u"megapixelstepsRequestedLabel")
+
+        self.formLayout_2.setWidget(28, QFormLayout.LabelRole, self.megapixelstepsRequestedLabel)
+
+        self.megapixelstepsRequestedDoubleSpinBox = QDoubleSpinBox(self.formLayoutWidget_2)
+        self.megapixelstepsRequestedDoubleSpinBox.setObjectName(u"megapixelstepsRequestedDoubleSpinBox")
+        self.megapixelstepsRequestedDoubleSpinBox.setEnabled(True)
+        self.megapixelstepsRequestedDoubleSpinBox.setReadOnly(True)
+        self.megapixelstepsRequestedDoubleSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(28, QFormLayout.FieldRole, self.megapixelstepsRequestedDoubleSpinBox)
+
+        self.tokensGeneratedLabel = QLabel(self.formLayoutWidget_2)
+        self.tokensGeneratedLabel.setObjectName(u"tokensGeneratedLabel")
+
+        self.formLayout_2.setWidget(30, QFormLayout.LabelRole, self.tokensGeneratedLabel)
+
+        self.tokensGeneratedSpinBox = QSpinBox(self.formLayoutWidget_2)
+        self.tokensGeneratedSpinBox.setObjectName(u"tokensGeneratedSpinBox")
+        self.tokensGeneratedSpinBox.setEnabled(True)
+        self.tokensGeneratedSpinBox.setReadOnly(True)
+        self.tokensGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(30, QFormLayout.FieldRole, self.tokensGeneratedSpinBox)
+
+        self.megapixelstepsGeneratedLabel = QLabel(self.formLayoutWidget_2)
+        self.megapixelstepsGeneratedLabel.setObjectName(u"megapixelstepsGeneratedLabel")
+
+        self.formLayout_2.setWidget(31, QFormLayout.LabelRole, self.megapixelstepsGeneratedLabel)
+
+        self.megapixelstepsGeneratedDoubleSpinBox = QDoubleSpinBox(self.formLayoutWidget_2)
+        self.megapixelstepsGeneratedDoubleSpinBox.setObjectName(u"megapixelstepsGeneratedDoubleSpinBox")
+        self.megapixelstepsGeneratedDoubleSpinBox.setEnabled(True)
+        self.megapixelstepsGeneratedDoubleSpinBox.setReadOnly(True)
+        self.megapixelstepsGeneratedDoubleSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
+        self.formLayout_2.setWidget(31, QFormLayout.FieldRole, self.megapixelstepsGeneratedDoubleSpinBox)
+
+        self.line_5 = QFrame(self.formLayoutWidget_2)
+        self.line_5.setObjectName(u"line_5")
+        self.line_5.setFrameShape(QFrame.Shape.HLine)
+        self.line_5.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.formLayout_2.setWidget(29, QFormLayout.LabelRole, self.line_5)
+
+        self.line_6 = QFrame(self.formLayoutWidget_2)
+        self.line_6.setObjectName(u"line_6")
+        self.line_6.setFrameShape(QFrame.Shape.HLine)
+        self.line_6.setFrameShadow(QFrame.Shadow.Sunken)
+
+        self.formLayout_2.setWidget(26, QFormLayout.LabelRole, self.line_6)
+
         icon8 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.UserOffline))
         self.tabWidget.addTab(self.userInfoPage, icon8, "")
         self.Stats_Tab = QWidget()
         self.Stats_Tab.setObjectName(u"Stats_Tab")
         self.localStats = QTreeView(self.Stats_Tab)
         self.localStats.setObjectName(u"localStats")
-        self.localStats.setGeometry(QRect(0, 30, 771, 651))
+        self.localStats.setGeometry(QRect(0, 30, 771, 781))
         icon9 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
         self.tabWidget.addTab(self.Stats_Tab, icon9, "")
         self.About_tab = QWidget()
@@ -384,12 +770,12 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 788, 21))
+        self.menubar.setGeometry(QRect(0, 0, 792, 21))
         MainWindow.setMenuBar(self.menubar)
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(3)
+        self.tabWidget.setCurrentIndex(4)
         self.modelComboBox.setCurrentIndex(0)
 
 
@@ -481,6 +867,44 @@ class Ui_MainWindow(object):
         self.NSFWCheckBox.setText("")
         self.maxJobsLabel.setText(QCoreApplication.translate("MainWindow", u"Max jobs", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), QCoreApplication.translate("MainWindow", u"Settings", None))
+        self.usernameLabel.setText(QCoreApplication.translate("MainWindow", u"Username", None))
+        self.idLabel.setText(QCoreApplication.translate("MainWindow", u"ID", None))
+        self.kudosLabel.setText(QCoreApplication.translate("MainWindow", u"Kudos", None))
+        self.trustedLabel.setText(QCoreApplication.translate("MainWindow", u"Trusted", None))
+        self.maximumConcurrencyLabel.setText(QCoreApplication.translate("MainWindow", u"Maximum Concurrency", None))
+        self.moderatorLabel.setText(QCoreApplication.translate("MainWindow", u"Moderator", None))
+        self.numberOfWorkersLabel.setText(QCoreApplication.translate("MainWindow", u"Number of Workers", None))
+        self.flaggedLabel.setText(QCoreApplication.translate("MainWindow", u"Flagged", None))
+        self.VPNLabel.setText(QCoreApplication.translate("MainWindow", u"VPN", None))
+        self.serviceLabel.setText(QCoreApplication.translate("MainWindow", u"Service", None))
+        self.educationLabel.setText(QCoreApplication.translate("MainWindow", u"Education", None))
+        self.customizerLabel.setText(QCoreApplication.translate("MainWindow", u"Customizer", None))
+        self.specialLabel.setText(QCoreApplication.translate("MainWindow", u"Special", None))
+        self.pseudonymousLabel.setText(QCoreApplication.translate("MainWindow", u"Pseudonymous", None))
+        self.accountAgeLabel.setText(QCoreApplication.translate("MainWindow", u"Account Age", None))
+        self.accountCreatedLabel.setText(QCoreApplication.translate("MainWindow", u"Account Created", None))
+        self.textGeneratedLabel.setText(QCoreApplication.translate("MainWindow", u"Text Generated", None))
+        self.textGeneratedSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" message(s)", None))
+        self.imageGeneratedLabel.setText(QCoreApplication.translate("MainWindow", u"Image Generated", None))
+        self.imageGeneratedSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" image(s)", None))
+        self.interrogationGeneratedLabel_2.setText(QCoreApplication.translate("MainWindow", u"Interrogation Generated", None))
+        self.interrogationGeneratedSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" interrogation(s)", None))
+        self.textRequestedLabel.setText(QCoreApplication.translate("MainWindow", u"Text Requested", None))
+        self.textRequestedSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" message(s)", None))
+        self.imagesRequestedLabel.setText(QCoreApplication.translate("MainWindow", u"Images Requested", None))
+        self.imagesRequestedSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" image(s)", None))
+        self.interrogationRequestedLabel.setText(QCoreApplication.translate("MainWindow", u"Interrogation Requested", None))
+        self.interrogationRequestedSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" interrogation(s)", None))
+        self.tokensRequestedLabel.setText(QCoreApplication.translate("MainWindow", u"Tokens Requested", None))
+        self.tokensRequestedSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" token(s)", None))
+        self.megapixelstepsRequestedLabel.setText(QCoreApplication.translate("MainWindow", u"Megapixelsteps Requested", None))
+        self.megapixelstepsRequestedDoubleSpinBox.setPrefix("")
+        self.megapixelstepsRequestedDoubleSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" megapixelstep(s)", None))
+        self.tokensGeneratedLabel.setText(QCoreApplication.translate("MainWindow", u"Tokens Generated", None))
+        self.tokensGeneratedSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" token(s)", None))
+        self.megapixelstepsGeneratedLabel.setText(QCoreApplication.translate("MainWindow", u"Megapixelsteps Generated", None))
+        self.megapixelstepsGeneratedDoubleSpinBox.setPrefix("")
+        self.megapixelstepsGeneratedDoubleSpinBox.setSuffix(QCoreApplication.translate("MainWindow", u" megapixelstep(s)", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.userInfoPage), QCoreApplication.translate("MainWindow", u"User Info", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Stats_Tab), QCoreApplication.translate("MainWindow", u"Stats", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.About_tab), QCoreApplication.translate("MainWindow", u"About", None))

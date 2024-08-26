@@ -1,4 +1,5 @@
 # This Python file uses the following encoding: utf-8
+import datetime
 import enum
 import json
 import random
@@ -276,9 +277,9 @@ class MainWindow(QMainWindow):
         self.model_dict: Dict[str, Model] = {}
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
-        if (k := keyring.get_password("QTHorde", "QTHordeUser")) != None:
+        if (k := keyring.get_password("HordeQT", "HordeQTUser")) != None:
             self.ui.apiKeyEntry.setText(k)
-
+            self.api_key = k
         self.ui.GenerateButton.clicked.connect(self.on_generate_click)
         self.ui.modelDetailsButton.clicked.connect(self.on_model_open_click)
 
@@ -287,15 +288,69 @@ class MainWindow(QMainWindow):
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
         self.construct_model_dict()
+        self.update_user_info()
+
+    def update_user_info(self):
+        r = requests.get(BASE_URL + "find_user", headers=get_headers(self.api_key))
+        if r.status_code == 404:
+            self.show_error("Invalid API key; User could not be found.")
+            return
+        j = r.json()
+        self.ui.usernameLineEdit.setText(j["username"])
+        self.ui.idLineEdit.setText(str(j["id"]))
+        self.ui.kudosSpinBox.setValue(j["kudos"])
+        self.ui.maxConcurrencySpinBox.setValue(j["concurrency"])
+        self.ui.moderatorCheckBox.setChecked(j["moderator"])
+        self.ui.numberOfWorkersSpinBox.setValue(j["worker_count"])
+        self.ui.trustedCheckBox.setChecked(j["trusted"])
+        self.ui.serviceCheckBox.setChecked(j["service"])
+        self.ui.educationCheckBox.setChecked(j["education"])
+        self.ui.customizerCheckBox.setChecked(j["customizer"])
+        self.ui.specialCheckBox.setChecked(j["special"])
+        self.ui.pseudonymousCheckBox.setChecked(j["pseudonymous"])
+        self.ui.accountAgeLineEdit.setText(str(j["account_age"]) + " seconds")
+        self.ui.accountAgeLineEdit.setText(
+            (datetime.datetime.fromtimestamp(time.time())
+            - datetime.timedelta(seconds=j["account_age"])).isoformat()
+        )
+        records = j["records"]
+        usage = records["usage"]
+        contrib = records["contribution"]
+
+        fulfill = records["fulfillment"]
+        self.ui.textGeneratedSpinBox.setValue(fulfill["text"])
+        self.ui.imageGeneratedSpinBox.setValue(fulfill["image"])
+        self.ui.interrogationGeneratedSpinBox.setValue(fulfill["interrogation"])
+
+        request = records["request"]
+
+        self.ui.textRequestedSpinBox.setValue(request["text"])
+        self.ui.imagesRequestedSpinBox.setValue(request["image"])
+        self.ui.interrogationRequestedSpinBox.setValue(request["interrogation"])
+
+        usage = records["usage"]
+        self.ui.tokensRequestedSpinBox.setValue(usage["tokens"])
+        self.ui.megapixelstepsRequestedDoubleSpinBox.setValue(usage["megapixelsteps"])
+
+        contrib = records["contribution"]
+
+        self.ui.tokensGeneratedSpinBox.setValue(contrib["tokens"])
+        self.ui.megapixelstepsGeneratedDoubleSpinBox.setValue(contrib["megapixelsteps"])
 
     def toggle_api_key_visibility(self):
         visible = self.ui.apiKeyEntry.echoMode() == QLineEdit.EchoMode.Normal
         if visible:
-            self.ui.showAPIKey.setText("Show API Key")
-            self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Password)
+            self.hide_api_key()
         else:
-            self.ui.showAPIKey.setText("Hide API Key")
-            self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.show_api_key()
+
+    def show_api_key(self):
+        self.ui.showAPIKey.setText("Hide API Key")
+        self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Normal)
+
+    def hide_api_key(self):
+        self.ui.showAPIKey.setText("Show API Key")
+        self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Password)
 
     def create_job(self):
         prompt = self.ui.PromptBox.toPlainText()
@@ -383,9 +438,11 @@ class MainWindow(QMainWindow):
         print(json.dumps(self.create_job().to_json()))
 
     def save_api_key(self):
+        self.hide_api_key()
         self.api_key = self.ui.apiKeyEntry.text()
         keyring.set_password("HordeQT", "HordeQTUser", self.api_key)
         self.show_info("API Key saved sucessfully.")
+        self.update_user_info()
 
     def copy_api_key(self):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
