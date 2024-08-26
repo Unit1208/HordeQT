@@ -9,3 +9,5 @@
 - [ ] Persistent Storage of settings
 - [ ] About Page
 - [ ] Toggle for Shared images
+- [ ] Handle Max jobs, get user concurrency for max
+- [ ] Evict Jobs from statusDictionary after some time

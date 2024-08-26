@@ -24,7 +24,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>5</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -51,40 +51,24 @@
           <height>70</height>
          </rect>
         </property>
+        <property name="tabChangesFocus">
+         <bool>true</bool>
+        </property>
         <property name="placeholderText">
          <string>Prompt</string>
-        </property>
-       </widget>
-       <widget class="QCheckBox" name="checkBox">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>110</y>
-          <width>171</width>
-          <height>22</height>
-         </rect>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Use Negative Prompt</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
         </property>
        </widget>
        <widget class="QTextEdit" name="NegativePromptBox">
         <property name="geometry">
          <rect>
           <x>20</x>
-          <y>150</y>
+          <y>110</y>
           <width>731</width>
           <height>70</height>
          </rect>
+        </property>
+        <property name="tabChangesFocus">
+         <bool>true</bool>
         </property>
         <property name="placeholderText">
          <string>Negative Prompt</string>
@@ -155,7 +139,7 @@
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QSpinBox" name="imagesSpinBox_2">
+             <widget class="QSpinBox" name="stepsSpinBox">
               <property name="minimum">
                <number>1</number>
               </property>
@@ -164,6 +148,13 @@
               </property>
               <property name="value">
                <number>20</number>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="modelLabel">
+              <property name="text">
+               <string>Model</string>
               </property>
              </widget>
             </item>
@@ -331,6 +322,16 @@
                 <string>DDIM</string>
                </property>
               </item>
+              <item>
+               <property name="text">
+                <string>lcm</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>dpmsolver</string>
+               </property>
+              </item>
              </widget>
             </item>
             <item row="7" column="0">
@@ -343,10 +344,16 @@
             <item row="7" column="1">
              <widget class="QSpinBox" name="seedSpinBox">
               <property name="toolTip">
-               <string>Leave empty for no seed</string>
+               <string>0 for unseeded generations</string>
               </property>
               <property name="statusTip">
                <string/>
+              </property>
+              <property name="maximum">
+               <number>2147483647</number>
+              </property>
+              <property name="displayIntegerBase">
+               <number>10</number>
               </property>
              </widget>
             </item>
@@ -363,10 +370,10 @@
                <number>1</number>
               </property>
               <property name="minimum">
-               <double>0.500000000000000</double>
+               <double>0.000000000000000</double>
               </property>
               <property name="maximum">
-               <double>30.000000000000000</double>
+               <double>100.000000000000000</double>
               </property>
               <property name="singleStep">
                <double>0.500000000000000</double>
@@ -393,25 +400,49 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="modelLabel">
-              <property name="text">
-               <string>Model</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="1">
-             <widget class="QComboBox" name="modelComboBox">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="currentText">
-               <string/>
-              </property>
-              <property name="placeholderText">
-               <string>NOT IMPLEMENTED YET</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_2">
+              <item>
+               <widget class="QComboBox" name="modelComboBox">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="editable">
+                 <bool>true</bool>
+                </property>
+                <property name="currentText">
+                 <string>Placeholder</string>
+                </property>
+                <property name="currentIndex">
+                 <number>0</number>
+                </property>
+                <property name="placeholderText">
+                 <string>NOT IMPLEMENTED YET</string>
+                </property>
+                <item>
+                 <property name="text">
+                  <string>Placeholder</string>
+                 </property>
+                </item>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="modelDetailsButton">
+                <property name="text">
+                 <string>Model Details </string>
+                </property>
+                <property name="icon">
+                 <iconset theme="QIcon::ThemeIcon::SystemSearch"/>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </widget>
@@ -422,7 +453,7 @@
         <property name="geometry">
          <rect>
           <x>600</x>
-          <y>110</y>
+          <y>190</y>
           <width>151</width>
           <height>31</height>
          </rect>
@@ -536,7 +567,7 @@
           <x>0</x>
           <y>10</y>
           <width>761</width>
-          <height>681</height>
+          <height>671</height>
          </rect>
         </property>
         <layout class="QFormLayout" name="settingsLayout">
@@ -611,35 +642,24 @@
           </widget>
          </item>
          <item row="2" column="0">
-          <widget class="QLabel" name="dataDirLabel">
+          <widget class="QLabel" name="maxJobsLabel">
            <property name="text">
-            <string>DataDir</string>
+            <string>Max jobs</string>
            </property>
           </widget>
          </item>
          <item row="2" column="1">
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QLineEdit" name="dataDirLineEdit">
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="SelectDataDir">
-             <property name="text">
-              <string>Select Data Dir</string>
-             </property>
-             <property name="icon">
-              <iconset theme="QIcon::ThemeIcon::EditFind"/>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item row="4" column="1">
-          <widget class="QCheckBox" name="allowAdvancedSettingsCheckBox"/>
+          <widget class="QSpinBox" name="maxJobsSpinBox">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>20</number>
+           </property>
+           <property name="value">
+            <number>5</number>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -735,38 +755,5 @@
   </action>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>checkBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>NegativePromptBox</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>111</x>
-     <y>177</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>401</x>
-     <y>231</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>copyAPIkey</sender>
-   <signal>clicked()</signal>
-   <receiver>apiKeyEntry</receiver>
-   <slot>copy()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>428</x>
-     <y>70</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>428</x>
-     <y>100</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>

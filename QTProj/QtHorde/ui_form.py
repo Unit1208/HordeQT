@@ -50,18 +50,11 @@ class Ui_MainWindow(object):
         self.PromptBox = QTextEdit(self.create_tab)
         self.PromptBox.setObjectName(u"PromptBox")
         self.PromptBox.setGeometry(QRect(20, 30, 731, 70))
-        self.checkBox = QCheckBox(self.create_tab)
-        self.checkBox.setObjectName(u"checkBox")
-        self.checkBox.setGeometry(QRect(20, 110, 171, 22))
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.checkBox.sizePolicy().hasHeightForWidth())
-        self.checkBox.setSizePolicy(sizePolicy1)
-        self.checkBox.setChecked(True)
+        self.PromptBox.setTabChangesFocus(True)
         self.NegativePromptBox = QTextEdit(self.create_tab)
         self.NegativePromptBox.setObjectName(u"NegativePromptBox")
-        self.NegativePromptBox.setGeometry(QRect(20, 150, 731, 70))
+        self.NegativePromptBox.setGeometry(QRect(20, 110, 731, 70))
+        self.NegativePromptBox.setTabChangesFocus(True)
         self.frame = QFrame(self.create_tab)
         self.frame.setObjectName(u"frame")
         self.frame.setGeometry(QRect(20, 220, 731, 461))
@@ -95,13 +88,13 @@ class Ui_MainWindow(object):
 
         self.formLayout.setWidget(1, QFormLayout.LabelRole, self.stepsLabel)
 
-        self.imagesSpinBox_2 = QSpinBox(self.gridLayoutWidget)
-        self.imagesSpinBox_2.setObjectName(u"imagesSpinBox_2")
-        self.imagesSpinBox_2.setMinimum(1)
-        self.imagesSpinBox_2.setMaximum(150)
-        self.imagesSpinBox_2.setValue(20)
+        self.stepsSpinBox = QSpinBox(self.gridLayoutWidget)
+        self.stepsSpinBox.setObjectName(u"stepsSpinBox")
+        self.stepsSpinBox.setMinimum(1)
+        self.stepsSpinBox.setMaximum(150)
+        self.stepsSpinBox.setValue(20)
 
-        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.imagesSpinBox_2)
+        self.formLayout.setWidget(1, QFormLayout.FieldRole, self.stepsSpinBox)
 
         self.presetLabel = QLabel(self.gridLayoutWidget)
         self.presetLabel.setObjectName(u"presetLabel")
@@ -167,6 +160,8 @@ class Ui_MainWindow(object):
         self.samplerComboBox.addItem("")
         self.samplerComboBox.addItem("")
         self.samplerComboBox.addItem("")
+        self.samplerComboBox.addItem("")
+        self.samplerComboBox.addItem("")
         self.samplerComboBox.setObjectName(u"samplerComboBox")
 
         self.formLayout.setWidget(6, QFormLayout.FieldRole, self.samplerComboBox)
@@ -178,6 +173,8 @@ class Ui_MainWindow(object):
 
         self.seedSpinBox = QSpinBox(self.gridLayoutWidget)
         self.seedSpinBox.setObjectName(u"seedSpinBox")
+        self.seedSpinBox.setMaximum(2147483647)
+        self.seedSpinBox.setDisplayIntegerBase(10)
 
         self.formLayout.setWidget(7, QFormLayout.FieldRole, self.seedSpinBox)
 
@@ -189,8 +186,8 @@ class Ui_MainWindow(object):
         self.guidenceDoubleSpinBox = QDoubleSpinBox(self.gridLayoutWidget)
         self.guidenceDoubleSpinBox.setObjectName(u"guidenceDoubleSpinBox")
         self.guidenceDoubleSpinBox.setDecimals(1)
-        self.guidenceDoubleSpinBox.setMinimum(0.500000000000000)
-        self.guidenceDoubleSpinBox.setMaximum(30.000000000000000)
+        self.guidenceDoubleSpinBox.setMinimum(0.000000000000000)
+        self.guidenceDoubleSpinBox.setMaximum(100.000000000000000)
         self.guidenceDoubleSpinBox.setSingleStep(0.500000000000000)
         self.guidenceDoubleSpinBox.setValue(5.000000000000000)
 
@@ -214,15 +211,17 @@ class Ui_MainWindow(object):
         self.formLayout.setWidget(2, QFormLayout.LabelRole, self.modelLabel)
 
         self.modelComboBox = QComboBox(self.gridLayoutWidget)
+        self.modelComboBox.addItem("")
         self.modelComboBox.setObjectName(u"modelComboBox")
-        self.modelComboBox.setEnabled(False)
+        self.modelComboBox.setEnabled(True)
+        self.modelComboBox.setEditable(True)
 
         self.formLayout.setWidget(2, QFormLayout.FieldRole, self.modelComboBox)
 
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.GenerateButton = QPushButton(self.create_tab)
         self.GenerateButton.setObjectName(u"GenerateButton")
-        self.GenerateButton.setGeometry(QRect(600, 110, 151, 31))
+        self.GenerateButton.setGeometry(QRect(600, 190, 151, 31))
         icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.InsertImage))
         self.GenerateButton.setIcon(icon)
         icon1 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.ListAdd))
@@ -264,7 +263,7 @@ class Ui_MainWindow(object):
         self.settings_tab.setObjectName(u"settings_tab")
         self.formLayoutWidget = QWidget(self.settings_tab)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(0, 10, 761, 681))
+        self.formLayoutWidget.setGeometry(QRect(0, 10, 761, 671))
         self.settingsLayout = QFormLayout(self.formLayoutWidget)
         self.settingsLayout.setObjectName(u"settingsLayout")
         self.settingsLayout.setContentsMargins(0, 0, 0, 0)
@@ -312,33 +311,18 @@ class Ui_MainWindow(object):
 
         self.settingsLayout.setWidget(1, QFormLayout.FieldRole, self.NSFWCheckBox)
 
-        self.dataDirLabel = QLabel(self.formLayoutWidget)
-        self.dataDirLabel.setObjectName(u"dataDirLabel")
+        self.maxJobsLabel = QLabel(self.formLayoutWidget)
+        self.maxJobsLabel.setObjectName(u"maxJobsLabel")
 
-        self.settingsLayout.setWidget(2, QFormLayout.LabelRole, self.dataDirLabel)
+        self.settingsLayout.setWidget(2, QFormLayout.LabelRole, self.maxJobsLabel)
 
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.dataDirLineEdit = QLineEdit(self.formLayoutWidget)
-        self.dataDirLineEdit.setObjectName(u"dataDirLineEdit")
-        self.dataDirLineEdit.setReadOnly(True)
+        self.maxJobsSpinBox = QSpinBox(self.formLayoutWidget)
+        self.maxJobsSpinBox.setObjectName(u"maxJobsSpinBox")
+        self.maxJobsSpinBox.setMinimum(1)
+        self.maxJobsSpinBox.setMaximum(20)
+        self.maxJobsSpinBox.setValue(5)
 
-        self.horizontalLayout_2.addWidget(self.dataDirLineEdit)
-
-        self.SelectDataDir = QPushButton(self.formLayoutWidget)
-        self.SelectDataDir.setObjectName(u"SelectDataDir")
-        icon6 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditFind))
-        self.SelectDataDir.setIcon(icon6)
-
-        self.horizontalLayout_2.addWidget(self.SelectDataDir)
-
-
-        self.settingsLayout.setLayout(2, QFormLayout.FieldRole, self.horizontalLayout_2)
-
-        self.allowAdvancedSettingsCheckBox = QCheckBox(self.formLayoutWidget)
-        self.allowAdvancedSettingsCheckBox.setObjectName(u"allowAdvancedSettingsCheckBox")
-
-        self.settingsLayout.setWidget(4, QFormLayout.FieldRole, self.allowAdvancedSettingsCheckBox)
+        self.settingsLayout.setWidget(2, QFormLayout.FieldRole, self.maxJobsSpinBox)
 
         self.tabWidget.addTab(self.settings_tab, icon2, "")
         self.userInfoPage = QWidget()
@@ -346,15 +330,15 @@ class Ui_MainWindow(object):
         self.treeView = QTreeView(self.userInfoPage)
         self.treeView.setObjectName(u"treeView")
         self.treeView.setGeometry(QRect(5, 31, 771, 491))
-        icon7 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.UserOffline))
-        self.tabWidget.addTab(self.userInfoPage, icon7, "")
+        icon6 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.UserOffline))
+        self.tabWidget.addTab(self.userInfoPage, icon6, "")
         self.Stats_Tab = QWidget()
         self.Stats_Tab.setObjectName(u"Stats_Tab")
         self.localStats = QTreeView(self.Stats_Tab)
         self.localStats.setObjectName(u"localStats")
         self.localStats.setGeometry(QRect(0, 30, 771, 651))
-        icon8 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
-        self.tabWidget.addTab(self.Stats_Tab, icon8, "")
+        icon7 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
+        self.tabWidget.addTab(self.Stats_Tab, icon7, "")
         self.About_tab = QWidget()
         self.About_tab.setObjectName(u"About_tab")
         self.verticalLayoutWidget = QWidget(self.About_tab)
@@ -367,9 +351,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addItem(self.horizontalSpacer)
 
-        icon9 = QIcon()
-        icon9.addFile(u"../../../Pictures/QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget.addTab(self.About_tab, icon9, "")
+        icon8 = QIcon()
+        icon8.addFile(u"../../../Pictures/QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget.addTab(self.About_tab, icon8, "")
 
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
 
@@ -380,10 +364,9 @@ class Ui_MainWindow(object):
         MainWindow.setMenuBar(self.menubar)
 
         self.retranslateUi(MainWindow)
-        self.checkBox.toggled.connect(self.NegativePromptBox.setVisible)
-        self.copyAPIkey.clicked.connect(self.apiKeyEntry.copy)
 
-        self.tabWidget.setCurrentIndex(5)
+        self.tabWidget.setCurrentIndex(0)
+        self.modelComboBox.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -393,7 +376,6 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.actionSave.setText(QCoreApplication.translate("MainWindow", u"Save", None))
         self.PromptBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Prompt", None))
-        self.checkBox.setText(QCoreApplication.translate("MainWindow", u"Use Negative Prompt", None))
         self.NegativePromptBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Negative Prompt", None))
         self.imagesLabel.setText(QCoreApplication.translate("MainWindow", u"Images", None))
         self.stepsLabel.setText(QCoreApplication.translate("MainWindow", u"Steps", None))
@@ -421,10 +403,12 @@ class Ui_MainWindow(object):
         self.samplerComboBox.setItemText(9, QCoreApplication.translate("MainWindow", u"k_dpmpp_2s_a", None))
         self.samplerComboBox.setItemText(10, QCoreApplication.translate("MainWindow", u"k_dpmpp_sde", None))
         self.samplerComboBox.setItemText(11, QCoreApplication.translate("MainWindow", u"DDIM", None))
+        self.samplerComboBox.setItemText(12, QCoreApplication.translate("MainWindow", u"lcm", None))
+        self.samplerComboBox.setItemText(13, QCoreApplication.translate("MainWindow", u"dpmsolver", None))
 
         self.seedLabel.setText(QCoreApplication.translate("MainWindow", u"Seed", None))
 #if QT_CONFIG(tooltip)
-        self.seedSpinBox.setToolTip(QCoreApplication.translate("MainWindow", u"Leave empty for no seed", None))
+        self.seedSpinBox.setToolTip(QCoreApplication.translate("MainWindow", u"0 for unseeded generations", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(statustip)
         self.seedSpinBox.setStatusTip("")
@@ -432,7 +416,9 @@ class Ui_MainWindow(object):
         self.guidenceLabel.setText(QCoreApplication.translate("MainWindow", u"Guidence", None))
         self.clipSkipLabel.setText(QCoreApplication.translate("MainWindow", u"Clip Skip", None))
         self.modelLabel.setText(QCoreApplication.translate("MainWindow", u"Model", None))
-        self.modelComboBox.setCurrentText("")
+        self.modelComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"Placeholder", None))
+
+        self.modelComboBox.setCurrentText(QCoreApplication.translate("MainWindow", u"Placeholder", None))
         self.modelComboBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"NOT IMPLEMENTED YET", None))
 #if QT_CONFIG(tooltip)
         self.GenerateButton.setToolTip(QCoreApplication.translate("MainWindow", u"Shortcut Ctrl + Enter", None))
@@ -467,8 +453,7 @@ class Ui_MainWindow(object):
         self.NSFWCheckBox.setToolTip(QCoreApplication.translate("MainWindow", u"Whether to allow the generation of NSFW content. Accidental NSFW content will be censored by workers.", None))
 #endif // QT_CONFIG(tooltip)
         self.NSFWCheckBox.setText("")
-        self.dataDirLabel.setText(QCoreApplication.translate("MainWindow", u"DataDir", None))
-        self.SelectDataDir.setText(QCoreApplication.translate("MainWindow", u"Select Data Dir", None))
+        self.maxJobsLabel.setText(QCoreApplication.translate("MainWindow", u"Max jobs", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), QCoreApplication.translate("MainWindow", u"Settings", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.userInfoPage), QCoreApplication.translate("MainWindow", u"User Info", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.Stats_Tab), QCoreApplication.translate("MainWindow", u"Stats", None))
