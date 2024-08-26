@@ -31,7 +31,6 @@ def get_headers(api_key: str):
         "Client-Agent": "https://github.com/Unit1208/HordeQt:0.0.1:Unit1208",
     }
 
-
 class Job:
     prompt: str
     sampler_name: str
@@ -46,6 +45,21 @@ class Job:
     model: str
     allow_nsfw: bool = False
 
+    def __init__(self, prompt: str, sampler_name: str, cfg_scale: float, seed: int, width: int, height: int, 
+                 clip_skip: int, steps: int, model: str, karras: bool = True, hires_fix: bool = True, 
+                 allow_nsfw: bool = False):
+        self.prompt = prompt
+        self.sampler_name = sampler_name
+        self.cfg_scale = cfg_scale
+        self.seed = seed
+        self.width = width
+        self.height = height
+        self.karras = karras
+        self.hires_fix = hires_fix
+        self.clip_skip = clip_skip
+        self.steps = steps
+        self.model = model
+        self.allow_nsfw = allow_nsfw
 
     def to_json(self):
         return {
@@ -67,11 +81,43 @@ class Job:
             "trusted_workers": False,
             "slow_workers": True,
             "censor_nsfw": not self.allow_nsfw,
-            "models": ["string"],
+            "models": [self.model],
             "r2": True,
             "shared": False,
             "replacement_filter": True,
         }
+
+    @classmethod
+    def from_json(cls, data: dict):
+        prompt = data.get("prompt")
+        params = data.get("params", {})
+        sampler_name = params.get("sampler_name")
+        cfg_scale = params.get("cfg_scale")
+        seed = params.get("seed")
+        width = params.get("width")
+        height = params.get("height")
+        karras = params.get("karras", True)
+        hires_fix = params.get("hires_fix", True)
+        clip_skip = params.get("clip_skip")
+        steps = params.get("steps")
+        model = data.get("models", ["string"])[0]
+        allow_nsfw = data.get("nsfw", False)
+
+        return cls(
+            prompt=prompt,
+            sampler_name=sampler_name,
+            cfg_scale=cfg_scale,
+            seed=seed,
+            width=width,
+            height=height,
+            karras=karras,
+            hires_fix=hires_fix,
+            clip_skip=clip_skip,
+            steps=steps,
+            model=model,
+            allow_nsfw=allow_nsfw,
+        )
+
 
 
 
