@@ -797,7 +797,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addItem(self.horizontalSpacer)
 
         icon10 = QIcon()
-        icon10.addFile(u"../../../Pictures/QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        icon10.addFile(u"./QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.tabWidget.addTab(self.About_tab, icon10, "")
 
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)

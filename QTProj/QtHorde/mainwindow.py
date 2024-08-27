@@ -198,9 +198,13 @@ class APIManagerThread(QThread):
             time.sleep(1)  # Sleep for a short time to avoid high CPU usage
 
     def serialize(self):
+        self.stop()
+        job_list = []
+        while not self.job_queue.empty():
+            job_list.append(self.job_queue.get())
         val = {
             "current_requests": self.current_requests,
-            "job_queue": self.job_queue,
+            "job_queue": job_list,
             "completed_jobs": self.completed_jobs,
         }
         return val
@@ -208,14 +212,20 @@ class APIManagerThread(QThread):
     @classmethod
     def deserialize(
         cls,
-        value: Dict[str, List[Job] | Queue[Job] | Dict[str, Job]],
+        value: Dict[str, List[Job] | Dict[str, Job]],
         api_key: str,
         max_requests: int,
         parent=None,
     ):
         v = cls(api_key, max_requests, parent)
         v.current_requests = value.get("current_requests", {})
-        v.job_queue = value.get("job_queue", Queue())
+        jobl: List[Job] = value.get("job_queue", [])
+        jobq = Queue()
+        # TODO: Pencil this out, does this reverse the order of the queue?
+        ## IF it does, I believe it would be canceled out by the serialization process
+        for item in jobl:
+            jobq.put(item)
+        v.job_queue = jobq
         v.completed_jobs = value.get("completed_jobs", [])
         return v
 
@@ -296,7 +306,7 @@ class ModelPopup(QDialog):
         self.ui.requirementsLineEdit.setText(req_str)
 
 
-class Worker(QObject):
+class LoadWorker(QObject):
     progress = Signal(int)
     model_info = Signal(dict)
     user_info = Signal(requests.Response)
@@ -313,7 +323,6 @@ class Worker(QObject):
             )
         )
         # os.makedirs(p,exist_ok=True)
-        print(p)
         model_cache_path = p / "model_ref.json"
         # print(QStandardPaths.locate(QStandardPaths.StandardLocation.CacheLocation,"model_ref.json"))
 
@@ -331,14 +340,15 @@ class Worker(QObject):
         else:
 
             with open(model_cache_path, "rt") as f:
-                j = json.loads(f)
+                j = json.load(f)
 
         self.model_info.emit(j)
         self.progress.emit(100)
 
-
 class SavedData:
     api_state: dict
+    nsfw_allowed: bool
+    max_jobs: int
 
     def __init__(self) -> None:
 
@@ -350,18 +360,31 @@ class SavedData:
         self.data_file = self.datadir / "saved_data.json"
         os.makedirs(self.datadir, exist_ok=True)
 
-    def update(self, api: APIManagerThread):
+    def update(self, api: APIManagerThread, nsfw: bool, max_jobs: int):
         self.api_state = api.serialize()
+        self.max_jobs = max_jobs
+        self.nsfw_allowed = nsfw
 
     def write(self):
-        d = {"api_state": self.api_state}
+        d = {
+            "api_state": self.api_state,
+            "max_jobs": self.max_jobs,
+            "nsfw_allowed": self.nsfw_allowed,
+        }
         # cbor2.dump ?
-        # jsondata = json.dumps(d)
-        sf=QSaveFile(self.data_file)
-        sf.open()
-        json.dump(sf)
+        jsondata = json.dumps(d)
+        with open(self.data_file, "wt") as f:
+            f.write(jsondata)
+
     def read(self):
-        pass
+        if self.data_file.exists():
+            with open(self.data_file, "rt") as f:
+                j: dict = json.loads(f.read())
+        else:
+            j = dict()
+        self.api_state = j.get("api_state", {})
+        self.max_jobs = j.get("max_jobs", 5)
+        self.nsfw_allowed = j.get("nsfw_allowed", False)
 
 
 class MainWindow(QMainWindow):
@@ -379,26 +402,45 @@ class MainWindow(QMainWindow):
 
     def on_fully_loaded(self):
         self.ui.GenerateButton.setEnabled(True)
+        self.ui.modelComboBox.setEnabled(True)
+        # this doesn't feel right, for some reason.
+        self.ui.maxJobsSpinBox.setMaximum(self.ui.maxConcurrencySpinBox.value())
         QTimer.singleShot(150, lambda: self.ui.progressBar.hide())
+
+    def closeEvent(self, event):
+        self.savedData.update(
+            self.api_thread,
+            self.ui.NSFWCheckBox.isChecked(),
+            self.ui.maxJobsSpinBox.value(),
+        )
+        self.savedData.write()
+        QMainWindow.closeEvent(self, event)
 
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
+        self.savedData = SavedData()
+        self.savedData.read()
         self.clipboard = app.clipboard()
         self.model_dict: Dict[str, Model] = {}
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
         self.loading_thread = QThread()
-        self.worker = Worker()
+        self.worker = LoadWorker()
         self.show()
         if (k := keyring.get_password("HordeQT", "HordeQTUser")) is not None:
             self.ui.apiKeyEntry.setText(k)
             self.api_key = k
         else:
             self.api_key = None
+        self.ui.maxJobsSpinBox.setValue(self.savedData.max_jobs)
+        self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
+        self.ui.GenerateButton.setEnabled(False)
+        self.ui.modelComboBox.setEnabled(False)
         self.api_thread = APIManagerThread(
-            api_key="your_api_key", max_requests=self.ui.maxJobsSpinBox.value()
+            api_key=self.api_key, max_requests=self.savedData.max_jobs
         )
         self.api_thread.job_completed.connect(self.on_job_completed)
+        
         # Connect signals
         self.worker.progress.connect(self.update_progress)
         self.worker.model_info.connect(self.construct_model_dict)
@@ -415,6 +457,8 @@ class MainWindow(QMainWindow):
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
         self.ui.progressBar.setValue(0)
         QTimer.singleShot(0, self.loading_thread.start)
+        QTimer.singleShot(0, self.api_thread.start)
+        
 
     def on_job_completed(self, value: Job):
         pass
@@ -430,6 +474,7 @@ class MainWindow(QMainWindow):
             self.show_error("Invalid API key; User could not be found.")
             return
         j = r.json()
+        self.user_info = j
         self.ui.usernameLineEdit.setText(j["username"])
         self.ui.idLineEdit.setText(str(j["id"]))
         self.ui.kudosSpinBox.setValue(j["kudos"])
@@ -569,7 +614,9 @@ class MainWindow(QMainWindow):
 
     def on_generate_click(self):
         # self.show_info("Generate was clicked!")
-        print(json.dumps(self.create_job().to_json()))
+        job = self.create_job()
+        if job is not None:
+            print(json.dumps(self.create_job().to_json()))
 
     def save_api_key(self):
         self.hide_api_key()

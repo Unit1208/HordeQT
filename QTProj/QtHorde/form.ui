@@ -1410,7 +1410,7 @@
       <widget class="QWidget" name="About_tab">
        <attribute name="icon">
         <iconset>
-         <normaloff>../../../Pictures/QTHordeAssets/IconSmaller.png</normaloff>../../../Pictures/QTHordeAssets/IconSmaller.png</iconset>
+         <normaloff>./QTHordeAssets/IconSmaller.png</normaloff>./QTHordeAssets/IconSmaller.png</iconset>
        </attribute>
        <attribute name="title">
         <string>About</string>
