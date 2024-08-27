@@ -7,9 +7,22 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QLabel,
     QVBoxLayout,
+    QScrollArea,
 )
 from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QPixmap
+
+
+class ImageWidget(QLabel):
+    def __init__(self, image_path):
+        super().__init__()
+        self.bpixmap = QPixmap(image_path)
+        self.setPixmap(self.bpixmap)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setAlignment(Qt.AlignCenter)
+
+    def resizeEvent(self, event):
+        self.setPixmap(self.bpixmap.scaled(event.size()))
 
 
 class MasonryLayout(QLayout):
@@ -83,30 +96,28 @@ class MasonryLayout(QLayout):
         return None
 
 
-class ImageWidget(QLabel):
-    def __init__(self, image_path):
-        super().__init__()
-        self.bpixmap = QPixmap(image_path)
-        self.setPixmap(self.bpixmap)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setAlignment(Qt.AlignCenter)
-
-    def resizeEvent(self, event):
-        self.setPixmap(self.bpixmap.scaled(event.size()))
-
-
 class MasonryGallery(QWidget):
     def __init__(self):
         super().__init__()
 
         layout = MasonryLayout(self)
-        self.setLayout(layout)
+        scroll_area = QScrollArea(self)
+        scroll_area.setWidgetResizable(True)
+
+        content_widget = QWidget()
+        content_widget.setLayout(layout)
+
+        scroll_area.setWidget(content_widget)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(scroll_area)
+        self.setLayout(main_layout)
 
         for image_path in os.listdir("images"):
             ip = "images/" + image_path
             if image_path.endswith(".png"):
                 image_widget = ImageWidget(ip)
-                self.layout().addWidget(image_widget)
+                layout.addWidget(image_widget)
 
 
 if __name__ == "__main__":
