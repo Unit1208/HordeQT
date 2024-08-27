@@ -2,6 +2,7 @@ PySide6
 keyring
 requests
 horde-sdk
+cbor2
 
 black
 cx_freeze

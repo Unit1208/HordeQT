@@ -1,12 +1,12 @@
 # This Python file uses the following encoding: utf-8
 import datetime
-import enum
+from pathlib import Path
 import json
+import os
 import random
 import sys
 import time
-from typing import List, Dict, Optional
-
+from typing import List, Dict, Optional, Self
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -15,8 +15,10 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QLineEdit,
 )
-from PySide6.QtCore import QObject, QThread, Signal, QTimer
+from PySide6.QtCore import QObject, QThread, Signal, QTimer, QSaveFile, QStandardPaths
 from queue import Queue
+
+import cbor2
 
 
 from ui_form import Ui_MainWindow
@@ -126,7 +128,7 @@ class Job:
         }
 
     @classmethod
-    def from_json(cls, data: Dict) -> "Job":
+    def from_json(cls, data: Dict) -> Self:
         prompt = data.get("prompt")
         params = data.get("params", {})
         return cls(
@@ -144,6 +146,30 @@ class Job:
             allow_nsfw=data.get("nsfw", False),
         )
 
+    def serialize(self):
+        b = self.to_json()
+        b["done"] = self.done
+        b["faulted"] = self.faulted
+        b["kudos"] = self.kudos
+        b["id"] = self.job_id
+        b["queue_position"] = self.queue_position
+        b["wait_time"] = self.wait_time
+        b["mod_time"] = self.mod_time
+        b["creation_time"] = self.creation_time
+
+    @classmethod
+    def deserialize(cls, value: Dict) -> Self:
+        v = cls.from_json(value)
+        v.done = value.get("done", False)
+        v.faulted = value.get("faulted", False)
+        v.kudos = value.get("kudos", 0)
+        v.job_id = value.get("id")
+        v.queue_position = value.get("queue_position", 0)
+        v.wait_time = value.get("wait_time", 0)
+        v.mod_time = time.time()
+        v.creation_time = value.get("creation_time", time.time())
+        return v
+
     def update_status(self, status_data: Dict):
         self.done = status_data.get("done", False)
         self.faulted = status_data.get("faulted", False)
@@ -153,14 +179,45 @@ class Job:
         self.mod_time = time.time()
 
 
-class APIManager:
-    def __init__(self, api_key: str, max_requests: int) -> None:
+class APIManagerThread(QThread):
+    job_completed = Signal(Job)  # Signal emitted when a job is completed
+
+    def __init__(self, api_key: str, max_requests: int, parent=None):
+        super().__init__(parent)
         self.api_key = api_key
         self.max_requests = max_requests
         self.current_requests: Dict[str, Job] = {}
         self.job_queue: Queue[Job] = Queue()
         self.last_request_time = time.time()
         self.completed_jobs: List[Job] = []
+        self.running = True  # To control the thread's loop
+
+    def run(self):
+        while self.running:
+            self.handle_queue()
+            time.sleep(1)  # Sleep for a short time to avoid high CPU usage
+
+    def serialize(self):
+        val = {
+            "current_requests": self.current_requests,
+            "job_queue": self.job_queue,
+            "completed_jobs": self.completed_jobs,
+        }
+        return val
+
+    @classmethod
+    def deserialize(
+        cls,
+        value: Dict[str, List[Job] | Queue[Job] | Dict[str, Job]],
+        api_key: str,
+        max_requests: int,
+        parent=None,
+    ):
+        v = cls(api_key, max_requests, parent)
+        v.current_requests = value.get("current_requests", {})
+        v.job_queue = value.get("job_queue", Queue())
+        v.completed_jobs = value.get("completed_jobs", [])
+        return v
 
     def handle_queue(self):
         self._send_new_jobs()
@@ -187,6 +244,8 @@ class APIManager:
                 except requests.RequestException as e:
                     print(f"Error sending job: {e}")
                     self.job_queue.put(job)  # Requeue the job
+            else:
+                time.sleep(0.25)
 
     def _update_current_jobs(self):
         to_remove = []
@@ -198,16 +257,18 @@ class APIManager:
                 if job.done:
                     self.completed_jobs.append(job)
                     to_remove.append(job_id)
+                    self.job_completed.emit(
+                        job
+                    )  # Emit the signal for the completed job
             except requests.RequestException as e:
                 print(f"Error updating job status: {e}")
 
         for job_id in to_remove:
             del self.current_requests[job_id]
 
-    def get_completed_jobs(self) -> List[Job]:
-        completed = self.completed_jobs.copy()
-        self.completed_jobs.clear()
-        return completed
+    def stop(self):
+        self.running = False
+        self.wait()
 
     def add_job(self, job: Job):
         self.job_queue.put(job)
@@ -237,7 +298,7 @@ class ModelPopup(QDialog):
 
 class Worker(QObject):
     progress = Signal(int)
-    model_info = Signal(requests.Response)
+    model_info = Signal(dict)
     user_info = Signal(requests.Response)
 
     def run(self, api_key):
@@ -245,12 +306,62 @@ class Worker(QObject):
             requests.get(BASE_URL + "find_user", headers=get_headers(api_key))
         )
         self.progress.emit(50)
-        self.model_info.emit(
-            requests.get(
-                "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/main/stable_diffusion.json"
+        # QSaveFile("model_ref.json").
+        p = Path(
+            QStandardPaths.writableLocation(
+                QStandardPaths.StandardLocation.CacheLocation
             )
         )
+        # os.makedirs(p,exist_ok=True)
+        print(p)
+        model_cache_path = p / "model_ref.json"
+        # print(QStandardPaths.locate(QStandardPaths.StandardLocation.CacheLocation,"model_ref.json"))
+
+        if (
+            not model_cache_path.exists()
+            or time.time() - model_cache_path.stat().st_mtime > 60 * 60 * 24
+        ):
+            os.makedirs(p, exist_ok=True)
+            r = requests.get(
+                "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/main/stable_diffusion.json"
+            )
+            j = r.json()
+            with open(model_cache_path, "wt") as f:
+                json.dump(j, f)
+        else:
+
+            with open(model_cache_path, "rt") as f:
+                j = json.loads(f)
+
+        self.model_info.emit(j)
         self.progress.emit(100)
+
+
+class SavedData:
+    api_state: dict
+
+    def __init__(self) -> None:
+
+        self.datadir = Path(
+            QStandardPaths.writableLocation(
+                QStandardPaths.StandardLocation.AppDataLocation
+            )
+        )
+        self.data_file = self.datadir / "saved_data.json"
+        os.makedirs(self.datadir, exist_ok=True)
+
+    def update(self, api: APIManagerThread):
+        self.api_state = api.serialize()
+
+    def write(self):
+        d = {"api_state": self.api_state}
+        # cbor2.dump ?
+        # jsondata = json.dumps(d)
+        sf=QSaveFile(self.data_file)
+        sf.open()
+        json.dump(sf)
+    def read(self):
+        pass
 
 
 class MainWindow(QMainWindow):
@@ -284,6 +395,10 @@ class MainWindow(QMainWindow):
             self.api_key = k
         else:
             self.api_key = None
+        self.api_thread = APIManagerThread(
+            api_key="your_api_key", max_requests=self.ui.maxJobsSpinBox.value()
+        )
+        self.api_thread.job_completed.connect(self.on_job_completed)
         # Connect signals
         self.worker.progress.connect(self.update_progress)
         self.worker.model_info.connect(self.construct_model_dict)
@@ -300,6 +415,9 @@ class MainWindow(QMainWindow):
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
         self.ui.progressBar.setValue(0)
         QTimer.singleShot(0, self.loading_thread.start)
+
+    def on_job_completed(self, value: Job):
+        pass
 
     def update_progress(self, value):
         self.ui.progressBar.setValue(value)
@@ -408,11 +526,10 @@ class MainWindow(QMainWindow):
         )
         return job
 
-    def construct_model_dict(self, sd_mod_ref):
+    def construct_model_dict(self, mod):
         self.ui.modelComboBox.clear()
 
-        sd_mod_ref.raise_for_status()
-        mod = sd_mod_ref.json()
+        # mod = sd_mod_ref
         models: List[Model] = self.get_available_models()
         models.sort(key=lambda k: k["count"], reverse=True)
         model_dict: Dict[str, Model] = {}
