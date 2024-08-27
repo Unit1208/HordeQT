@@ -46,12 +46,6 @@ import requests
 
 ANON_API_KEY = "0000000000"
 BASE_URL = "https://aihorde.net/api/v2/"
-SAVED_IMAGE_PATH = (
-    Path(
-        QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
-    )
-    / "images"
-)
 
 
 def get_headers(api_key: str):
@@ -61,8 +55,6 @@ def get_headers(api_key: str):
         "accept": "application/json",
         "Content-Type": "application/json",
     }
-
-
 
 
 class ImageWidget(QLabel):
@@ -321,7 +313,7 @@ class LocalJob:
         self.id = job.job_id
         self.original = job
         self.fileType = "webp"
-        self.path = (SAVED_IMAGE_PATH / self.id).with_suffix(".webp")
+        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix(".webp")
 
     def serialize(self) -> dict:
         return {
@@ -493,6 +485,7 @@ class APIManagerThread(QThread):
 
     def get_completed_jobs(self) -> List[Job]:
         return self.completed_jobs
+
     def stop(self):
         self.running = False
         self.wait()
@@ -623,13 +616,7 @@ class SavedData:
 
     def __init__(self) -> None:
 
-        self.datadir = Path(
-            QStandardPaths.writableLocation(
-                QStandardPaths.StandardLocation.AppDataLocation
-            )
-        )
-        self.data_file = self.datadir / "saved_data.json"
-        os.makedirs(self.datadir, exist_ok=True)
+        os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
 
     def update(
         self, api: APIManagerThread, nsfw: bool, max_jobs: int, dlthread: DownloadThread
@@ -648,12 +635,12 @@ class SavedData:
         }
         # cbor2.dump ?
         jsondata = json.dumps(d)
-        with open(self.data_file, "wt") as f:
+        with open(SAVED_DATA_PATH, "wt") as f:
             f.write(jsondata)
 
     def read(self):
-        if self.data_file.exists():
-            with open(self.data_file, "rt") as f:
+        if SAVED_DATA_PATH.exists():
+            with open(SAVED_DATA_PATH, "rt") as f:
                 j: dict = json.loads(f.read())
         else:
             j = dict()
@@ -684,8 +671,6 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(150, lambda: self.ui.progressBar.hide())
 
     def closeEvent(self, event):
-
-
 
         self.api_thread.stop()
         self.download_thread.stop()
@@ -742,16 +727,17 @@ class MainWindow(QMainWindow):
         self.ui.saveAPIkey.clicked.connect(self.save_api_key)
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
-        self.ui.openSavedData.clicked.connect(self.open_saved_data)
+        self.ui.openSavedData.clicked.connect(
+            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_DATA_DIR_PATH))
+        )
+        self.ui.openSavedImages.clicked.connect(
+            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
+        )
+
         self.ui.progressBar.setValue(0)
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
-
-    def open_saved_data(self):
-        dir_url = QUrl.fromLocalFile(self.savedData.datadir)
-
-        QDesktopServices.openUrl(dir_url)
 
     def on_job_completed(self, job: LocalJob):
         print(f"Job {job.id} completed.")
@@ -926,10 +912,25 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    os.makedirs(SAVED_IMAGE_PATH, exist_ok=True)
     app = QApplication(sys.argv)
     app.setApplicationName("Horde QT")
     app.setOrganizationName("Unit1208")
+    SAVED_IMAGE_DIR_PATH = (
+        Path(
+            QStandardPaths.writableLocation(
+                QStandardPaths.StandardLocation.AppDataLocation
+            )
+        )
+        / "images"
+    )
+    SAVED_DATA_DIR_PATH = Path(
+        QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
+    )
+    SAVED_DATA_PATH = SAVED_DATA_DIR_PATH / "saved_data.json"
+    print(SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH)
+    os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
+    os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
+
     widget = MainWindow(app)
     widget.show()
     sys.exit(app.exec())

@@ -583,22 +583,10 @@
           <x>0</x>
           <y>10</y>
           <width>761</width>
-          <height>801</height>
+          <height>140</height>
          </rect>
         </property>
-        <layout class="QFormLayout" name="settingsLayout">
-         <property name="sizeConstraint">
-          <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
-         </property>
-         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
-         </property>
-         <property name="rowWrapPolicy">
-          <enum>QFormLayout::RowWrapPolicy::DontWrapRows</enum>
-         </property>
-         <property name="labelAlignment">
-          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
-         </property>
+        <layout class="QFormLayout" name="formLayout_3">
          <property name="verticalSpacing">
           <number>6</number>
          </property>
@@ -707,12 +695,25 @@
            <property name="text">
             <string>Open Saved Data</string>
            </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
+           </property>
           </widget>
          </item>
          <item row="4" column="0">
           <widget class="QLabel" name="openSavedDataLabel">
            <property name="text">
             <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QPushButton" name="openSavedImages">
+           <property name="text">
+            <string>Open Saved Images</string>
+           </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::InsertImage"/>
            </property>
           </widget>
          </item>

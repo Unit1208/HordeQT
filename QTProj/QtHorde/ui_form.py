@@ -311,20 +311,16 @@ class Ui_MainWindow(object):
         self.settings_tab.setObjectName(u"settings_tab")
         self.formLayoutWidget = QWidget(self.settings_tab)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(0, 10, 761, 801))
-        self.settingsLayout = QFormLayout(self.formLayoutWidget)
-        self.settingsLayout.setObjectName(u"settingsLayout")
-        self.settingsLayout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
-        self.settingsLayout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
-        self.settingsLayout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.DontWrapRows)
-        self.settingsLayout.setLabelAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
-        self.settingsLayout.setVerticalSpacing(6)
-        self.settingsLayout.setContentsMargins(0, 0, 0, 0)
+        self.formLayoutWidget.setGeometry(QRect(0, 10, 761, 140))
+        self.formLayout_3 = QFormLayout(self.formLayoutWidget)
+        self.formLayout_3.setObjectName(u"formLayout_3")
+        self.formLayout_3.setVerticalSpacing(6)
+        self.formLayout_3.setContentsMargins(0, 0, 0, 0)
         self.APIKeyLabel = QLabel(self.formLayoutWidget)
         self.APIKeyLabel.setObjectName(u"APIKeyLabel")
         self.APIKeyLabel.setScaledContents(False)
 
-        self.settingsLayout.setWidget(0, QFormLayout.LabelRole, self.APIKeyLabel)
+        self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.APIKeyLabel)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setObjectName(u"horizontalLayout")
@@ -358,23 +354,23 @@ class Ui_MainWindow(object):
         self.horizontalLayout.addWidget(self.copyAPIkey)
 
 
-        self.settingsLayout.setLayout(0, QFormLayout.FieldRole, self.horizontalLayout)
+        self.formLayout_3.setLayout(0, QFormLayout.FieldRole, self.horizontalLayout)
 
         self.NSFWLabel = QLabel(self.formLayoutWidget)
         self.NSFWLabel.setObjectName(u"NSFWLabel")
 
-        self.settingsLayout.setWidget(1, QFormLayout.LabelRole, self.NSFWLabel)
+        self.formLayout_3.setWidget(1, QFormLayout.LabelRole, self.NSFWLabel)
 
         self.NSFWCheckBox = QCheckBox(self.formLayoutWidget)
         self.NSFWCheckBox.setObjectName(u"NSFWCheckBox")
         self.NSFWCheckBox.setTristate(False)
 
-        self.settingsLayout.setWidget(1, QFormLayout.FieldRole, self.NSFWCheckBox)
+        self.formLayout_3.setWidget(1, QFormLayout.FieldRole, self.NSFWCheckBox)
 
         self.maxJobsLabel = QLabel(self.formLayoutWidget)
         self.maxJobsLabel.setObjectName(u"maxJobsLabel")
 
-        self.settingsLayout.setWidget(2, QFormLayout.LabelRole, self.maxJobsLabel)
+        self.formLayout_3.setWidget(2, QFormLayout.LabelRole, self.maxJobsLabel)
 
         self.maxJobsSpinBox = QSpinBox(self.formLayoutWidget)
         self.maxJobsSpinBox.setObjectName(u"maxJobsSpinBox")
@@ -382,17 +378,25 @@ class Ui_MainWindow(object):
         self.maxJobsSpinBox.setMaximum(20)
         self.maxJobsSpinBox.setValue(5)
 
-        self.settingsLayout.setWidget(2, QFormLayout.FieldRole, self.maxJobsSpinBox)
+        self.formLayout_3.setWidget(2, QFormLayout.FieldRole, self.maxJobsSpinBox)
 
         self.openSavedData = QPushButton(self.formLayoutWidget)
         self.openSavedData.setObjectName(u"openSavedData")
+        icon8 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentOpen))
+        self.openSavedData.setIcon(icon8)
 
-        self.settingsLayout.setWidget(3, QFormLayout.FieldRole, self.openSavedData)
+        self.formLayout_3.setWidget(3, QFormLayout.FieldRole, self.openSavedData)
 
         self.openSavedDataLabel = QLabel(self.formLayoutWidget)
         self.openSavedDataLabel.setObjectName(u"openSavedDataLabel")
 
-        self.settingsLayout.setWidget(4, QFormLayout.LabelRole, self.openSavedDataLabel)
+        self.formLayout_3.setWidget(4, QFormLayout.LabelRole, self.openSavedDataLabel)
+
+        self.openSavedImages = QPushButton(self.formLayoutWidget)
+        self.openSavedImages.setObjectName(u"openSavedImages")
+        self.openSavedImages.setIcon(icon1)
+
+        self.formLayout_3.setWidget(4, QFormLayout.FieldRole, self.openSavedImages)
 
         self.tabWidget.addTab(self.settings_tab, icon3, "")
         self.userInfoPage = QWidget()
@@ -803,15 +807,15 @@ class Ui_MainWindow(object):
 
         self.formLayout_2.setWidget(26, QFormLayout.LabelRole, self.line_6)
 
-        icon8 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.UserOffline))
-        self.tabWidget.addTab(self.userInfoPage, icon8, "")
+        icon9 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.UserOffline))
+        self.tabWidget.addTab(self.userInfoPage, icon9, "")
         self.Stats_Tab = QWidget()
         self.Stats_Tab.setObjectName(u"Stats_Tab")
         self.localStats = QTreeView(self.Stats_Tab)
         self.localStats.setObjectName(u"localStats")
         self.localStats.setGeometry(QRect(0, 10, 771, 801))
-        icon9 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
-        self.tabWidget.addTab(self.Stats_Tab, icon9, "")
+        icon10 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
+        self.tabWidget.addTab(self.Stats_Tab, icon10, "")
         self.About_tab = QWidget()
         self.About_tab.setObjectName(u"About_tab")
         self.verticalLayoutWidget = QWidget(self.About_tab)
@@ -824,9 +828,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout.addItem(self.horizontalSpacer)
 
-        icon10 = QIcon()
-        icon10.addFile(u"QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
-        self.tabWidget.addTab(self.About_tab, icon10, "")
+        icon11 = QIcon()
+        icon11.addFile(u"QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+        self.tabWidget.addTab(self.About_tab, icon11, "")
 
         self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
 
@@ -933,6 +937,7 @@ class Ui_MainWindow(object):
         self.maxJobsLabel.setText(QCoreApplication.translate("MainWindow", u"Max jobs", None))
         self.openSavedData.setText(QCoreApplication.translate("MainWindow", u"Open Saved Data", None))
         self.openSavedDataLabel.setText("")
+        self.openSavedImages.setText(QCoreApplication.translate("MainWindow", u"Open Saved Images", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), QCoreApplication.translate("MainWindow", u"Settings", None))
         self.usernameLabel.setText(QCoreApplication.translate("MainWindow", u"Username", None))
         self.idLabel.setText(QCoreApplication.translate("MainWindow", u"ID", None))
