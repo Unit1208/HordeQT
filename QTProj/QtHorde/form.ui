@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::WindowModality::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -18,13 +21,13 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -45,443 +48,419 @@
        <attribute name="title">
         <string>Create</string>
        </attribute>
-       <widget class="QTextEdit" name="PromptBox">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>30</y>
-          <width>731</width>
-          <height>70</height>
-         </rect>
-        </property>
-        <property name="tabChangesFocus">
-         <bool>true</bool>
-        </property>
-        <property name="placeholderText">
-         <string>Prompt</string>
-        </property>
-       </widget>
-       <widget class="QTextEdit" name="NegativePromptBox">
-        <property name="geometry">
-         <rect>
-          <x>20</x>
-          <y>110</y>
-          <width>731</width>
-          <height>70</height>
-         </rect>
-        </property>
-        <property name="tabChangesFocus">
-         <bool>true</bool>
-        </property>
-        <property name="placeholderText">
-         <string>Negative Prompt</string>
-        </property>
-       </widget>
        <widget class="QFrame" name="frame">
         <property name="geometry">
          <rect>
-          <x>20</x>
-          <y>220</y>
-          <width>731</width>
-          <height>531</height>
+          <x>0</x>
+          <y>0</y>
+          <width>771</width>
+          <height>751</height>
          </rect>
         </property>
-        <widget class="QScrollArea" name="scrollArea">
+        <widget class="QWidget" name="gridLayoutWidget">
          <property name="geometry">
           <rect>
-           <x>0</x>
-           <y>10</y>
-           <width>731</width>
-           <height>541</height>
+           <x>10</x>
+           <y>9</y>
+           <width>751</width>
+           <height>661</height>
           </rect>
          </property>
-         <property name="widgetResizable">
-          <bool>true</bool>
-         </property>
-         <widget class="QWidget" name="scrollAreaWidgetContents">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>729</width>
-            <height>539</height>
-           </rect>
+         <layout class="QFormLayout" name="formLayout">
+          <property name="sizeConstraint">
+           <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
           </property>
-          <widget class="QWidget" name="gridLayoutWidget">
-           <property name="geometry">
-            <rect>
-             <x>0</x>
-             <y>0</y>
-             <width>721</width>
-             <height>511</height>
-            </rect>
-           </property>
-           <layout class="QFormLayout" name="formLayout">
-            <property name="formAlignment">
-             <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+          <property name="formAlignment">
+           <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+          </property>
+          <property name="verticalSpacing">
+           <number>6</number>
+          </property>
+          <item row="4" column="0">
+           <widget class="QLabel" name="imagesLabel">
+            <property name="text">
+             <string>Images</string>
             </property>
-            <property name="verticalSpacing">
-             <number>6</number>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QSpinBox" name="imagesSpinBox">
+            <property name="minimum">
+             <number>1</number>
             </property>
-            <item row="0" column="0">
-             <widget class="QLabel" name="imagesLabel">
-              <property name="text">
-               <string>Images</string>
+            <property name="maximum">
+             <number>50</number>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="stepsLabel">
+            <property name="text">
+             <string>Steps</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QSpinBox" name="stepsSpinBox">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>150</number>
+            </property>
+            <property name="value">
+             <number>20</number>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="modelLabel">
+            <property name="text">
+             <string>Model</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QComboBox" name="modelComboBox">
+              <property name="enabled">
+               <bool>true</bool>
               </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QSpinBox" name="imagesSpinBox">
-              <property name="minimum">
-               <number>1</number>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
               </property>
-              <property name="maximum">
-               <number>50</number>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="stepsLabel">
-              <property name="text">
-               <string>Steps</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QSpinBox" name="stepsSpinBox">
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>150</number>
-              </property>
-              <property name="value">
-               <number>20</number>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="modelLabel">
-              <property name="text">
-               <string>Model</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <layout class="QHBoxLayout" name="horizontalLayout_2">
-              <item>
-               <widget class="QComboBox" name="modelComboBox">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="editable">
-                 <bool>true</bool>
-                </property>
-                <property name="currentText">
-                 <string>Loading...</string>
-                </property>
-                <property name="currentIndex">
-                 <number>0</number>
-                </property>
-                <property name="placeholderText">
-                 <string/>
-                </property>
-                <item>
-                 <property name="text">
-                  <string>Loading...</string>
-                 </property>
-                </item>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="modelDetailsButton">
-                <property name="text">
-                 <string>Model Details </string>
-                </property>
-                <property name="icon">
-                 <iconset theme="QIcon::ThemeIcon::SystemSearch"/>
-                </property>
-                <property name="flat">
-                 <bool>false</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="presetLabel">
-              <property name="text">
-               <string>Preset</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QComboBox" name="presetComboBox">
               <property name="editable">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
-              <item>
-               <property name="text">
-                <string>Custom</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Portrait</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Landscape</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Large Portrait</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Large Landscape</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Square</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Large Square</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="widthLabel">
-              <property name="text">
-               <string>Width</string>
+              <property name="currentText">
+               <string>Loading...</string>
               </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QSpinBox" name="widthSpinBox">
-              <property name="minimum">
-               <number>64</number>
+              <property name="currentIndex">
+               <number>0</number>
               </property>
-              <property name="maximum">
-               <number>3072</number>
-              </property>
-              <property name="singleStep">
-               <number>64</number>
-              </property>
-              <property name="value">
-               <number>768</number>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="heightLabel">
-              <property name="text">
-               <string>Height</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QSpinBox" name="heightSpinBox">
-              <property name="minimum">
-               <number>64</number>
-              </property>
-              <property name="maximum">
-               <number>3072</number>
-              </property>
-              <property name="singleStep">
-               <number>64</number>
-              </property>
-              <property name="value">
-               <number>1024</number>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="samplerLabel">
-              <property name="text">
-               <string>Sampler</string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1">
-             <widget class="QComboBox" name="samplerComboBox">
-              <item>
-               <property name="text">
-                <string>k_euler</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>k_euler_a</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>k_lms</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>k_heun</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>k_dpm_2</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>k_dpm_2_a</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>k_dpm_adaptive</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>k_dpm_fast</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>k_dpmpp_2m</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>k_dpmpp_2s_a</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>k_dpmpp_sde</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>DDIM</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>lcm</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>dpmsolver</string>
-               </property>
-              </item>
-             </widget>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="seedLabel">
-              <property name="text">
-               <string>Seed</string>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="1">
-             <widget class="QSpinBox" name="seedSpinBox">
-              <property name="toolTip">
-               <string>0 for unseeded generations</string>
-              </property>
-              <property name="statusTip">
+              <property name="placeholderText">
                <string/>
               </property>
-              <property name="maximum">
-               <number>2147483647</number>
-              </property>
-              <property name="displayIntegerBase">
-               <number>10</number>
-              </property>
+              <item>
+               <property name="text">
+                <string>Loading...</string>
+               </property>
+              </item>
              </widget>
             </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="guidenceLabel">
+            <item>
+             <widget class="QPushButton" name="modelDetailsButton">
               <property name="text">
-               <string>Guidence</string>
+               <string>Model Details </string>
               </property>
-             </widget>
-            </item>
-            <item row="8" column="1">
-             <widget class="QDoubleSpinBox" name="guidenceDoubleSpinBox">
-              <property name="decimals">
-               <number>1</number>
+              <property name="icon">
+               <iconset theme="QIcon::ThemeIcon::SystemSearch"/>
               </property>
-              <property name="minimum">
-               <double>0.000000000000000</double>
-              </property>
-              <property name="maximum">
-               <double>100.000000000000000</double>
-              </property>
-              <property name="singleStep">
-               <double>0.500000000000000</double>
-              </property>
-              <property name="value">
-               <double>5.000000000000000</double>
-              </property>
-             </widget>
-            </item>
-            <item row="9" column="0">
-             <widget class="QLabel" name="clipSkipLabel">
-              <property name="text">
-               <string>Clip Skip</string>
-              </property>
-             </widget>
-            </item>
-            <item row="9" column="1">
-             <widget class="QSpinBox" name="clipSkipSpinBox">
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>12</number>
+              <property name="flat">
+               <bool>false</bool>
               </property>
              </widget>
             </item>
            </layout>
-          </widget>
-         </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="presetLabel">
+            <property name="text">
+             <string>Preset</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QComboBox" name="presetComboBox">
+            <property name="editable">
+             <bool>false</bool>
+            </property>
+            <item>
+             <property name="text">
+              <string>Custom</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Portrait</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Landscape</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Large Portrait</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Large Landscape</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Square</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Large Square</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="widthLabel">
+            <property name="text">
+             <string>Width</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QSpinBox" name="widthSpinBox">
+            <property name="minimum">
+             <number>64</number>
+            </property>
+            <property name="maximum">
+             <number>3072</number>
+            </property>
+            <property name="singleStep">
+             <number>64</number>
+            </property>
+            <property name="value">
+             <number>768</number>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="heightLabel">
+            <property name="text">
+             <string>Height</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QSpinBox" name="heightSpinBox">
+            <property name="minimum">
+             <number>64</number>
+            </property>
+            <property name="maximum">
+             <number>3072</number>
+            </property>
+            <property name="singleStep">
+             <number>64</number>
+            </property>
+            <property name="value">
+             <number>1024</number>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="samplerLabel">
+            <property name="text">
+             <string>Sampler</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="QComboBox" name="samplerComboBox">
+            <item>
+             <property name="text">
+              <string>k_euler</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>k_euler_a</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>k_lms</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>k_heun</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>k_dpm_2</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>k_dpm_2_a</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>k_dpm_adaptive</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>k_dpm_fast</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>k_dpmpp_2m</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>k_dpmpp_2s_a</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>k_dpmpp_sde</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>DDIM</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>lcm</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>dpmsolver</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="11" column="0">
+           <widget class="QLabel" name="seedLabel">
+            <property name="text">
+             <string>Seed</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="1">
+           <widget class="QSpinBox" name="seedSpinBox">
+            <property name="toolTip">
+             <string>0 for unseeded generations</string>
+            </property>
+            <property name="statusTip">
+             <string/>
+            </property>
+            <property name="maximum">
+             <number>2147483647</number>
+            </property>
+            <property name="displayIntegerBase">
+             <number>10</number>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="0">
+           <widget class="QLabel" name="guidenceLabel">
+            <property name="text">
+             <string>Guidence</string>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="1">
+           <widget class="QDoubleSpinBox" name="guidenceDoubleSpinBox">
+            <property name="decimals">
+             <number>1</number>
+            </property>
+            <property name="minimum">
+             <double>0.000000000000000</double>
+            </property>
+            <property name="maximum">
+             <double>100.000000000000000</double>
+            </property>
+            <property name="singleStep">
+             <double>0.500000000000000</double>
+            </property>
+            <property name="value">
+             <double>5.000000000000000</double>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="0">
+           <widget class="QLabel" name="clipSkipLabel">
+            <property name="text">
+             <string>Clip Skip</string>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="1">
+           <widget class="QSpinBox" name="clipSkipSpinBox">
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>12</number>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="GenerateButton">
+            <property name="toolTip">
+             <string>Shortcut Ctrl + Enter</string>
+            </property>
+            <property name="text">
+             <string>Generate</string>
+            </property>
+            <property name="icon">
+             <iconset theme="QIcon::ThemeIcon::InsertImage"/>
+            </property>
+            <property name="shortcut">
+             <string>Ctrl+Return</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPlainTextEdit" name="PromptBox">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="placeholderText">
+             <string>Prompt</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QPlainTextEdit" name="NegativePromptBox">
+            <property name="placeholderText">
+             <string>Negative Prompt</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Prompt</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Negative Prompt</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
-       </widget>
-       <widget class="QPushButton" name="GenerateButton">
-        <property name="geometry">
-         <rect>
-          <x>600</x>
-          <y>190</y>
-          <width>151</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <property name="toolTip">
-         <string>Shortcut Ctrl + Enter</string>
-        </property>
-        <property name="text">
-         <string>Generate</string>
-        </property>
-        <property name="icon">
-         <iconset theme="QIcon::ThemeIcon::InsertImage"/>
-        </property>
-        <property name="shortcut">
-         <string>Ctrl+Return</string>
-        </property>
        </widget>
        <widget class="QWidget" name="horizontalLayoutWidget">
         <property name="geometry">
@@ -1410,7 +1389,7 @@
       <widget class="QWidget" name="About_tab">
        <attribute name="icon">
         <iconset>
-         <normaloff>./QTHordeAssets/IconSmaller.png</normaloff>./QTHordeAssets/IconSmaller.png</iconset>
+         <normaloff>QTHordeAssets/IconSmaller.png</normaloff>QTHordeAssets/IconSmaller.png</iconset>
        </attribute>
        <attribute name="title">
         <string>About</string>

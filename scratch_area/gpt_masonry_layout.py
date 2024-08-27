@@ -1,10 +1,26 @@
-from PySide6.QtWidgets import QApplication, QWidget, QLayout, QVBoxLayout, QPushButton, QSizePolicy
-from PySide6.QtCore import QRect, QSize
+import os
+from typing import List
+from PySide6.QtWidgets import (
+    QApplication,
+    QWidget,
+    QLayout,
+    QSizePolicy,
+    QLabel,
+    QVBoxLayout,
+)
+from PySide6.QtCore import QRect, QSize, Qt
+from PySide6.QtGui import QPixmap
+
 
 class MasonryLayout(QLayout):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, margin=10, spacing=10):
         super(MasonryLayout, self).__init__(parent)
-        self.item_list = []
+        self.margin = margin
+        self.mspacing = spacing
+        self.item_list: List[ImageWidget] = []
+        self.column_heights = []
+        self.num_columns = 0
+        self.column_width = 0
 
     def addItem(self, item):
         self.item_list.append(item)
@@ -22,26 +38,36 @@ class MasonryLayout(QLayout):
         super(MasonryLayout, self).setGeometry(rect)
         if not self.item_list:
             return
-        
-        # Get the width of the available space
-        max_width = rect.width()
-        num_columns = max_width // 200  # Assuming a fixed column width
-        column_width = max_width // num_columns
 
-        # Initialize column heights
-        column_heights = [0] * num_columns
-        
+        self.calculateColumnLayout(rect.width())
+        self.arrangeItems()
+
+    def calculateColumnLayout(self, width):
+        self.num_columns = max(
+            1, width // (200 + self.mspacing)
+        )  # Dynamically calculate number of columns
+        self.column_width = (
+            width - (self.num_columns - 1) * self.mspacing
+        ) // self.num_columns
+        self.column_heights = [0] * self.num_columns
+
+    def arrangeItems(self):
         for item in self.item_list:
-            # Find the column with the minimum height
-            min_col = column_heights.index(min(column_heights))
-            x = min_col * column_width
-            y = column_heights[min_col]
-            
-            # Place the item in the layout
-            item.widget().setGeometry(QRect(x, y, column_width, item.sizeHint().height()))
-            
-            # Update the height of the column
-            column_heights[min_col] += item.sizeHint().height()
+            widget = item.widget()
+            pixmap = widget.pixmap()
+
+            if pixmap:
+                aspect_ratio = pixmap.width() / pixmap.height()
+                height = self.column_width / aspect_ratio
+            else:
+                height = widget.sizeHint().height()
+
+            min_col = self.column_heights.index(min(self.column_heights))
+            x = min_col * (self.column_width + self.mspacing)
+            y = self.column_heights[min_col]
+
+            widget.setGeometry(QRect(x, y, self.column_width, height))
+            self.column_heights[min_col] += height + self.mspacing
 
     def count(self):
         return len(self.item_list)
@@ -56,22 +82,37 @@ class MasonryLayout(QLayout):
             return self.item_list.pop(index)
         return None
 
-class MasonryWidget(QWidget):
+
+class ImageWidget(QLabel):
+    def __init__(self, image_path):
+        super().__init__()
+        self.bpixmap = QPixmap(image_path)
+        self.setPixmap(self.bpixmap)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setAlignment(Qt.AlignCenter)
+
+    def resizeEvent(self, event):
+        self.setPixmap(self.bpixmap.scaled(event.size()))
+
+
+class MasonryGallery(QWidget):
     def __init__(self):
         super().__init__()
 
-        # Set the layout to MasonryLayout
-        self.setLayout(MasonryLayout())
+        layout = MasonryLayout(self)
+        self.setLayout(layout)
 
-        # Add some widgets
-        for i in range(10):
-            button = QPushButton(f"Button {i}")
-            self.layout().addWidget(button)
+        for image_path in os.listdir("images"):
+            ip = "images/" + image_path
+            if image_path.endswith(".png"):
+                image_widget = ImageWidget(ip)
+                self.layout().addWidget(image_widget)
+
 
 if __name__ == "__main__":
     app = QApplication([])
 
-    window = MasonryWidget()
-    window.show()
+    gallery = MasonryGallery()
+    gallery.show()
 
     app.exec()

@@ -10,8 +10,8 @@
 - [x] Persistent Storage of settings
 - [ ] About Page
 - [ ] Toggle for Shared images
-- [ ] Handle Max jobs, get user concurrency for max
-- [ ] Evict Jobs from statusDictionary after some time
+- [x] Handle Max jobs, get user concurrency for max
+- [ ] Evict Jobs from statis after some time
 - [x] Cache models, esp. from GH as it's larger and less likely to change
 - [ ] [QPixmap doesn't support displaying WEBPs](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPixmap.html#reading-and-writing-image-files), need to convert them before displaying them.
 - [ ] Allow the user to control the saved format of images after conversion. (Horde always(?) uses WEBP)
