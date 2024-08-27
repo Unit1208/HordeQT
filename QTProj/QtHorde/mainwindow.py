@@ -160,7 +160,9 @@ class JobStatus:
     done: bool
     faulted: bool
     kudos: float
-
+    id: str | None
+    prompt: str | None
+    model: str | None
     mod_time: float
 
     def __init__(
@@ -170,10 +172,16 @@ class JobStatus:
         done: bool,
         faulted: bool,
         kudos: float,
+        id: str | None,
+        prompt: str | None,
+        model: str | None,
     ) -> None:
         self.done = done
         self.faulted = faulted
+        self.id = id
         self.kudos = kudos
+        self.model = model
+        self.prompt = prompt
         self.queue_position = queue_position
         self.wait_time = wait_time
 
@@ -202,6 +210,9 @@ class APIManager:
         self.current_requests = []
         self.job_queue: Queue[Job] = Queue()
         self.last_request = time.time()
+
+    def get_unified_jobs(self):
+        return
 
     def handle_queue(self):
         if (
@@ -281,11 +292,11 @@ class Worker(QObject):
 
 class MainWindow(QMainWindow):
     def show_error(self, message):
-        
+
         QMessageBox.critical(self, "Error", message)
 
     def show_warn(self, message):
-        
+
         QMessageBox.warning(self, "Warning", message)
 
     def show_info(self, message):
@@ -477,7 +488,7 @@ class MainWindow(QMainWindow):
         ModelPopup(curr_model.details)
 
     def on_generate_click(self):
-        self.show_info("Generate was clicked!")
+        # self.show_info("Generate was clicked!")
         print(json.dumps(self.create_job().to_json()))
 
     def save_api_key(self):

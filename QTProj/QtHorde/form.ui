@@ -33,7 +33,7 @@
        <bool>false</bool>
       </property>
       <property name="movable">
-       <bool>true</bool>
+       <bool>false</bool>
       </property>
       <property name="tabBarAutoHide">
        <bool>false</bool>
@@ -780,6 +780,9 @@
            <property name="buttonSymbols">
             <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
            </property>
+           <property name="maximum">
+            <number>2147483647</number>
+           </property>
           </widget>
          </item>
          <item row="3" column="0">
@@ -820,6 +823,9 @@
            <property name="buttonSymbols">
             <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
            </property>
+           <property name="maximum">
+            <number>2147483647</number>
+           </property>
           </widget>
          </item>
          <item row="5" column="0">
@@ -859,6 +865,9 @@
            </property>
            <property name="buttonSymbols">
             <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+           </property>
+           <property name="maximum">
+            <number>2147483647</number>
            </property>
           </widget>
          </item>
@@ -1099,6 +1108,9 @@
            <property name="suffix">
             <string> message(s)</string>
            </property>
+           <property name="maximum">
+            <number>2147483647</number>
+           </property>
           </widget>
          </item>
          <item row="20" column="0">
@@ -1122,6 +1134,9 @@
            <property name="suffix">
             <string> image(s)</string>
            </property>
+           <property name="maximum">
+            <number>2147483647</number>
+           </property>
           </widget>
          </item>
          <item row="21" column="0">
@@ -1144,6 +1159,9 @@
            </property>
            <property name="suffix">
             <string> interrogation(s)</string>
+           </property>
+           <property name="maximum">
+            <number>2147483647</number>
            </property>
           </widget>
          </item>
@@ -1175,6 +1193,9 @@
            <property name="suffix">
             <string> message(s)</string>
            </property>
+           <property name="maximum">
+            <number>2147483647</number>
+           </property>
           </widget>
          </item>
          <item row="24" column="0">
@@ -1197,6 +1218,9 @@
            </property>
            <property name="suffix">
             <string> image(s)</string>
+           </property>
+           <property name="maximum">
+            <number>2147483647</number>
            </property>
           </widget>
          </item>
@@ -1221,6 +1245,9 @@
            <property name="suffix">
             <string> interrogation(s)</string>
            </property>
+           <property name="maximum">
+            <number>2147483647</number>
+           </property>
           </widget>
          </item>
          <item row="27" column="0">
@@ -1243,6 +1270,9 @@
            </property>
            <property name="suffix">
             <string> token(s)</string>
+           </property>
+           <property name="maximum">
+            <number>2147483647</number>
            </property>
           </widget>
          </item>
@@ -1301,6 +1331,9 @@
            </property>
            <property name="suffix">
             <string> token(s)</string>
+           </property>
+           <property name="maximum">
+            <number>2147483647</number>
            </property>
           </widget>
          </item>

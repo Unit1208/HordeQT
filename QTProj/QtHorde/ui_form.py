@@ -44,7 +44,7 @@ class Ui_MainWindow(object):
         self.tabWidget.setSizePolicy(sizePolicy)
         self.tabWidget.setDocumentMode(False)
         self.tabWidget.setTabsClosable(False)
-        self.tabWidget.setMovable(True)
+        self.tabWidget.setMovable(False)
         self.tabWidget.setTabBarAutoHide(False)
         self.create_tab = QWidget()
         self.create_tab.setObjectName(u"create_tab")
@@ -409,6 +409,7 @@ class Ui_MainWindow(object):
         self.kudosSpinBox.setEnabled(True)
         self.kudosSpinBox.setReadOnly(True)
         self.kudosSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.kudosSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(2, QFormLayout.FieldRole, self.kudosSpinBox)
 
@@ -435,6 +436,7 @@ class Ui_MainWindow(object):
         self.maxConcurrencySpinBox.setEnabled(True)
         self.maxConcurrencySpinBox.setReadOnly(True)
         self.maxConcurrencySpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.maxConcurrencySpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(4, QFormLayout.FieldRole, self.maxConcurrencySpinBox)
 
@@ -461,6 +463,7 @@ class Ui_MainWindow(object):
         self.numberOfWorkersSpinBox.setEnabled(True)
         self.numberOfWorkersSpinBox.setReadOnly(True)
         self.numberOfWorkersSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.numberOfWorkersSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(6, QFormLayout.FieldRole, self.numberOfWorkersSpinBox)
 
@@ -617,6 +620,7 @@ class Ui_MainWindow(object):
         self.textGeneratedSpinBox.setEnabled(True)
         self.textGeneratedSpinBox.setReadOnly(True)
         self.textGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.textGeneratedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(19, QFormLayout.FieldRole, self.textGeneratedSpinBox)
 
@@ -630,6 +634,7 @@ class Ui_MainWindow(object):
         self.imageGeneratedSpinBox.setEnabled(True)
         self.imageGeneratedSpinBox.setReadOnly(True)
         self.imageGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.imageGeneratedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(20, QFormLayout.FieldRole, self.imageGeneratedSpinBox)
 
@@ -643,6 +648,7 @@ class Ui_MainWindow(object):
         self.interrogationGeneratedSpinBox.setEnabled(True)
         self.interrogationGeneratedSpinBox.setReadOnly(True)
         self.interrogationGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.interrogationGeneratedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(21, QFormLayout.FieldRole, self.interrogationGeneratedSpinBox)
 
@@ -663,6 +669,7 @@ class Ui_MainWindow(object):
         self.textRequestedSpinBox.setEnabled(True)
         self.textRequestedSpinBox.setReadOnly(True)
         self.textRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.textRequestedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(23, QFormLayout.FieldRole, self.textRequestedSpinBox)
 
@@ -676,6 +683,7 @@ class Ui_MainWindow(object):
         self.imagesRequestedSpinBox.setEnabled(True)
         self.imagesRequestedSpinBox.setReadOnly(True)
         self.imagesRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.imagesRequestedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(24, QFormLayout.FieldRole, self.imagesRequestedSpinBox)
 
@@ -689,6 +697,7 @@ class Ui_MainWindow(object):
         self.interrogationRequestedSpinBox.setEnabled(True)
         self.interrogationRequestedSpinBox.setReadOnly(True)
         self.interrogationRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.interrogationRequestedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(25, QFormLayout.FieldRole, self.interrogationRequestedSpinBox)
 
@@ -702,6 +711,7 @@ class Ui_MainWindow(object):
         self.tokensRequestedSpinBox.setEnabled(True)
         self.tokensRequestedSpinBox.setReadOnly(True)
         self.tokensRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.tokensRequestedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(27, QFormLayout.FieldRole, self.tokensRequestedSpinBox)
 
@@ -731,6 +741,7 @@ class Ui_MainWindow(object):
         self.tokensGeneratedSpinBox.setEnabled(True)
         self.tokensGeneratedSpinBox.setReadOnly(True)
         self.tokensGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.tokensGeneratedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(30, QFormLayout.FieldRole, self.tokensGeneratedSpinBox)
 

@@ -11,3 +11,4 @@
 - [ ] Toggle for Shared images
 - [ ] Handle Max jobs, get user concurrency for max
 - [ ] Evict Jobs from statusDictionary after some time
+- [ ] Cache models, esp. from GH as it's larger and less likely to change
