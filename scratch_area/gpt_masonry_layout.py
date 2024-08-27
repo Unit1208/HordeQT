@@ -16,81 +16,72 @@ from PySide6.QtGui import QPixmap
 class ImageWidget(QLabel):
     def __init__(self, image_path):
         super().__init__()
-        self.bpixmap = QPixmap(image_path)
-        self.setPixmap(self.bpixmap.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.original_pixmap = QPixmap(image_path)
+        self.setPixmap(self.original_pixmap)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setAlignment(Qt.AlignCenter)
 
     def resizeEvent(self, event):
-        # Scale the pixmap with aspect ratio preserved
-        self.setPixmap(self.bpixmap.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        super().resizeEvent(event)
+        self.update_pixmap()
+
+    def update_pixmap(self):
+        if self.original_pixmap:
+            scaled_pixmap = self.original_pixmap.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.setPixmap(scaled_pixmap)
 
 
 class MasonryLayout(QLayout):
     def __init__(self, parent=None, margin=10, spacing=10):
         super(MasonryLayout, self).__init__(parent)
         self.margin = margin
-        self.mspacing = spacing
-        self.item_list: List[ImageWidget] = []
-        self.column_heights = []
-        self.num_columns = 0
-        self.column_width = 0
+        self.spacing = spacing
+        self.items = []
 
     def addItem(self, item):
-        self.item_list.append(item)
+        self.items.append(item)
 
+    def count(self):
+        return len(self.items)
     def sizeHint(self):
         return self.minimumSize()
+    def itemAt(self, index):
+        return self.items[index] if 0 <= index < len(self.items) else None
 
-    def minimumSize(self):
-        size = QSize()
-        for item in self.item_list:
-            size = size.expandedTo(item.minimumSize())
-        return size
+    def takeAt(self, index):
+        if 0 <= index < len(self.items):
+            return self.items.pop(index)
+        return None
 
     def setGeometry(self, rect):
         super(MasonryLayout, self).setGeometry(rect)
-        if not self.item_list:
-            return
+        self.updateGeometry()
 
-        self.calculateColumnLayout(rect.width())
+    def updateGeometry(self):
+        if not self.items:
+            return
+        width = self.geometry().width()
+        self.calculateColumnLayout(width)
         self.arrangeItems()
 
     def calculateColumnLayout(self, width):
-        self.num_columns = max(1, width // (200 + self.mspacing))  # Dynamically calculate number of columns
-        self.column_width = (width - (self.num_columns - 1) * self.mspacing) // self.num_columns
+        self.num_columns = max(1, width // (200 + self.spacing))
+        self.column_width = (width - (self.num_columns - 1) * self.spacing) // self.num_columns
         self.column_heights = [0] * self.num_columns
 
     def arrangeItems(self):
-        for item in self.item_list:
+        x_offsets = [i * (self.column_width + self.spacing) for i in range(self.num_columns)]
+        for item in self.items:
             widget = item.widget()
             pixmap = widget.pixmap()
-
-            if pixmap:
-                aspect_ratio = pixmap.width() / pixmap.height()
-                height = self.column_width / aspect_ratio
-            else:
-                height = widget.sizeHint().height()
-
+            aspect_ratio = pixmap.width() / pixmap.height() if pixmap else widget.sizeHint().width() / widget.sizeHint().height()
+            height = self.column_width / aspect_ratio
             min_col = self.column_heights.index(min(self.column_heights))
-            x = min_col * (self.column_width + self.mspacing)
+            x = x_offsets[min_col]
             y = self.column_heights[min_col]
-
             widget.setGeometry(QRect(x, y, self.column_width, height))
-            self.column_heights[min_col] += height + self.mspacing
+            self.column_heights[min_col] += height + self.spacing
 
-    def count(self):
-        return len(self.item_list)
-
-    def itemAt(self, index):
-        if 0 <= index < len(self.item_list):
-            return self.item_list[index]
-        return None
-
-    def takeAt(self, index):
-        if 0 <= index < len(self.item_list):
-            return self.item_list.pop(index)
-        return None
 
 
 class MasonryGallery(QWidget):
