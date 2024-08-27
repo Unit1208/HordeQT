@@ -17,12 +17,13 @@ class ImageWidget(QLabel):
     def __init__(self, image_path):
         super().__init__()
         self.bpixmap = QPixmap(image_path)
-        self.setPixmap(self.bpixmap)
+        self.setPixmap(self.bpixmap.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setAlignment(Qt.AlignCenter)
 
     def resizeEvent(self, event):
-        self.setPixmap(self.bpixmap.scaled(event.size()))
+        # Scale the pixmap with aspect ratio preserved
+        self.setPixmap(self.bpixmap.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
 
 
 class MasonryLayout(QLayout):
@@ -56,12 +57,8 @@ class MasonryLayout(QLayout):
         self.arrangeItems()
 
     def calculateColumnLayout(self, width):
-        self.num_columns = max(
-            1, width // (200 + self.mspacing)
-        )  # Dynamically calculate number of columns
-        self.column_width = (
-            width - (self.num_columns - 1) * self.mspacing
-        ) // self.num_columns
+        self.num_columns = max(1, width // (200 + self.mspacing))  # Dynamically calculate number of columns
+        self.column_width = (width - (self.num_columns - 1) * self.mspacing) // self.num_columns
         self.column_heights = [0] * self.num_columns
 
     def arrangeItems(self):
