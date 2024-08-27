@@ -5,7 +5,7 @@ import json
 import random
 import sys
 import time
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from PySide6.QtWidgets import (
     QApplication,
@@ -55,19 +55,6 @@ class Model:
 
 
 class Job:
-    prompt: str
-    sampler_name: str
-    cfg_scale: float
-    seed: int
-    width: int
-    height: int
-    karras: bool = True
-    hires_fix: bool = True
-    clip_skip: int
-    steps: int
-    model: str
-    allow_nsfw: bool = False
-
     def __init__(
         self,
         prompt: str,
@@ -82,6 +69,12 @@ class Job:
         karras: bool = True,
         hires_fix: bool = True,
         allow_nsfw: bool = False,
+        job_id: Optional[str] = None,
+        wait_time: float = 0,
+        queue_position: float = 0,
+        done: bool = False,
+        faulted: bool = False,
+        kudos: float = 0,
     ):
         self.prompt = prompt
         self.sampler_name = sampler_name
@@ -96,7 +89,17 @@ class Job:
         self.model = model
         self.allow_nsfw = allow_nsfw
 
-    def to_json(self):
+        # Status-related attributes
+        self.job_id = job_id
+        self.wait_time = wait_time
+        self.queue_position = queue_position
+        self.done = done
+        self.faulted = faulted
+        self.kudos = kudos
+        self.creation_time = time.time()
+        self.mod_time = time.time()
+
+    def to_json(self) -> Dict:
         return {
             "prompt": self.prompt,
             "params": {
@@ -123,131 +126,91 @@ class Job:
         }
 
     @classmethod
-    def from_json(cls, data: dict):
+    def from_json(cls, data: Dict) -> "Job":
         prompt = data.get("prompt")
         params = data.get("params", {})
-        sampler_name = params.get("sampler_name")
-        cfg_scale = params.get("cfg_scale")
-        seed = params.get("seed")
-        width = params.get("width")
-        height = params.get("height")
-        karras = params.get("karras", True)
-        hires_fix = params.get("hires_fix", True)
-        clip_skip = params.get("clip_skip")
-        steps = params.get("steps")
-        model = data.get("models", ["string"])[0]
-        allow_nsfw = data.get("nsfw", False)
-
         return cls(
             prompt=prompt,
-            sampler_name=sampler_name,
-            cfg_scale=cfg_scale,
-            seed=seed,
-            width=width,
-            height=height,
-            karras=karras,
-            hires_fix=hires_fix,
-            clip_skip=clip_skip,
-            steps=steps,
-            model=model,
-            allow_nsfw=allow_nsfw,
+            sampler_name=params.get("sampler_name"),
+            cfg_scale=params.get("cfg_scale"),
+            seed=params.get("seed"),
+            width=params.get("width"),
+            height=params.get("height"),
+            karras=params.get("karras", True),
+            hires_fix=params.get("hires_fix", True),
+            clip_skip=params.get("clip_skip"),
+            steps=params.get("steps"),
+            model=data.get("models", ["INVALID_MODEL_NAME_HERE"])[0],
+            allow_nsfw=data.get("nsfw", False),
         )
 
-
-class JobStatus:
-    wait_time: float
-    queue_position: float
-    done: bool
-    faulted: bool
-    kudos: float
-    id: str | None
-    prompt: str | None
-    model: str | None
-    mod_time: float
-
-    def __init__(
-        self,
-        wait_time: float,
-        queue_position: float,
-        done: bool,
-        faulted: bool,
-        kudos: float,
-        id: str | None,
-        prompt: str | None,
-        model: str | None,
-    ) -> None:
-        self.done = done
-        self.faulted = faulted
-        self.id = id
-        self.kudos = kudos
-        self.model = model
-        self.prompt = prompt
-        self.queue_position = queue_position
-        self.wait_time = wait_time
-
+    def update_status(self, status_data: Dict):
+        self.done = status_data.get("done", False)
+        self.faulted = status_data.get("faulted", False)
+        self.kudos = status_data.get("kudos", 0)
+        self.queue_position = status_data.get("queue_position", 0)
+        self.wait_time = status_data.get("wait_time", 0)
         self.mod_time = time.time()
-
-    @classmethod
-    def from_json(cls, data: dict):
-        return cls(
-            done=data.get("done", False),
-            faulted=data.get("faulted", False),
-            kudos=data.get("kudos", 0),
-            queue_position=data.get("queue_position", 0),
-            wait_time=data.get("wait_time", 0),
-        )
 
 
 class APIManager:
-    max_requests = 10
-    current_requests: List[str] = []
-    statuses: Dict[str, JobStatus]
-    completed_jobs: List[str] = []
-
     def __init__(self, api_key: str, max_requests: int) -> None:
-        self.max_requests = max_requests
         self.api_key = api_key
-        self.current_requests = []
+        self.max_requests = max_requests
+        self.current_requests: Dict[str, Job] = {}
         self.job_queue: Queue[Job] = Queue()
-        self.last_request = time.time()
-
-    def get_unified_jobs(self):
-        return
+        self.last_request_time = time.time()
+        self.completed_jobs: List[Job] = []
 
     def handle_queue(self):
-        if (
-            len(self.current_requests) <= self.max_requests
-            and time.time() - self.last_request > 2
+        self._send_new_jobs()
+        self._update_current_jobs()
+
+    def _send_new_jobs(self):
+        while (
+            len(self.current_requests) < self.max_requests
+            and not self.job_queue.empty()
         ):
-            nj = self.job_queue.get()
-            res = requests.post(
-                BASE_URL + "generate/async",
-                json=nj.to_json(),
-                headers=get_headers(self.api_key),
-            )
-            self.last_request = time.time()
-            res.raise_for_status()
+            if time.time() - self.last_request_time > 2:
+                job = self.job_queue.get()
+                try:
+                    response = requests.post(
+                        BASE_URL + "generate/async",
+                        json=job.to_json(),
+                        headers=get_headers(self.api_key),
+                    )
+                    response.raise_for_status()
+                    job_id = response.json().get("id")
+                    job.job_id = job_id
+                    self.current_requests[job_id] = job
+                    self.last_request_time = time.time()
+                except requests.RequestException as e:
+                    print(f"Error sending job: {e}")
+                    self.job_queue.put(job)  # Requeue the job
 
-            rj = res.json()
-            self.current_requests.append(rj["id"])
+    def _update_current_jobs(self):
+        to_remove = []
+        for job_id, job in self.current_requests.items():
+            try:
+                response = requests.get(BASE_URL + f"generate/check/{job_id}")
+                response.raise_for_status()
+                job.update_status(response.json())
+                if job.done:
+                    self.completed_jobs.append(job)
+                    to_remove.append(job_id)
+            except requests.RequestException as e:
+                print(f"Error updating job status: {e}")
 
-        new_requests = []
-        for job in self.current_requests:
+        for job_id in to_remove:
+            del self.current_requests[job_id]
 
-            res = requests.get(BASE_URL + "generate/check/" + job)
-            res.raise_for_status()
+    def get_completed_jobs(self) -> List[Job]:
+        completed = self.completed_jobs.copy()
+        self.completed_jobs.clear()
+        return completed
 
-            self.statuses[job] = JobStatus.from_json(res.json())
-            if self.statuses[job].done:
-                self.completed_jobs.append(job)
-            else:
-                new_requests.append(job)
-        self.current_requests = new_requests
-
-    def done_jobs(self):
-        dj = self.completed_jobs.copy()
-        self.completed_jobs = []
-        return dj
+    def add_job(self, job: Job):
+        self.job_queue.put(job)
 
 
 class ModelPopup(QDialog):
@@ -478,7 +441,7 @@ class MainWindow(QMainWindow):
         r.raise_for_status()
         return r.json()
 
-    def get_model_details(self, available_models: List[Model] | None):
+    def get_model_details(self, available_models: Optional[List[Model]]):
         if available_models == None:
             available_models = self.get_available_models()
 
