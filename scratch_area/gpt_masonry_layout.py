@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import List
 from PySide6.QtWidgets import (
     QApplication,
@@ -99,12 +100,12 @@ class MasonryGallery(QWidget):
     def __init__(self):
         super().__init__()
 
-        layout = MasonryLayout(self)
+        self.mlayout = MasonryLayout(self)
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
 
         content_widget = QWidget()
-        content_widget.setLayout(layout)
+        content_widget.setLayout(self.mlayout)
 
         scroll_area.setWidget(content_widget)
 
@@ -115,8 +116,11 @@ class MasonryGallery(QWidget):
         for image_path in os.listdir("images"):
             ip = "images/" + image_path
             if image_path.endswith(".png"):
-                image_widget = ImageWidget(ip)
-                layout.addWidget(image_widget)
+                self.addImage(ip)
+
+    def addImage(self, path: os.PathLike):
+        image_widget = ImageWidget(path)
+        self.mlayout.addWidget(image_widget)
 
 
 if __name__ == "__main__":
