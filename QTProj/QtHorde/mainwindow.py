@@ -915,17 +915,11 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setApplicationName("Horde QT")
     app.setOrganizationName("Unit1208")
-    SAVED_IMAGE_DIR_PATH = (
-        Path(
-            QStandardPaths.writableLocation(
-                QStandardPaths.StandardLocation.AppDataLocation
-            )
-        )
-        / "images"
-    )
     SAVED_DATA_DIR_PATH = Path(
         QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
     )
+    SAVED_IMAGE_DIR_PATH = SAVED_DATA_DIR_PATH / "images"
+
     SAVED_DATA_PATH = SAVED_DATA_DIR_PATH / "saved_data.json"
     print(SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH)
     os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
