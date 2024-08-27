@@ -1,7 +1,7 @@
 # Todo
 
 - [ ] Handle save/load multiple users
-- [ ] Handle Job Queueing
+- [x] Handle Job Queueing
 - [ ] Gallery View
   - [Artbot's image view](https://tinybots.net/artbot/images) is called a *Masonry* Layout
 - [ ] Model Download
@@ -16,3 +16,4 @@
 - [ ] [QPixmap doesn't support displaying WEBPs](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPixmap.html#reading-and-writing-image-files), need to convert them before displaying them.
 - [ ] Allow the user to control the saved format of images after conversion. (Horde always(?) uses WEBP)
 - [ ] Save generation info into metadata
+- [x] Button to open locally saved data folder

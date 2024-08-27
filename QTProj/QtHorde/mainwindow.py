@@ -20,8 +20,17 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QScrollArea,
 )
-from PySide6.QtCore import QObject, QThread, Signal, QTimer, QStandardPaths, QRect, QSize, Qt
-from PySide6.QtGui import QPixmap
+from PySide6.QtCore import (
+    QObject,
+    QThread,
+    Signal,
+    QTimer,
+    QStandardPaths,
+    QRect,
+    Qt,
+    QUrl,
+)
+from PySide6.QtGui import QPixmap, QDesktopServices
 
 from queue import Queue
 
@@ -37,12 +46,20 @@ import requests
 
 ANON_API_KEY = "0000000000"
 BASE_URL = "https://aihorde.net/api/v2/"
+SAVED_IMAGE_PATH = (
+    Path(
+        QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
+    )
+    / "images"
+)
 
 
 def get_headers(api_key: str):
     return {
         "apikey": api_key,
-        "Client-Agent": "https://github.com/Unit1208/HordeQt:0.0.1:Unit1208",
+        "Client-Agent": "HordeQt:0.0.1:Unit1208",
+        "accept": "application/json",
+        "Content-Type": "application/json",
     }
 
 
@@ -176,7 +193,7 @@ class Job:
         prompt: str,
         sampler_name: str,
         cfg_scale: float,
-        seed: int,
+        seed: str,
         width: int,
         height: int,
         clip_skip: int,
@@ -221,7 +238,7 @@ class Job:
             "params": {
                 "sampler_name": self.sampler_name,
                 "cfg_scale": self.cfg_scale,
-                "seed": self.seed,
+                "seed": str(self.seed),
                 "height": self.height,
                 "width": self.width,
                 "post_processing": [],
@@ -293,8 +310,35 @@ class Job:
         self.mod_time = time.time()
 
 
+class LocalJob:
+    id: str
+    path: Path
+    original: Job
+    fileType: str
+    downloadURL: str
+
+    def __init__(self, job: Job) -> None:
+        self.id = job.job_id
+        self.original = job
+        self.fileType = "webp"
+        self.path = (SAVED_IMAGE_PATH / self.id).with_suffix(".webp")
+
+    def serialize(self) -> dict:
+        return {
+            "id": self.id,
+            "original": self.original.serialize(),
+            "fileType": self.fileType,
+            "path": str(self.path),
+        }
+
+    @classmethod
+    def deserialize(cls, value: dict) -> Self:
+        job = value.get("original")
+        return cls(job)
+
+
 class APIManagerThread(QThread):
-    job_completed = Signal(Job)  # Signal emitted when a job is completed
+    job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
 
     def __init__(self, api_key: str, max_requests: int, parent=None):
         super().__init__(parent)
@@ -302,9 +346,16 @@ class APIManagerThread(QThread):
         self.max_requests = max_requests
         self.current_requests: Dict[str, Job] = {}
         self.job_queue: Queue[Job] = Queue()
-        self.last_request_time = time.time()
+        self.last_status_time = time.time()
+        self.last_async_time = time.time()
         self.completed_jobs: List[Job] = []
         self.running = True  # To control the thread's loop
+        self.async_requests = 0
+        self.async_reset_time = time.time()
+        self.status_requests = 0
+        self.status_reset_time = time.time()
+
+        self.errored_jobs: List[Job] = []
 
     def run(self):
         while self.running:
@@ -312,90 +363,194 @@ class APIManagerThread(QThread):
             time.sleep(1)  # Sleep for a short time to avoid high CPU usage
 
     def serialize(self):
-        self.stop()
-        job_list = []
-        while not self.job_queue.empty():
-            job_list.append(self.job_queue.get())
-        val = {
-            "current_requests": self.current_requests,
-            "job_queue": job_list,
-            "completed_jobs": self.completed_jobs,
+        return {
+            "current_requests": {
+                k: self.current_requests[k].serialize() for k in self.current_requests
+            },
+            "job_queue": [_.serialize() for _ in list(self.job_queue.queue)],
+            "completed_jobs": [_.serialize() for _ in self.completed_jobs],
+            "errored_jobs": [_.serialize() for _ in self.errored_jobs],
         }
-        return val
 
     @classmethod
     def deserialize(
         cls,
-        value: Dict[str, List[Job] | Dict[str, Job]],
+        data: Dict,
         api_key: str,
         max_requests: int,
         parent=None,
     ):
-        v = cls(api_key, max_requests, parent)
-        v.current_requests = value.get("current_requests", {})
-        jobl: List[Job] = value.get("job_queue", [])
-        jobq = Queue()
-        # TODO: Pencil this out, does this reverse the order of the queue?
-        ## IF it does, I believe it would be canceled out by the serialization process
-        for item in jobl:
-            jobq.put(item)
-        v.job_queue = jobq
-        v.completed_jobs = value.get("completed_jobs", [])
-        return v
+        instance = cls(api_key, max_requests, parent)
+
+        instance.current_requests = {
+            k: Job.deserialize(v) for k, v in data.get("current_requests", {}).items()
+        }
+
+        instance.job_queue = Queue()
+        for item in data.get("job_queue", []):
+            instance.job_queue.put(Job.deserialize(item))
+
+        instance.completed_jobs = [
+            Job.deserialize(item) for item in data.get("completed_jobs", {})
+        ]
+
+        instance.errored_jobs = [
+            Job.deserialize(item) for item in data.get("errored_jobs", [])
+        ]
+
+        return instance
 
     def handle_queue(self):
         self._send_new_jobs()
         self._update_current_jobs()
+        self._get_download_paths()
 
     def _send_new_jobs(self):
         while (
             len(self.current_requests) < self.max_requests
             and not self.job_queue.empty()
         ):
-            if time.time() - self.last_request_time > 2:
+            current_time = time.time()
+            if current_time - self.last_async_time > 5 and self.async_requests < 10:
                 job = self.job_queue.get()
                 try:
+                    d = json.dumps(job.to_json())
                     response = requests.post(
                         BASE_URL + "generate/async",
-                        json=job.to_json(),
+                        data=d,
                         headers=get_headers(self.api_key),
                     )
                     response.raise_for_status()
                     job_id = response.json().get("id")
                     job.job_id = job_id
                     self.current_requests[job_id] = job
-                    self.last_request_time = time.time()
+                    print("Job now has uuid: " + job.job_id)
+                    self.last_async_time = time.time()
+                    self.async_requests += 1
                 except requests.RequestException as e:
                     print(f"Error sending job: {e}")
-                    self.job_queue.put(job)  # Requeue the job
-            else:
-                time.sleep(0.25)
+                    self.errored_jobs.append(job)
+                    # self.job_queue.put(job)
+            current_time = time.time()
+            if current_time - self.async_reset_time > 60:
+                self.async_requests = 0
+                self.async_reset_time = current_time
 
     def _update_current_jobs(self):
         to_remove = []
         for job_id, job in self.current_requests.items():
+            if time.time() - job.creation_time > 600:
+                job.faulted = True
+                to_remove.append(job_id)
+                continue
+
             try:
+                # print("checking job "+job_id)
+
                 response = requests.get(BASE_URL + f"generate/check/{job_id}")
                 response.raise_for_status()
                 job.update_status(response.json())
                 if job.done:
                     self.completed_jobs.append(job)
                     to_remove.append(job_id)
-                    self.job_completed.emit(
-                        job
-                    )  # Emit the signal for the completed job
+
+                    # Emit the signal for the completed job
             except requests.RequestException as e:
                 print(f"Error updating job status: {e}")
 
         for job_id in to_remove:
             del self.current_requests[job_id]
+            # del self.current_requests[job_id]
+            self.current_requests.pop(job_id)
 
+    def _get_download_paths(self):
+        njobs = []
+        for job in self.completed_jobs:
+            if time.time() - self.last_status_time > 5 and self.status_requests < 10:
+
+                lj = LocalJob(job)
+
+                r = requests.get(BASE_URL + f"generate/status/{job.job_id}")
+                r.raise_for_status()
+                rj = r.json()
+                lj.downloadURL = rj["generations"][0]["img"]
+
+                self.job_completed.emit(lj)
+
+                self.last_status_time = time.time()
+                if time.time() - self.status_reset_time > 60:
+                    self.status_requests = 0
+                    self.status_reset_time = time.time()
+            else:
+                njobs.append(job)
+        self.completed_jobs = njobs
+
+    def get_current_jobs(self) -> Dict[str, Job]:
+        return self.current_requests
+
+    def get_queued_jobs(self) -> List[Job]:
+        return list(self.job_queue.queue)
+
+    def get_completed_jobs(self) -> List[Job]:
+        return self.completed_jobs
     def stop(self):
         self.running = False
         self.wait()
 
     def add_job(self, job: Job):
         self.job_queue.put(job)
+        print("added job")
+
+
+class DownloadThread(QThread):
+    completed_downloads: List[LocalJob]
+    queued_downloads: List[LocalJob]
+    completed = Signal(LocalJob)
+
+    def __init__(
+        self, queued_downloads=[], completed_downloads=[], parent=None
+    ) -> None:
+        super().__init__(parent)
+        self.queued_downloads = queued_downloads
+        self.completed_downloads = completed_downloads
+        self.running = True
+
+    def add_dl(self, local_job: LocalJob):
+        self.queued_downloads.append(local_job)
+
+    def run(self):
+        while self.running:
+            if len(self.queued_downloads) > 0:
+                lj = self.queued_downloads.pop()
+                print("downloading " + lj.id)
+                with open(lj.path, "wb") as f:
+                    f.write(requests.get(lj.downloadURL).content)
+                self.completed.emit(lj)
+            time.sleep(1)
+
+    def serialize(self):
+        return {
+            "completed_downloads": [x.serialize() for x in self.completed_downloads],
+            "queued_downloads": [x.serialize() for x in self.queued_downloads],
+        }
+
+    @classmethod
+    def deserialize(cls: Self, value: Dict):
+        if (cd := value.get("completed_downloads", None)) is None:
+            ncd = []
+        else:
+            cd: List[dict] = cd
+            ncd = [LocalJob.deserialize(x) for x in cd]
+        if (qd := value.get("queued_downloads", None)) is None:
+            nqd = []
+        else:
+            qd: List[dict] = qd
+            nqd = [LocalJob.deserialize(x) for x in qd]
+        return cls(completed_downloads=ncd, queued_downloads=nqd)
+
+    def stop(self):
+        self.running = False
+        self.wait()
 
 
 class ModelPopup(QDialog):
@@ -462,6 +617,7 @@ class LoadWorker(QObject):
 
 class SavedData:
     api_state: dict
+    current_images: List[dict]
     nsfw_allowed: bool
     max_jobs: int
 
@@ -475,8 +631,11 @@ class SavedData:
         self.data_file = self.datadir / "saved_data.json"
         os.makedirs(self.datadir, exist_ok=True)
 
-    def update(self, api: APIManagerThread, nsfw: bool, max_jobs: int):
+    def update(
+        self, api: APIManagerThread, nsfw: bool, max_jobs: int, dlthread: DownloadThread
+    ):
         self.api_state = api.serialize()
+        self.current_images = dlthread.serialize()
         self.max_jobs = max_jobs
         self.nsfw_allowed = nsfw
 
@@ -485,6 +644,7 @@ class SavedData:
             "api_state": self.api_state,
             "max_jobs": self.max_jobs,
             "nsfw_allowed": self.nsfw_allowed,
+            "current_images": self.current_images,
         }
         # cbor2.dump ?
         jsondata = json.dumps(d)
@@ -499,6 +659,7 @@ class SavedData:
             j = dict()
         self.api_state = j.get("api_state", {})
         self.max_jobs = j.get("max_jobs", 5)
+        self.current_images = j.get("current_images", {})
         self.nsfw_allowed = j.get("nsfw_allowed", False)
 
 
@@ -523,10 +684,16 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(150, lambda: self.ui.progressBar.hide())
 
     def closeEvent(self, event):
+
+
+
+        self.api_thread.stop()
+        self.download_thread.stop()
         self.savedData.update(
             self.api_thread,
             self.ui.NSFWCheckBox.isChecked(),
             self.ui.maxJobsSpinBox.value(),
+            self.download_thread,
         )
         self.savedData.write()
         QMainWindow.closeEvent(self, event)
@@ -551,8 +718,13 @@ class MainWindow(QMainWindow):
         self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
         self.ui.GenerateButton.setEnabled(False)
         self.ui.modelComboBox.setEnabled(False)
-        self.api_thread = APIManagerThread(
-            api_key=self.api_key, max_requests=self.savedData.max_jobs
+        self.api_thread = APIManagerThread.deserialize(
+            self.savedData.api_state,
+            api_key=self.api_key,
+            max_requests=self.savedData.max_jobs,
+        )
+        self.download_thread: DownloadThread = DownloadThread.deserialize(
+            self.savedData.current_images
         )
         self.api_thread.job_completed.connect(self.on_job_completed)
 
@@ -570,12 +742,20 @@ class MainWindow(QMainWindow):
         self.ui.saveAPIkey.clicked.connect(self.save_api_key)
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
+        self.ui.openSavedData.clicked.connect(self.open_saved_data)
         self.ui.progressBar.setValue(0)
         QTimer.singleShot(0, self.loading_thread.start)
+        QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
 
-    def on_job_completed(self, value: Job):
-        pass
+    def open_saved_data(self):
+        dir_url = QUrl.fromLocalFile(self.savedData.datadir)
+
+        QDesktopServices.openUrl(dir_url)
+
+    def on_job_completed(self, job: LocalJob):
+        print(f"Job {job.id} completed.")
+        self.download_thread.add_dl(job)
 
     def update_progress(self, value):
         self.ui.progressBar.setValue(value)
@@ -665,7 +845,7 @@ class MainWindow(QMainWindow):
         height = self.ui.heightSpinBox.value()
         clip_skip = self.ui.clipSkipSpinBox.value()
         steps = self.ui.stepsSpinBox.value()
-        model = self.ui.modelComboBox.currentText()
+        model = self.model_dict[self.ui.modelComboBox.currentText()].name
         karras = True
         hires_fix = True
         allow_nsfw = True
@@ -731,6 +911,7 @@ class MainWindow(QMainWindow):
         job = self.create_job()
         if job is not None:
             print(json.dumps(self.create_job().to_json()))
+            self.api_thread.add_job(job)
 
     def save_api_key(self):
         self.hide_api_key()
@@ -745,6 +926,7 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
+    os.makedirs(SAVED_IMAGE_PATH, exist_ok=True)
     app = QApplication(sys.argv)
     app.setApplicationName("Horde QT")
     app.setOrganizationName("Unit1208")

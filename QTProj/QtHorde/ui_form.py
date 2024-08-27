@@ -314,6 +314,11 @@ class Ui_MainWindow(object):
         self.formLayoutWidget.setGeometry(QRect(0, 10, 761, 801))
         self.settingsLayout = QFormLayout(self.formLayoutWidget)
         self.settingsLayout.setObjectName(u"settingsLayout")
+        self.settingsLayout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
+        self.settingsLayout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+        self.settingsLayout.setRowWrapPolicy(QFormLayout.RowWrapPolicy.DontWrapRows)
+        self.settingsLayout.setLabelAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
+        self.settingsLayout.setVerticalSpacing(6)
         self.settingsLayout.setContentsMargins(0, 0, 0, 0)
         self.APIKeyLabel = QLabel(self.formLayoutWidget)
         self.APIKeyLabel.setObjectName(u"APIKeyLabel")
@@ -378,6 +383,16 @@ class Ui_MainWindow(object):
         self.maxJobsSpinBox.setValue(5)
 
         self.settingsLayout.setWidget(2, QFormLayout.FieldRole, self.maxJobsSpinBox)
+
+        self.openSavedData = QPushButton(self.formLayoutWidget)
+        self.openSavedData.setObjectName(u"openSavedData")
+
+        self.settingsLayout.setWidget(3, QFormLayout.FieldRole, self.openSavedData)
+
+        self.openSavedDataLabel = QLabel(self.formLayoutWidget)
+        self.openSavedDataLabel.setObjectName(u"openSavedDataLabel")
+
+        self.settingsLayout.setWidget(4, QFormLayout.LabelRole, self.openSavedDataLabel)
 
         self.tabWidget.addTab(self.settings_tab, icon3, "")
         self.userInfoPage = QWidget()
@@ -823,7 +838,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
         self.modelComboBox.setCurrentIndex(0)
 
 
@@ -916,6 +931,8 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(tooltip)
         self.NSFWCheckBox.setText("")
         self.maxJobsLabel.setText(QCoreApplication.translate("MainWindow", u"Max jobs", None))
+        self.openSavedData.setText(QCoreApplication.translate("MainWindow", u"Open Saved Data", None))
+        self.openSavedDataLabel.setText("")
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), QCoreApplication.translate("MainWindow", u"Settings", None))
         self.usernameLabel.setText(QCoreApplication.translate("MainWindow", u"Username", None))
         self.idLabel.setText(QCoreApplication.translate("MainWindow", u"ID", None))

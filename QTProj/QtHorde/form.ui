@@ -27,7 +27,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -587,6 +587,21 @@
          </rect>
         </property>
         <layout class="QFormLayout" name="settingsLayout">
+         <property name="sizeConstraint">
+          <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
+         </property>
+         <property name="fieldGrowthPolicy">
+          <enum>QFormLayout::FieldGrowthPolicy::AllNonFixedFieldsGrow</enum>
+         </property>
+         <property name="rowWrapPolicy">
+          <enum>QFormLayout::RowWrapPolicy::DontWrapRows</enum>
+         </property>
+         <property name="labelAlignment">
+          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
+         </property>
+         <property name="verticalSpacing">
+          <number>6</number>
+         </property>
          <item row="0" column="0">
           <widget class="QLabel" name="APIKeyLabel">
            <property name="text">
@@ -684,6 +699,20 @@
            </property>
            <property name="value">
             <number>5</number>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QPushButton" name="openSavedData">
+           <property name="text">
+            <string>Open Saved Data</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="openSavedDataLabel">
+           <property name="text">
+            <string/>
            </property>
           </widget>
          </item>
