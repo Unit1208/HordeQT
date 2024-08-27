@@ -12,11 +12,19 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QDialog,
-
     QLineEdit,
+    QWidget,
+    QLayout,
+    QSizePolicy,
+    QLabel,
+    QVBoxLayout,
+    QScrollArea,
 )
-from PySide6.QtCore import QObject, QThread, Signal, QTimer, QStandardPaths
+from PySide6.QtCore import QObject, QThread, Signal, QTimer, QStandardPaths, QRect, QSize, Qt
+from PySide6.QtGui import QPixmap
+
 from queue import Queue
+
 
 # import cbor2
 
@@ -36,6 +44,112 @@ def get_headers(api_key: str):
         "apikey": api_key,
         "Client-Agent": "https://github.com/Unit1208/HordeQt:0.0.1:Unit1208",
     }
+
+
+
+
+class ImageWidget(QLabel):
+    def __init__(self, image_path):
+        super().__init__()
+        self.original_pixmap = QPixmap(image_path)
+        self.setPixmap(self.original_pixmap)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setAlignment(Qt.AlignCenter)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.update_pixmap()
+
+    def update_pixmap(self):
+        if self.original_pixmap:
+            scaled_pixmap = self.original_pixmap.scaled(
+                self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
+            self.setPixmap(scaled_pixmap)
+
+
+class MasonryLayout(QLayout):
+    def __init__(self, parent=None, margin=10, spacing=10):
+        super(MasonryLayout, self).__init__(parent)
+        self.margin = margin
+        self.spacing = spacing
+        self.items = []
+
+    def addItem(self, item):
+        self.items.append(item)
+
+    def count(self):
+        return len(self.items)
+
+    def sizeHint(self):
+        return self.minimumSize()
+
+    def itemAt(self, index):
+        return self.items[index] if 0 <= index < len(self.items) else None
+
+    def takeAt(self, index):
+        if 0 <= index < len(self.items):
+            return self.items.pop(index)
+        return None
+
+    def setGeometry(self, rect):
+        super(MasonryLayout, self).setGeometry(rect)
+        self.updateGeometry()
+
+    def updateGeometry(self):
+        if not self.items:
+            return
+        width = self.geometry().width()
+        self.calculateColumnLayout(width)
+        self.arrangeItems()
+
+    def calculateColumnLayout(self, width):
+        self.num_columns = max(1, width // (200 + self.spacing))
+        self.column_width = (
+            width - (self.num_columns - 1) * self.spacing
+        ) // self.num_columns
+        self.column_heights = [0] * self.num_columns
+
+    def arrangeItems(self):
+        x_offsets = [
+            i * (self.column_width + self.spacing) for i in range(self.num_columns)
+        ]
+        for item in self.items:
+            widget = item.widget()
+            pixmap = widget.pixmap()
+            aspect_ratio = (
+                pixmap.width() / pixmap.height()
+                if pixmap
+                else widget.sizeHint().width() / widget.sizeHint().height()
+            )
+            height = self.column_width / aspect_ratio
+            min_col = self.column_heights.index(min(self.column_heights))
+            x = x_offsets[min_col]
+            y = self.column_heights[min_col]
+            widget.setGeometry(QRect(x, y, self.column_width, height))
+            self.column_heights[min_col] += height + self.spacing
+
+
+class MasonryGallery(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.mlayout = MasonryLayout(self)
+        scroll_area = QScrollArea(self)
+        scroll_area.setWidgetResizable(True)
+
+        content_widget = QWidget()
+        content_widget.setLayout(self.mlayout)
+
+        scroll_area.setWidget(content_widget)
+
+        main_layout = QVBoxLayout(self)
+        main_layout.addWidget(scroll_area)
+        self.setLayout(main_layout)
+
+    def addImage(self, path: os.PathLike):
+        image_widget = ImageWidget(path)
+        self.mlayout.addWidget(image_widget)
 
 
 class Model:
@@ -345,6 +459,7 @@ class LoadWorker(QObject):
         self.model_info.emit(j)
         self.progress.emit(100)
 
+
 class SavedData:
     api_state: dict
     nsfw_allowed: bool
@@ -440,7 +555,7 @@ class MainWindow(QMainWindow):
             api_key=self.api_key, max_requests=self.savedData.max_jobs
         )
         self.api_thread.job_completed.connect(self.on_job_completed)
-        
+
         # Connect signals
         self.worker.progress.connect(self.update_progress)
         self.worker.model_info.connect(self.construct_model_dict)
@@ -458,7 +573,6 @@ class MainWindow(QMainWindow):
         self.ui.progressBar.setValue(0)
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
-        
 
     def on_job_completed(self, value: Job):
         pass
