@@ -27,7 +27,9 @@ class ImageWidget(QLabel):
 
     def update_pixmap(self):
         if self.original_pixmap:
-            scaled_pixmap = self.original_pixmap.scaled(self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_pixmap = self.original_pixmap.scaled(
+                self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
             self.setPixmap(scaled_pixmap)
 
 
@@ -43,8 +45,10 @@ class MasonryLayout(QLayout):
 
     def count(self):
         return len(self.items)
+
     def sizeHint(self):
         return self.minimumSize()
+
     def itemAt(self, index):
         return self.items[index] if 0 <= index < len(self.items) else None
 
@@ -66,22 +70,29 @@ class MasonryLayout(QLayout):
 
     def calculateColumnLayout(self, width):
         self.num_columns = max(1, width // (200 + self.spacing))
-        self.column_width = (width - (self.num_columns - 1) * self.spacing) // self.num_columns
+        self.column_width = (
+            width - (self.num_columns - 1) * self.spacing
+        ) // self.num_columns
         self.column_heights = [0] * self.num_columns
 
     def arrangeItems(self):
-        x_offsets = [i * (self.column_width + self.spacing) for i in range(self.num_columns)]
+        x_offsets = [
+            i * (self.column_width + self.spacing) for i in range(self.num_columns)
+        ]
         for item in self.items:
             widget = item.widget()
             pixmap = widget.pixmap()
-            aspect_ratio = pixmap.width() / pixmap.height() if pixmap else widget.sizeHint().width() / widget.sizeHint().height()
+            aspect_ratio = (
+                pixmap.width() / pixmap.height()
+                if pixmap
+                else widget.sizeHint().width() / widget.sizeHint().height()
+            )
             height = self.column_width / aspect_ratio
             min_col = self.column_heights.index(min(self.column_heights))
             x = x_offsets[min_col]
             y = self.column_heights[min_col]
             widget.setGeometry(QRect(x, y, self.column_width, height))
             self.column_heights[min_col] += height + self.spacing
-
 
 
 class MasonryGallery(QWidget):
