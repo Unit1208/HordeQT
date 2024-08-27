@@ -12,13 +12,13 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QDialog,
-    QMessageBox,
+
     QLineEdit,
 )
-from PySide6.QtCore import QObject, QThread, Signal, QTimer, QSaveFile, QStandardPaths
+from PySide6.QtCore import QObject, QThread, Signal, QTimer, QStandardPaths
 from queue import Queue
 
-import cbor2
+# import cbor2
 
 
 from ui_form import Ui_MainWindow
