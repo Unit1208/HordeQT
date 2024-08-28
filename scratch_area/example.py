@@ -2,9 +2,10 @@ from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 import requests
 import queue
 
+
 class ApiWorker(QObject):
     result_ready = pyqtSignal(object)  # Custom signal to emit the result
-    error_occurred = pyqtSignal(str)   # Custom signal to emit errors
+    error_occurred = pyqtSignal(str)  # Custom signal to emit errors
 
     def __init__(self, request_queue):
         super().__init__()
@@ -31,6 +32,7 @@ class ApiWorker(QObject):
     def stop(self):
         self.running = False
 
+
 class ApiManager(QObject):
     def __init__(self):
         super().__init__()
@@ -39,10 +41,10 @@ class ApiManager(QObject):
         # Create the worker and thread
         self.worker = ApiWorker(self.request_queue)
         self.thread = QThread()
-        
+
         # Move the worker to the thread
         self.worker.moveToThread(self.thread)
-        
+
         # Connect signals and slots
         self.thread.started.connect(self.worker.process_requests)
         self.worker.result_ready.connect(self.handle_result)
@@ -65,6 +67,7 @@ class ApiManager(QObject):
         self.thread.quit()
         self.thread.wait()
 
+
 # Usage Example
 if __name__ == "__main__":
     from PyQt5.QtWidgets import QApplication
@@ -72,10 +75,14 @@ if __name__ == "__main__":
     app = QApplication([])
 
     manager = ApiManager()
-    
+
     # Example API requests
-    manager.add_request('GET', 'https://jsonplaceholder.typicode.com/posts', params={'userId': 1})
-    manager.add_request('GET', 'https://jsonplaceholder.typicode.com/comments', params={'postId': 1})
+    manager.add_request(
+        "GET", "https://jsonplaceholder.typicode.com/posts", params={"userId": 1}
+    )
+    manager.add_request(
+        "GET", "https://jsonplaceholder.typicode.com/comments", params={"postId": 1}
+    )
 
     # Stop the thread after some time
     QTimer.singleShot(5000, manager.stop)
