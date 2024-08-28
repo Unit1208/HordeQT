@@ -5,15 +5,16 @@
 - [ ] Gallery View
   - [Artbot's image view](https://tinybots.net/artbot/images) is called a *Masonry* Layout
 - [ ] Model Download
-- [ ] Queued items view
+- [x] Queued items view
 - [x] User Info
 - [x] Persistent Storage of settings
 - [ ] About Page
 - [ ] Toggle for Shared images
 - [x] Handle Max jobs, get user concurrency for max
-- [ ] Evict Jobs from statis after some time
+- [ ] Evict Jobs from status after some time
 - [x] Cache models, esp. from GH as it's larger and less likely to change
 - [ ] [QPixmap doesn't support displaying WEBPs](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPixmap.html#reading-and-writing-image-files), need to convert them before displaying them.
 - [ ] Allow the user to control the saved format of images after conversion. (Horde always(?) uses WEBP)
 - [ ] Save generation info into metadata
 - [x] Button to open locally saved data folder
+- [ ] Multiple Images (e.g. for loop on addjob)
