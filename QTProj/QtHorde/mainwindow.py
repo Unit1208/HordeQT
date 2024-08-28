@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 import datetime as dt
+import re
 import uuid
 import human_readable as hr
 from pathlib import Path
@@ -35,7 +36,7 @@ from PySide6.QtCore import (
     QRect,
     Qt,
     QUrl,
-    QByteArray,
+
 )
 from PySide6.QtGui import QPixmap, QDesktopServices
 
@@ -66,6 +67,35 @@ def get_headers(api_key: str):
         "accept": "application/json",
         "Content-Type": "application/json",
     }
+# fails with nested brackets, but that shouldn't be an issue?
+# Writing this out, {{1|2}|{3|4}} would evalutate to {1|2|3|4}, and I doubt that anyone would try that. If they do, I'll fix it. Maybe.
+
+def prompt_matrix(prompt: str) -> List[str]:
+    matched_matrix = re.finditer(r"\{.+?\}", prompt, re.M)
+    
+    def generate_prompts(current_prompt: str, matches: List[str]) -> List[str]:
+        if not matches:
+            return [current_prompt]
+        
+        matched = matches[0]
+        remaining_matches = matches[1:]
+        
+        # Strip brackets and split by '|'
+        options = matched[1:-1].split("|")
+        
+        # Recursively generate all combinations
+        generated_prompts = []
+        for option in options:
+            new_prompt = current_prompt.replace(matched, option, 1)
+            generated_prompts.extend(generate_prompts(new_prompt, remaining_matches))
+        
+        return generated_prompts
+    
+    matches = [match.group() for match in matched_matrix]
+    result_prompts = generate_prompts(prompt, matches)
+    
+    # If no valid combinations were generated, return the original prompt
+    return result_prompts if result_prompts else [prompt]
 
 
 class ImageWidget(QLabel):
@@ -950,13 +980,24 @@ class MainWindow(QMainWindow):
         self.ui.showAPIKey.setText("Show API Key")
         self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Password)
 
-    def create_job(self):
+    def create_jobs(self)->Optional[List[Job]]:
         prompt = self.ui.PromptBox.toPlainText()
         if prompt.strip() == "":
             self.show_error("Prompt can not be empty")
             return None
         np = self.ui.NegativePromptBox.toPlainText()
         if np.strip() != "":
+            """
+            NOTE: the subsequent call to prompt matrix could do some *really* dumb stuff with this current implementation. 
+            Along the lines of:
+            
+            Prompt: This is a {test|
+            Negative Prompt: negative test}
+            new prompt: This is a {test| ### negative test} 
+            
+            prompt matrix: [This is a test, this is a  ### negative test]
+            *To be fair*, you'd either be an idiot or know exactly what you're doing to try this.
+            """
             prompt = prompt + " ### " + np
 
         sampler_name = self.ui.samplerComboBox.currentText()
@@ -973,22 +1014,27 @@ class MainWindow(QMainWindow):
         hires_fix = True
         allow_nsfw = self.ui.NSFWCheckBox.isChecked()
         share_image = self.ui.shareImagesCheckBox.isChecked()
-        job = Job(
-            prompt,
-            sampler_name,
-            cfg_scale,
-            seed,
-            width,
-            height,
-            clip_skip,
-            steps,
-            model,
-            karras,
-            hires_fix,
-            allow_nsfw,
-            share_image,
-        )
-        return job
+        prompts=prompt_matrix(prompt)
+        prompts*=self.ui.imagesSpinBox.value()
+        jobs=[]
+        for nprompt in prompts:
+            job = Job(
+                nprompt,
+                sampler_name,
+                cfg_scale,
+                seed,
+                width,
+                height,
+                clip_skip,
+                steps,
+                model,
+                karras,
+                hires_fix,
+                allow_nsfw,
+                share_image,
+            )
+            jobs.append(job)
+        return jobs
 
     def construct_model_dict(self, mod):
         self.ui.modelComboBox.clear()
@@ -1033,11 +1079,10 @@ class MainWindow(QMainWindow):
 
     def on_generate_click(self):
         # self.show_info("Generate was clicked!")
-        job = self.create_job()
-        if job is not None:
-            print(json.dumps(self.create_job().to_json()))
-            self.api_thread.add_job(job)
-
+        jobs = self.create_jobs()
+        if jobs is not None:
+            for n in range(len(jobs)):
+                self.api_thread.add_job(jobs[n])
     def save_api_key(self):
         self.hide_api_key()
         self.api_key = self.ui.apiKeyEntry.text()

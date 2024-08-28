@@ -16,6 +16,8 @@
 - [ ] [QPixmap doesn't support displaying WEBPs](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPixmap.html#reading-and-writing-image-files), need to convert them before displaying them.
 - [ ] Allow the user to control the saved format of images after conversion. (Horde always(?) uses WEBP)
 - [ ] Save generation info into metadata
+- [ ] Save open tab on close
+- [ ] Toast on image created
 - [x] Button to open locally saved data folder
 - [ ] Multiple Images (e.g. for loop on addjob)
   - [ ] Prompt Matrices
