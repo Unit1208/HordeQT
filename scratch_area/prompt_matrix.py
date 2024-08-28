@@ -3,12 +3,6 @@ import uuid
 import re
 import re
 
-tests = """A green bus
-A {purple|orange} boat
-A {red|blue} {bicycle|car}
-A {scarlet|cerulean} {bus|cart|train}
-A {very|incredibly|stupidly} {long|girthy|deep} {negative prompt|neg prompt|pos prompt}"""
-test_cases = tests.split("\n")
 
 ## Logic adapted from Artbot's implementation
 
@@ -49,6 +43,14 @@ def prompt_matrix(prompt: str):
     return newer_prompts_array
 
 
-for test in test_cases:
-    print(f'TESTING "{test}"')
-    print("RESULT: " + str(prompt_matrix(test)))
+if __name__ == "__main__":
+
+    tests = """A green bus
+    A {purple|orange} boat
+    A {red|blue} {bicycle|car}
+    A {scarlet|cerulean} {bus|cart|train}
+    A {very|incredibly|stupidly} {long|girthy|deep} {negative prompt|neg prompt|pos prompt}"""
+    test_cases = tests.split("\n")
+    for test in test_cases:
+        print(f'TESTING "{test}"')
+        print("RESULT: " + str(prompt_matrix(test)))
