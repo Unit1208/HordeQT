@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QTableWidgetItem,
     QVBoxLayout,
+    QHBoxLayout,
     QPushButton,
 )
 from PySide6.QtCore import (
@@ -112,14 +113,20 @@ class ImagePopup(QDockWidget):
         copy_all = QPushButton("Copy All")
         show_details = QPushButton("Show Details")
 
-        # Create a layout and add widgets
+        # Create horizontal layouts for button pairs
+        copy_layout = QHBoxLayout()
+        copy_layout.addWidget(copy_prompt)
+        copy_layout.addWidget(copy_all)
+
+        use_layout = QHBoxLayout()
+        use_layout.addWidget(use_prompt)
+        use_layout.addWidget(use_all)
+
+        # Create a main vertical layout and add widgets
         layout = QVBoxLayout()
         layout.addWidget(self.label)
-
-        layout.addWidget(copy_prompt)
-        layout.addWidget(copy_all)
-        layout.addWidget(use_prompt)
-        layout.addWidget(use_all)
+        layout.addLayout(copy_layout)
+        layout.addLayout(use_layout)
         layout.addWidget(show_details)
 
         # Create a central widget to set the layout
