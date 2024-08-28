@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QLayout,
     QSizePolicy,
     QLabel,
-    QVBoxLayout,
+    QDockWidget,
     QScrollArea,
     QTableWidgetItem,
 )
@@ -66,6 +66,8 @@ def get_headers(api_key: str):
 
 
 class ImageWidget(QLabel):
+    imageClicked = Signal(QPixmap)
+
     def __init__(self, image_path):
         super().__init__()
         self.original_pixmap = QPixmap(image_path)
@@ -83,6 +85,26 @@ class ImageWidget(QLabel):
                 self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
             self.setPixmap(scaled_pixmap)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.imageClicked.emit(self.original_pixmap)
+        super().mouseReleaseEvent(event)
+
+
+class ImagePopup(QDockWidget):
+    def __init__(self, pixmap, parent=None):
+        super().__init__("Image Viewer", parent)
+        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+
+        label = QLabel(self)
+        label.setPixmap(pixmap)
+        label.setAlignment(Qt.AlignCenter)
+        label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        self.setWidget(label)
+        self.setFloating(True)
+        self.resize(400, 400)  # Adjust the size of the popup window
 
 
 class MasonryLayout(QLayout):
@@ -713,6 +735,7 @@ class MainWindow(QMainWindow):
         self.download_thread: DownloadThread = DownloadThread.deserialize(
             self.savedData.current_images
         )
+        self.download_thread.completed.connect(self.on_image_fully_downloaded)
         self.api_thread.job_completed.connect(self.on_job_completed)
         self.api_thread.updated.connect(self.update_inprogess_table)
         # Connect signals
@@ -747,7 +770,7 @@ class MainWindow(QMainWindow):
 
         for lj in self.download_thread.completed_downloads:
             print(lj.path)
-            self.gallery_layout.addImage(lj.path)
+            self.add_image_to_gallery(lj.path)
         # =MasonryGallery()
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
@@ -764,6 +787,19 @@ class MainWindow(QMainWindow):
     def show_info(self, message):
 
         QMessageBox.information(self, "Info", message)
+
+    def on_image_fully_downloaded(self, lj: LocalJob):
+        self.add_image_to_gallery(lj.path)
+
+    def add_image_to_gallery(self, image_path):
+        image_widget = ImageWidget(image_path)
+        image_widget.imageClicked.connect(self.show_image_popup)
+        self.gallery_layout.addWidget(image_widget)
+
+    def show_image_popup(self, pixmap):
+        popup = ImagePopup(pixmap, self)
+        self.addDockWidget(Qt.RightDockWidgetArea, popup)
+        popup.show()
 
     def on_fully_loaded(self):
         self.ui.GenerateButton.setEnabled(True)
