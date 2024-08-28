@@ -6,3 +6,4 @@ nuitka
 zstandard
 human-readable
 pyqt-toast-notification
+pillow
