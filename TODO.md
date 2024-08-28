@@ -18,3 +18,4 @@
 - [ ] Save generation info into metadata
 - [x] Button to open locally saved data folder
 - [ ] Multiple Images (e.g. for loop on addjob)
+  - [ ] Prompt Matrices
