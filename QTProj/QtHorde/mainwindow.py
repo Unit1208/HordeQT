@@ -24,7 +24,7 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QVBoxLayout,
     QHBoxLayout,
-    QPushButton
+    QPushButton,
 )
 from PySide6.QtCore import (
     QObject,
@@ -35,11 +35,9 @@ from PySide6.QtCore import (
     QRect,
     Qt,
     QUrl,
-    
-
 )
-from pyqttoast import Toast, ToastPreset,toast_enums
-from PySide6.QtGui import QPixmap, QDesktopServices,QFont
+from pyqttoast import Toast, ToastPreset, toast_enums
+from PySide6.QtGui import QPixmap, QDesktopServices, QFont
 
 from queue import Queue
 
@@ -69,34 +67,35 @@ def get_headers(api_key: str):
         "Content-Type": "application/json",
     }
 
+
 def prompt_matrix(prompt: str) -> List[str]:
     # fails with nested brackets, but that shouldn't be an issue?
     # Writing this out, {{1|2}|{3|4}} would evalutate to e.g [1,2,3,4], and I doubt that anyone would the former. If they do, I'll fix it. Maybe.
     # {{1|2|3|4}} should evalutate to [1,2,3,4] as well.
     matched_matrix = re.finditer(r"\{.+?\}", prompt, re.M)
-    
+
     def generate_prompts(current_prompt: str, matches: List[str]) -> List[str]:
         if not matches:
             return [current_prompt]
-        
+
         matched = matches[0]
         remaining_matches = matches[1:]
-        
+
         # Strip brackets and split by '|'
         options = matched[1:-1].split("|")
-        
+
         # Recursively generate all combinations.
         # If you hit the stack limit, that's on you, it shouldn't happen.
         generated_prompts = []
         for option in options:
             new_prompt = current_prompt.replace(matched, option, 1)
             generated_prompts.extend(generate_prompts(new_prompt, remaining_matches))
-        
+
         return generated_prompts
-    
+
     matches = [match.group() for match in matched_matrix]
     result_prompts = generate_prompts(prompt, matches)
-    
+
     # If no valid combinations were generated, return the original prompt
     return result_prompts if result_prompts else [prompt]
 
@@ -703,13 +702,14 @@ class LoadThread(QThread):
 
 class SavedData:
     api_state: dict
-    current_open_tab:int
+    current_open_tab: int
     current_images: List[dict]
     finished_jobs: list[Dict]
     job_config: dict
     max_jobs: int
     nsfw_allowed: bool
-    share_images:bool
+    share_images: bool
+
     def __init__(self) -> None:
 
         os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
@@ -722,7 +722,7 @@ class SavedData:
         dlthread: DownloadThread,
         job_config: dict,
         share_images: bool,
-        current_open_tab:int,
+        current_open_tab: int,
     ):
         self.api_state = api.serialize()
         self.current_images = dlthread.serialize()
@@ -730,7 +730,8 @@ class SavedData:
         self.nsfw_allowed = nsfw
         self.share_images = share_images
         self.job_config = job_config
-        self.current_open_tab=current_open_tab
+        self.current_open_tab = current_open_tab
+
     def write(self):
         d = {
             "api_state": self.api_state,
@@ -739,7 +740,7 @@ class SavedData:
             "current_images": self.current_images,
             "job_config": self.job_config,
             "share_images": self.share_images,
-            "current_open_tab":self.current_open_tab
+            "current_open_tab": self.current_open_tab,
         }
         # cbor2.dump ?
         jsondata = json.dumps(d)
@@ -758,8 +759,8 @@ class SavedData:
         self.nsfw_allowed = j.get("nsfw_allowed", False)
         self.share_images = j.get("share_images", True)
         self.job_config = j.get("job_config", {})
-        self.current_open_tab=j.get("current_open_tab",0)
-        
+        self.current_open_tab = j.get("current_open_tab", 0)
+
 
 class MainWindow(QMainWindow):
 
@@ -862,7 +863,7 @@ class MainWindow(QMainWindow):
             self.download_thread,
             job_config,
             self.ui.shareImagesCheckBox.isChecked(),
-            self.ui.tabWidget.currentIndex()
+            self.ui.tabWidget.currentIndex(),
         )
         self.savedData.write()
         QMainWindow.closeEvent(self, event)
@@ -979,21 +980,21 @@ class MainWindow(QMainWindow):
         self.ui.showAPIKey.setText("Show API Key")
         self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Password)
 
-    def create_jobs(self)->Optional[List[Job]]:
+    def create_jobs(self) -> Optional[List[Job]]:
         prompt = self.ui.PromptBox.toPlainText()
         if prompt.strip() == "":
-            self.show_error_toast("Prompt error","Prompt cannot be empty")
+            self.show_error_toast("Prompt error", "Prompt cannot be empty")
             return None
         np = self.ui.NegativePromptBox.toPlainText()
         if np.strip() != "":
             """
-            NOTE: the subsequent call to prompt matrix could do some *really* dumb stuff with this current implementation. 
+            NOTE: the subsequent call to prompt matrix could do some *really* dumb stuff with this current implementation.
             Along the lines of:
-            
+
             Prompt: This is a {test|
             Negative Prompt: negative test}
-            new prompt: This is a {test| ### negative test} 
-            
+            new prompt: This is a {test| ### negative test}
+
             prompt matrix: [This is a test, this is a  ### negative test]
             "###" delineates prompt from negative prompt in the horde. i.e prompt ### negative prompt
             *To be fair*, you'd either be an idiot or know exactly what you're doing to encounter this.
@@ -1009,48 +1010,66 @@ class MainWindow(QMainWindow):
         height = self.ui.heightSpinBox.value()
         clip_skip = self.ui.clipSkipSpinBox.value()
         steps = self.ui.stepsSpinBox.value()
-        model_details=self.model_dict[self.ui.modelComboBox.currentText()]
+        model_details = self.model_dict[self.ui.modelComboBox.currentText()]
         model = model_details.name
-        reqs:Optional[Dict[str,int|str]]=model_details.details.get("requirements",None)
+        reqs: Optional[Dict[str, int | str]] = model_details.details.get(
+            "requirements", None
+        )
         if reqs is not None:
             # Pony is the largest family of models to have this issue, but dreamshaperXL also has a specific configuration.
-            if reqs.get("clip_skip",None)==2:
-                if clip_skip==1:
-                    self.show_warn_toast("CLIP Skip Requirement","This model requires CLIP Skip = 2")
+            if reqs.get("clip_skip", None) == 2:
+                if clip_skip == 1:
+                    self.show_warn_toast(
+                        "CLIP Skip Requirement", "This model requires CLIP Skip = 2"
+                    )
                     self.ui.clipSkipSpinBox.setValue(2)
                     return
-            if (mins:=reqs.get("min_steps",None)) is not None:
-                if steps<mins:
-                    self.show_warn_toast("Min Steps",f"This model requires at least {mins} steps, currently {steps}")
+            if (mins := reqs.get("min_steps", None)) is not None:
+                if steps < mins:
+                    self.show_warn_toast(
+                        "Min Steps",
+                        f"This model requires at least {mins} steps, currently {steps}",
+                    )
                     self.ui.stepsSpinBox.setValue(mins)
-                    return 
-                
-            if (maxs:=reqs.get("max_steps",None)) is not None:
-                if steps>maxs:
-                    self.show_warn_toast("Max Steps",f"This model requires at most {maxs} steps, currently {steps}")
+                    return
+
+            if (maxs := reqs.get("max_steps", None)) is not None:
+                if steps > maxs:
+                    self.show_warn_toast(
+                        "Max Steps",
+                        f"This model requires at most {maxs} steps, currently {steps}",
+                    )
                     self.ui.stepsSpinBox.setValue(maxs)
                     return
-            if (cfgreq:=reqs.get("cfg_scale",None)) is not None:
-                if cfg_scale!=cfgreq:
-                    self.show_warn_toast("Min Steps",f"This model requires a CFG value of {cfgreq}, currently {cfg_scale}")
+            if (cfgreq := reqs.get("cfg_scale", None)) is not None:
+                if cfg_scale != cfgreq:
+                    self.show_warn_toast(
+                        "Min Steps",
+                        f"This model requires a CFG value of {cfgreq}, currently {cfg_scale}",
+                    )
                     self.ui.guidenceDoubleSpinBox.setValue(float(cfgreq))
                     return
-            if (rsamplers:=reqs.get("samplers",None)) is not None:
+            if (rsamplers := reqs.get("samplers", None)) is not None:
                 if sampler_name not in rsamplers:
-                    samplertext=""
+                    samplertext = ""
                     for n in rsamplers:
-                        samplertext+="\""+n+"\","
-                    samplertext=samplertext[:-1]
-                    self.show_warn_toast("Wrong Sampler", "This mode requires the use of one of "+samplertext+" samplers")
-                    self.ui.samplerComboBox=rsamplers[0]
+                        samplertext += '"' + n + '",'
+                    samplertext = samplertext[:-1]
+                    self.show_warn_toast(
+                        "Wrong Sampler",
+                        "This mode requires the use of one of "
+                        + samplertext
+                        + " samplers",
+                    )
+                    self.ui.samplerComboBox = rsamplers[0]
                     return
         karras = True
         hires_fix = True
         allow_nsfw = self.ui.NSFWCheckBox.isChecked()
         share_image = self.ui.shareImagesCheckBox.isChecked()
-        prompts=prompt_matrix(prompt)
-        prompts*=self.ui.imagesSpinBox.value()
-        jobs=[]
+        prompts = prompt_matrix(prompt)
+        prompts *= self.ui.imagesSpinBox.value()
+        jobs = []
         for nprompt in prompts:
             job = Job(
                 nprompt,
@@ -1117,7 +1136,8 @@ class MainWindow(QMainWindow):
             for n in range(len(jobs)):
                 self.api_thread.add_job(jobs[n])
                 # print(jobs[n])
-            self.show_success_toast("Created!","Jobs were created and put into queue")
+            self.show_success_toast("Created!", "Jobs were created and put into queue")
+
     def save_api_key(self):
         self.hide_api_key()
         self.api_key = self.ui.apiKeyEntry.text()
@@ -1128,34 +1148,55 @@ class MainWindow(QMainWindow):
     def copy_api_key(self):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
         self.clipboard.setText(self.api_key)
-    def show_success_toast(self,title,message,duration=5000):
-        success_toast=Toast(self)
+
+    def show_success_toast(self, title, message, duration=5000):
+        success_toast = Toast(self)
         success_toast.setDuration(duration)
         success_toast.setTitle(title)
         success_toast.setText(message)
-        success_toast.applyPreset(ToastPreset.SUCCESS if app.styleHints()==Qt.ColorScheme.Light else ToastPreset.SUCCESS_DARK)
+        success_toast.applyPreset(
+            ToastPreset.SUCCESS
+            if app.styleHints() == Qt.ColorScheme.Light
+            else ToastPreset.SUCCESS_DARK
+        )
         success_toast.show()
-    def show_info_toast(self,title,message,duration=5000):
-        info_toast=Toast(self)
+
+    def show_info_toast(self, title, message, duration=5000):
+        info_toast = Toast(self)
         info_toast.setDuration(duration)
         info_toast.setTitle(title)
         info_toast.setText(message)
-        info_toast.applyPreset(ToastPreset.INFORMATION if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.INFORMATION_DARK)
+        info_toast.applyPreset(
+            ToastPreset.INFORMATION
+            if app.styleHints() == Qt.ColorScheme.Light
+            else ToastPreset.INFORMATION_DARK
+        )
         info_toast.show()
-    def show_error_toast(self,title,message,duration=5000):
-        error_toast=Toast(self)
+
+    def show_error_toast(self, title, message, duration=5000):
+        error_toast = Toast(self)
         error_toast.setDuration(duration)
         error_toast.setTitle(title)
         error_toast.setText(message)
-        error_toast.applyPreset(ToastPreset.ERROR if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.ERROR_DARK)
+        error_toast.applyPreset(
+            ToastPreset.ERROR
+            if app.styleHints() == Qt.ColorScheme.Light
+            else ToastPreset.ERROR_DARK
+        )
         error_toast.show()
-    def show_warn_toast(self,title,message,duration=5000):
-        warn_toast=Toast(self)
+
+    def show_warn_toast(self, title, message, duration=5000):
+        warn_toast = Toast(self)
         warn_toast.setDuration(duration)
         warn_toast.setTitle(title)
         warn_toast.setText(message)
-        warn_toast.applyPreset(ToastPreset.WARNING if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.WARNING_DARK)
+        warn_toast.applyPreset(
+            ToastPreset.WARNING
+            if app.styleHints() == Qt.ColorScheme.Light
+            else ToastPreset.WARNING_DARK
+        )
         warn_toast.show()
+
     def update_row(self, row, id: str, status: str, prompt: str, model: str, eta: int):
         # ID, STATUS, PROMPT, MODEL, ETA
         table = self.ui.inProgressItemsTable
@@ -1175,14 +1216,18 @@ class MainWindow(QMainWindow):
             ]
         ):
             item = table.item(row, col)
-                
+
             if item is None:
                 item = QTableWidgetItem()
                 table.setItem(row, col, item)
-            if item==id:
+            if item == id:
                 font = QFont()
-                font.setStyleHint(QFont.StyleHint.Monospace)  # Set the style hint to Monospace
-                font.setFamily("Monospace")         # This ensures a fallback to a common monospace font
+                font.setStyleHint(
+                    QFont.StyleHint.Monospace
+                )  # Set the style hint to Monospace
+                font.setFamily(
+                    "Monospace"
+                )  # This ensures a fallback to a common monospace font
                 item.setFont(font)
             item.setText(value)
 
