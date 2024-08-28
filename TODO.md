@@ -17,7 +17,7 @@
 - [ ] Allow the user to control the saved format of images after conversion. (Horde always(?) uses WEBP)
 - [ ] Save generation info into metadata
 - [x] Save open tab on close
-- [ ] Toast on image created
+- [x] Toast on image created
 - [x] Button to open locally saved data folder
 - [x] Multiple Images (e.g. for loop on addjob)
   - [x] Prompt Matrices

@@ -997,7 +997,7 @@ class MainWindow(QMainWindow):
 
             prompt matrix: [This is a test, this is a  ### negative test]
             "###" delineates prompt from negative prompt in the horde. i.e prompt ### negative prompt
-            *To be fair*, you'd either be an idiot or know exactly what you're doing to encounter this.
+            *To be fair*, you'd either be an idiot or know exactly what you're doing to encounter this. -\_o_/-
             """
             prompt = prompt + " ### " + np
         sampler_name = self.ui.samplerComboBox.currentText()
@@ -1005,6 +1005,7 @@ class MainWindow(QMainWindow):
 
         seed = self.ui.seedSpinBox.value()
         if seed == 0:
+            # technically, seed is a string. But it makes it easier to just deal with ints.
             seed = random.randint(0, 2**31 - 1)
         width = self.ui.widthSpinBox.value()
         height = self.ui.heightSpinBox.value()
