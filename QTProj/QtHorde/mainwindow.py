@@ -752,7 +752,12 @@ class MainWindow(QMainWindow):
             lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
         )
         self.ui.progressBar.setValue(0)
+        self.gallery = MasonryGallery()
+        self.ui.galleryView.addWidget(self.gallery)
+        for lj in self.download_thread.completed_downloads:
 
+            self.gallery.addImage(lj.path)
+        # =MasonryGallery()
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
@@ -1003,7 +1008,11 @@ class MainWindow(QMainWindow):
                 status,
                 prompt,
                 model,
-                hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta)),
+                (
+                    "Done"
+                    if eta == -1
+                    else hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta))
+                ),
             ]
         ):
             item = table.item(row, col)
@@ -1018,14 +1027,9 @@ class MainWindow(QMainWindow):
         table = self.ui.inProgressItemsTable
         table.setUpdatesEnabled(True)
         current_jobs = self.api_thread.current_requests
-        print("Updating in progress table")
-        print(current_jobs)
         for job_id in current_jobs.keys():
-            print(job_id)
             job = current_jobs[job_id]
-            print(job)
             r = table.findItems(job_id, Qt.MatchFlag.MatchFixedString)
-            print(r)
             if len(r) == 0:
                 if table.columnCount() == 0:
                     table.setColumnCount(5)  # Set the number of columns
@@ -1041,6 +1045,24 @@ class MainWindow(QMainWindow):
                 job.prompt[: min(len(job.prompt), 50)],
                 job.model,
                 job.wait_time,
+            )
+        for lj in self.download_thread.completed_downloads:
+            r = table.findItems(lj.id, Qt.MatchFlag.MatchFixedString)
+            if len(r) == 0:
+                if table.columnCount() == 0:
+                    table.setColumnCount(5)  # Set the number of columns
+                row = table.rowCount()
+                table.insertRow(row)
+            else:
+                row = r[0].row()
+
+            self.update_row(
+                row,
+                job_id,
+                "Done",
+                lj.original.prompt[: min(len(job.prompt), 50)],
+                lj.original.model,
+                -1,
             )
 
 

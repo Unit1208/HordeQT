@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>792</width>
-    <height>879</height>
+    <width>1000</width>
+    <height>1200</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -53,8 +53,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>771</width>
-          <height>751</height>
+          <width>961</width>
+          <height>1081</height>
          </rect>
         </property>
         <widget class="QWidget" name="gridLayoutWidget">
@@ -62,8 +62,8 @@
           <rect>
            <x>10</x>
            <y>9</y>
-           <width>751</width>
-           <height>661</height>
+           <width>951</width>
+           <height>731</height>
           </rect>
          </property>
          <layout class="QFormLayout" name="createLayout">
@@ -471,9 +471,9 @@
        <widget class="QWidget" name="horizontalLayoutWidget">
         <property name="geometry">
          <rect>
-          <x>20</x>
-          <y>769</y>
-          <width>721</width>
+          <x>10</x>
+          <y>1090</y>
+          <width>951</width>
           <height>41</height>
          </rect>
         </property>
@@ -518,9 +518,15 @@
           <rect>
            <x>0</x>
            <y>0</y>
-           <width>751</width>
-           <height>771</height>
+           <width>951</width>
+           <height>1091</height>
           </rect>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
          <column>
           <property name="text">
@@ -570,6 +576,17 @@
        <attribute name="title">
         <string>Gallery</string>
        </attribute>
+       <widget class="QWidget" name="gridLayoutWidget_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>2</width>
+          <height>2</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="galleryView"/>
+       </widget>
       </widget>
       <widget class="QWidget" name="settings_tab">
        <attribute name="icon">
@@ -583,8 +600,8 @@
          <rect>
           <x>0</x>
           <y>10</y>
-          <width>761</width>
-          <height>140</height>
+          <width>971</width>
+          <height>141</height>
          </rect>
         </property>
         <layout class="QFormLayout" name="formLayout_3">
@@ -731,10 +748,10 @@
        <widget class="QWidget" name="formLayoutWidget_2">
         <property name="geometry">
          <rect>
-          <x>-1</x>
+          <x>9</x>
           <y>9</y>
-          <width>771</width>
-          <height>801</height>
+          <width>961</width>
+          <height>1111</height>
          </rect>
         </property>
         <layout class="QFormLayout" name="formLayout_2">
@@ -1411,7 +1428,7 @@
          <rect>
           <x>0</x>
           <y>10</y>
-          <width>771</width>
+          <width>971</width>
           <height>801</height>
          </rect>
         </property>
@@ -1434,21 +1451,7 @@
           <height>691</height>
          </rect>
         </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Orientation::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-        </layout>
+        <layout class="QVBoxLayout" name="verticalLayout"/>
        </widget>
       </widget>
      </widget>
@@ -1460,7 +1463,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>792</width>
+     <width>1000</width>
      <height>21</height>
     </rect>
    </property>

@@ -295,7 +295,7 @@ class Ui_MainWindow(object):
         __qtablewidgetitem4 = QTableWidgetItem()
         self.inProgressItemsTable.setHorizontalHeaderItem(4, __qtablewidgetitem4)
         self.inProgressItemsTable.setObjectName(u"inProgressItemsTable")
-        self.inProgressItemsTable.setGeometry(QRect(0, 0, 771, 771))
+        self.inProgressItemsTable.setGeometry(QRect(0, 0, 751, 771))
         self.label_4 = QLabel(self.curr_items_tab)
         self.label_4.setObjectName(u"label_4")
         self.label_4.setGeometry(QRect(10, 10, 211, 16))
@@ -303,6 +303,12 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.curr_items_tab, icon3, "")
         self.gallery_tab = QWidget()
         self.gallery_tab.setObjectName(u"gallery_tab")
+        self.gridLayoutWidget_2 = QWidget(self.gallery_tab)
+        self.gridLayoutWidget_2.setObjectName(u"gridLayoutWidget_2")
+        self.gridLayoutWidget_2.setGeometry(QRect(9, 9, 751, 791))
+        self.galleryView = QGridLayout(self.gridLayoutWidget_2)
+        self.galleryView.setObjectName(u"galleryView")
+        self.galleryView.setContentsMargins(0, 0, 0, 0)
         icon4 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentPrintPreview))
         self.tabWidget.addTab(self.gallery_tab, icon4, "")
         self.settings_tab = QWidget()
@@ -840,7 +846,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(2)
         self.modelComboBox.setCurrentIndex(0)
 
 
