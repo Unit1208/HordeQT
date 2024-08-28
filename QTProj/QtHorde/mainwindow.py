@@ -68,10 +68,11 @@ def get_headers(api_key: str):
         "accept": "application/json",
         "Content-Type": "application/json",
     }
-# fails with nested brackets, but that shouldn't be an issue?
-# Writing this out, {{1|2}|{3|4}} would evalutate to {1|2|3|4}, and I doubt that anyone would try that. If they do, I'll fix it. Maybe.
 
 def prompt_matrix(prompt: str) -> List[str]:
+    # fails with nested brackets, but that shouldn't be an issue?
+    # Writing this out, {{1|2}|{3|4}} would evalutate to e.g [1,2,3,4], and I doubt that anyone would the former. If they do, I'll fix it. Maybe.
+    # {{1|2|3|4}} should evalutate to [1,2,3,4] as well.
     matched_matrix = re.finditer(r"\{.+?\}", prompt, re.M)
     
     def generate_prompts(current_prompt: str, matches: List[str]) -> List[str]:
@@ -84,7 +85,8 @@ def prompt_matrix(prompt: str) -> List[str]:
         # Strip brackets and split by '|'
         options = matched[1:-1].split("|")
         
-        # Recursively generate all combinations
+        # Recursively generate all combinations.
+        # If you hit the stack limit, that's on you, it shouldn't happen.
         generated_prompts = []
         for option in options:
             new_prompt = current_prompt.replace(matched, option, 1)
@@ -1028,12 +1030,13 @@ class MainWindow(QMainWindow):
             new prompt: This is a {test| ### negative test} 
             
             prompt matrix: [This is a test, this is a  ### negative test]
-            *To be fair*, you'd either be an idiot or know exactly what you're doing to try this.
+            "###" delineates prompt from negative prompt in the horde. i.e prompt ### negative prompt
+            *To be fair*, you'd either be an idiot or know exactly what you're doing to encounter this.
             """
             prompt = prompt + " ### " + np
-
         sampler_name = self.ui.samplerComboBox.currentText()
         cfg_scale = self.ui.guidenceDoubleSpinBox.value()
+
         seed = self.ui.seedSpinBox.value()
         if seed == 0:
             seed = random.randint(0, 2**31 - 1)
@@ -1041,7 +1044,37 @@ class MainWindow(QMainWindow):
         height = self.ui.heightSpinBox.value()
         clip_skip = self.ui.clipSkipSpinBox.value()
         steps = self.ui.stepsSpinBox.value()
-        model = self.model_dict[self.ui.modelComboBox.currentText()].name
+        model_details=self.model_dict[self.ui.modelComboBox.currentText()]
+        model = model_details.name
+        reqs:Optional[Dict[str,int|str]]=model_details.details.get("requirements",None)
+        if reqs is not None:
+            # Pony is the largest family of models to have this issue, but dreamshaperXL also has a specific configuration.
+            if reqs.get("clip_skip",None)==2:
+                if clip_skip==1:
+                    self.show_warn_toast("CLIP Skip Requirement","This model requires CLIP Skip = 2")
+                    self.ui.clipSkipSpinBox.setValue(2)
+                    return
+            if (mins:=reqs.get("min_steps",None)) is not None:
+                if steps<mins:
+                    self.show_warn_toast("Min Steps",f"This model requires at least {mins} steps, currently {steps}")
+                    self.ui.stepsSpinBox.setValue(mins)
+                    return 
+                
+            if (maxs:=reqs.get("max_steps",None)) is not None:
+                if steps>maxs:
+                    self.show_warn_toast("Max Steps",f"This model requires at most {maxs} steps, currently {steps}")
+                    self.ui.stepsSpinBox.setValue(maxs)
+            if (cfgreq:=reqs.get("cfg_scale",None)) is not None:
+                if cfg_scale!=cfgreq:
+                    self.show_warn_toast("Min Steps",f"This model requires a CFG value of {cfgreq} steps, currently {cfg_scale}")
+                    self.ui.guidenceDoubleSpinBox.setValue(float(cfgreq))
+            if (rsamplers:=reqs.get("samplers",None)) is not None:
+                if sampler_name not in rsamplers:
+                    samplertext=""
+                    for n in rsamplers:
+                        samplertext+="\""+n+"\","
+                    samplertext=samplertext[:-1]
+                    self.show_warn_toast("Wrong Sampler", "This mode requires the use of one of "+samplertext+" samplers")
         karras = True
         hires_fix = True
         allow_nsfw = self.ui.NSFWCheckBox.isChecked()
