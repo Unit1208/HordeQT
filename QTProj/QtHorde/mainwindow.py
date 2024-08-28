@@ -22,6 +22,8 @@ from PySide6.QtWidgets import (
     QDockWidget,
     QScrollArea,
     QTableWidgetItem,
+    QVBoxLayout,
+    QPushButton,
 )
 from PySide6.QtCore import (
     QObject,
@@ -97,12 +99,36 @@ class ImagePopup(QDockWidget):
         super().__init__("Image Viewer", parent)
         self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
 
-        label = QLabel(self)
-        label.setPixmap(pixmap)
-        label.setAlignment(Qt.AlignCenter)
-        label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # Create a label to display the image
+        self.label = QLabel(self)
+        self.label.setPixmap(pixmap)
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self.setWidget(label)
+        # Create buttons
+        use_prompt = QPushButton("Use Prompt")
+        use_all = QPushButton("Use All")
+        copy_prompt = QPushButton("Copy Prompt")
+        copy_all = QPushButton("Copy All")
+        show_details = QPushButton("Show Details")
+
+        # Create a layout and add widgets
+        layout = QVBoxLayout()
+        layout.addWidget(self.label)
+
+        layout.addWidget(copy_prompt)
+        layout.addWidget(copy_all)
+        layout.addWidget(use_prompt)
+        layout.addWidget(use_all)
+        layout.addWidget(show_details)
+
+        # Create a central widget to set the layout
+        widget = QWidget()
+        widget.setLayout(layout)
+
+        # Set the widget for the QDockWidget
+        self.setWidget(widget)
+
         self.setFloating(True)
         self.resize(400, 400)  # Adjust the size of the popup window
 
