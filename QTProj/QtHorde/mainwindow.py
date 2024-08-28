@@ -1,5 +1,7 @@
 # This Python file uses the following encoding: utf-8
-import datetime
+import datetime as dt
+import uuid
+import human_readable as hr
 from pathlib import Path
 import json
 import os
@@ -19,6 +21,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QVBoxLayout,
     QScrollArea,
+    QTableWidgetItem,
 )
 from PySide6.QtCore import (
     QObject,
@@ -47,6 +50,10 @@ import requests
 
 ANON_API_KEY = "0000000000"
 BASE_URL = "https://aihorde.net/api/v2/"
+
+
+def create_uuid():
+    return str(uuid.uuid4())
 
 
 def get_headers(api_key: str):
@@ -195,7 +202,7 @@ class Job:
         karras: bool = True,
         hires_fix: bool = True,
         allow_nsfw: bool = False,
-        job_id: Optional[str] = None,
+        horde_job_id: Optional[str] = None,
         wait_time: float = 0,
         queue_position: float = 0,
         done: bool = False,
@@ -216,7 +223,8 @@ class Job:
         self.allow_nsfw = allow_nsfw
 
         # Status-related attributes
-        self.job_id = job_id
+        self.job_id = create_uuid()
+        self.horde_job_id = horde_job_id
         self.wait_time = wait_time
         self.queue_position = queue_position
         self.done = done
@@ -251,6 +259,9 @@ class Job:
             "replacement_filter": True,
         }
 
+    def __str__(self) -> str:
+        return json.dumps({"ser": self.serialize(), "tj": self.to_json()})
+
     @classmethod
     def from_json(cls, data: Dict) -> Self:
         prompt = data.get("prompt")
@@ -276,10 +287,12 @@ class Job:
         b["faulted"] = self.faulted
         b["kudos"] = self.kudos
         b["id"] = self.job_id
+        b["horde_job_id"] = self.horde_job_id
         b["queue_position"] = self.queue_position
         b["wait_time"] = self.wait_time
         b["mod_time"] = self.mod_time
         b["creation_time"] = self.creation_time
+        return b
 
     @classmethod
     def deserialize(cls, value: Dict) -> Self:
@@ -287,7 +300,8 @@ class Job:
         v.done = value.get("done", False)
         v.faulted = value.get("faulted", False)
         v.kudos = value.get("kudos", 0)
-        v.job_id = value.get("id")
+        v.job_id = value.get("id", create_uuid())
+        v.horde_job_id = value.get("horde_job_id")
         v.queue_position = value.get("queue_position", 0)
         v.wait_time = value.get("wait_time", 0)
         v.mod_time = time.time()
@@ -332,6 +346,7 @@ class LocalJob:
 
 class APIManagerThread(QThread):
     job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
+    updated = Signal()
 
     def __init__(self, api_key: str, max_requests: int, parent=None):
         super().__init__(parent)
@@ -353,6 +368,7 @@ class APIManagerThread(QThread):
     def run(self):
         while self.running:
             self.handle_queue()
+            self.updated.emit()
             time.sleep(1)  # Sleep for a short time to avoid high CPU usage
 
     def serialize(self):
@@ -384,7 +400,7 @@ class APIManagerThread(QThread):
             instance.job_queue.put(Job.deserialize(item))
 
         instance.completed_jobs = [
-            Job.deserialize(item) for item in data.get("completed_jobs", {})
+            Job.deserialize(item) for item in data.get("completed_jobs", [])
         ]
 
         instance.errored_jobs = [
@@ -414,10 +430,10 @@ class APIManagerThread(QThread):
                         headers=get_headers(self.api_key),
                     )
                     response.raise_for_status()
-                    job_id = response.json().get("id")
-                    job.job_id = job_id
-                    self.current_requests[job_id] = job
-                    print("Job now has uuid: " + job.job_id)
+                    horde_job_id = response.json().get("id")
+                    job.horde_job_id = horde_job_id
+                    self.current_requests[job.job_id] = job
+                    print(f"Job {job.job_id} now has horde uuid: " + job.horde_job_id)
                     self.last_async_time = time.time()
                     self.async_requests += 1
                 except requests.RequestException as e:
@@ -440,7 +456,7 @@ class APIManagerThread(QThread):
             try:
                 # print("checking job "+job_id)
 
-                response = requests.get(BASE_URL + f"generate/check/{job_id}")
+                response = requests.get(BASE_URL + f"generate/check/{job.horde_job_id}")
                 response.raise_for_status()
                 job.update_status(response.json())
                 if job.done:
@@ -453,8 +469,6 @@ class APIManagerThread(QThread):
 
         for job_id in to_remove:
             del self.current_requests[job_id]
-            # del self.current_requests[job_id]
-            self.current_requests.pop(job_id)
 
     def _get_download_paths(self):
         njobs = []
@@ -463,7 +477,7 @@ class APIManagerThread(QThread):
 
                 lj = LocalJob(job)
 
-                r = requests.get(BASE_URL + f"generate/status/{job.job_id}")
+                r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
                 r.raise_for_status()
                 rj = r.json()
                 lj.downloadURL = rj["generations"][0]["img"]
@@ -583,7 +597,6 @@ class LoadThread(QThread):
             requests.get(BASE_URL + "find_user", headers=get_headers(self.api_key))
         )
         self.progress.emit(50)
-        # QSaveFile("model_ref.json").
         p = Path(
             QStandardPaths.writableLocation(
                 QStandardPaths.StandardLocation.CacheLocation
@@ -717,7 +730,7 @@ class MainWindow(QMainWindow):
             self.savedData.current_images
         )
         self.api_thread.job_completed.connect(self.on_job_completed)
-
+        self.api_thread.updated.connect(self.update_inprogess_table)
         # Connect signals
         self.loading_thread.progress.connect(self.update_progress)
         self.loading_thread.model_info.connect(self.construct_model_dict)
@@ -737,10 +750,10 @@ class MainWindow(QMainWindow):
             lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
         )
         self.ui.progressBar.setValue(0)
+
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
-
     def show_error(self, message):
 
         QMessageBox.critical(self, "Error", message)
@@ -836,8 +849,8 @@ class MainWindow(QMainWindow):
         self.ui.accountAgeLineEdit.setText(str(j["account_age"]) + " seconds")
         self.ui.accountCreatedLineEdit.setText(
             (
-                datetime.datetime.fromtimestamp(time.time())
-                - datetime.timedelta(seconds=j["account_age"])
+                dt.datetime.fromtimestamp(time.time())
+                - dt.timedelta(seconds=j["account_age"])
             ).isoformat()
         )
         records = j["records"]
@@ -975,6 +988,53 @@ class MainWindow(QMainWindow):
     def copy_api_key(self):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
         self.clipboard.setText(self.api_key)
+
+    def update_row(self, row, id: str, status: str, prompt: str, model: str, eta: int):
+        # ID, STATUS, PROMPT, MODEL, ETA
+        table = self.ui.inProgressItemsTable
+        table.setSortingEnabled(False)
+        table.itemAt(1, row).setText(id)
+        table.itemAt(2, row).setText(status)
+        table.itemAt(3, row).setText(prompt)
+        table.itemAt(4, row).setText(model)
+        table.itemAt(5, row).setText(
+            hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta))
+        )
+
+        table.setSortingEnabled(True)
+
+    def update_inprogess_table(self):
+        table = self.ui.inProgressItemsTable
+        table.setUpdatesEnabled(True)
+        current_jobs = self.api_thread.current_requests
+        print("Updating in progress table")
+        print(current_jobs)
+        for job_id in current_jobs.keys():
+            print(job_id)
+            job = current_jobs[job_id]
+            print(job)
+            r = table.findItems(job_id, Qt.MatchFlag.MatchFixedString)
+            print(r)
+            if len(r) == 0:
+                if table.columnCount()==0:
+                    for n in range(5):
+                        table.insertColumn(n)
+                row = table.rowCount()
+                table.insertRow(row)
+                # table.ad(row)
+            else:
+                row = r[0].row()
+
+            self.update_row(
+                row,
+                job_id,
+                "In Progress",
+                job.prompt[: min(len(job.prompt), 50)],
+                job.model,
+                job.wait_time,
+            )
+
+        # table.findItems()
 
 
 if __name__ == "__main__":

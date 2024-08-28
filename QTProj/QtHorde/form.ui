@@ -27,7 +27,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -513,7 +513,7 @@
         <property name="title">
          <string/>
         </property>
-        <widget class="QTableWidget" name="tableWidget">
+        <widget class="QTableWidget" name="inProgressItemsTable">
          <property name="geometry">
           <rect>
            <x>0</x>
@@ -522,11 +522,6 @@
            <height>771</height>
           </rect>
          </property>
-         <row>
-          <property name="text">
-           <string>Example 1</string>
-          </property>
-         </row>
          <column>
           <property name="text">
            <string>ID</string>

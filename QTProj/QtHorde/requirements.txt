@@ -4,3 +4,4 @@ requests
 black
 nuitka
 zstandard
+human-readable
