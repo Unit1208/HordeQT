@@ -534,6 +534,7 @@ class DownloadThread(QThread):
                 with open(lj.path, "wb") as f:
                     f.write(requests.get(lj.downloadURL).content)
                 self.completed.emit(lj)
+                self.completed_downloads.append(lj)
             time.sleep(1)
 
     def serialize(self):
@@ -625,7 +626,6 @@ class LoadThread(QThread):
         self.model_info.emit(j)
         self.progress.emit(100)
 
-
 class SavedData:
     api_state: dict
     current_images: List[dict]
@@ -634,7 +634,7 @@ class SavedData:
     window_geometry: QByteArray
     window_state: QByteArray
     job_config: dict
-
+    finished_jobs:list[Dict]
     def __init__(self) -> None:
 
         os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
@@ -988,18 +988,17 @@ class MainWindow(QMainWindow):
     def copy_api_key(self):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
         self.clipboard.setText(self.api_key)
-
     def update_row(self, row, id: str, status: str, prompt: str, model: str, eta: int):
         # ID, STATUS, PROMPT, MODEL, ETA
         table = self.ui.inProgressItemsTable
         table.setSortingEnabled(False)
-        table.itemAt(1, row).setText(id)
-        table.itemAt(2, row).setText(status)
-        table.itemAt(3, row).setText(prompt)
-        table.itemAt(4, row).setText(model)
-        table.itemAt(5, row).setText(
-            hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta))
-        )
+
+        for col, value in enumerate([id, status, prompt, model, hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta))]):
+            item = table.item(row, col)
+            if item is None:
+                item = QTableWidgetItem()
+                table.setItem(row, col, item)
+            item.setText(value)
 
         table.setSortingEnabled(True)
 
@@ -1016,12 +1015,10 @@ class MainWindow(QMainWindow):
             r = table.findItems(job_id, Qt.MatchFlag.MatchFixedString)
             print(r)
             if len(r) == 0:
-                if table.columnCount()==0:
-                    for n in range(5):
-                        table.insertColumn(n)
+                if table.columnCount() == 0:
+                    table.setColumnCount(5)  # Set the number of columns
                 row = table.rowCount()
                 table.insertRow(row)
-                # table.ad(row)
             else:
                 row = r[0].row()
 
@@ -1033,8 +1030,6 @@ class MainWindow(QMainWindow):
                 job.model,
                 job.wait_time,
             )
-
-        # table.findItems()
 
 
 if __name__ == "__main__":
