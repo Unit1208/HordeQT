@@ -703,13 +703,13 @@ class LoadThread(QThread):
 
 class SavedData:
     api_state: dict
+    current_open_tab:int
     current_images: List[dict]
-    nsfw_allowed: bool
-    max_jobs: int
-
-    job_config: dict
     finished_jobs: list[Dict]
-
+    job_config: dict
+    max_jobs: int
+    nsfw_allowed: bool
+    share_images:bool
     def __init__(self) -> None:
 
         os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
@@ -722,6 +722,7 @@ class SavedData:
         dlthread: DownloadThread,
         job_config: dict,
         share_images: bool,
+        current_open_tab:int,
     ):
         self.api_state = api.serialize()
         self.current_images = dlthread.serialize()
@@ -729,7 +730,7 @@ class SavedData:
         self.nsfw_allowed = nsfw
         self.share_images = share_images
         self.job_config = job_config
-
+        self.current_open_tab=current_open_tab
     def write(self):
         d = {
             "api_state": self.api_state,
@@ -738,6 +739,7 @@ class SavedData:
             "current_images": self.current_images,
             "job_config": self.job_config,
             "share_images": self.share_images,
+            "current_open_tab":self.current_open_tab
         }
         # cbor2.dump ?
         jsondata = json.dumps(d)
@@ -756,7 +758,8 @@ class SavedData:
         self.nsfw_allowed = j.get("nsfw_allowed", False)
         self.share_images = j.get("share_images", True)
         self.job_config = j.get("job_config", {})
-
+        self.current_open_tab=j.get("current_open_tab",0)
+        
 
 class MainWindow(QMainWindow):
 
@@ -781,6 +784,7 @@ class MainWindow(QMainWindow):
         self.ui.maxJobsSpinBox.setValue(self.savedData.max_jobs)
         self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
         self.ui.shareImagesCheckBox.setChecked(self.savedData.share_images)
+        self.ui.tabWidget.setCurrentIndex(self.savedData.current_open_tab)
         self.ui.GenerateButton.setEnabled(False)
         self.ui.modelComboBox.setEnabled(False)
         self.api_thread = APIManagerThread.deserialize(
@@ -835,55 +839,6 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
 
-    def show_success_toast(self,title,message,duration=5000):
-        success_toast=Toast(self)
-        success_toast.setDuration(duration)
-        success_toast.setTitle(title)
-        success_toast.setText(message)
-        success_toast.applyPreset(ToastPreset.SUCCESS if app.styleHints()==Qt.ColorScheme.Light else ToastPreset.SUCCESS_DARK)
-        success_toast.show()
-    def show_info_toast(self,title,message,duration=5000):
-        info_toast=Toast(self)
-        info_toast.setDuration(duration)
-        info_toast.setTitle(title)
-        info_toast.setText(message)
-        info_toast.applyPreset(ToastPreset.INFORMATION if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.INFORMATION_DARK)
-        info_toast.show()
-    def show_error_toast(self,title,message,duration=5000):
-        error_toast=Toast(self)
-        error_toast.setDuration(duration)
-        error_toast.setTitle(title)
-        error_toast.setText(message)
-        error_toast.applyPreset(ToastPreset.ERROR if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.ERROR_DARK)
-        error_toast.show()
-    def show_warn_toast(self,title,message,duration=5000):
-        warn_toast=Toast(self)
-        warn_toast.setDuration(duration)
-        warn_toast.setTitle(title)
-        warn_toast.setText(message)
-        warn_toast.applyPreset(ToastPreset.WARNING if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.WARNING_DARK)
-        warn_toast.show()
-    
-    def on_image_fully_downloaded(self, lj: LocalJob):
-        self.add_image_to_gallery(lj.path)
-
-    def add_image_to_gallery(self, image_path):
-        image_widget = ImageWidget(image_path)
-        image_widget.imageClicked.connect(self.show_image_popup)
-        self.gallery_layout.addWidget(image_widget)
-
-    def show_image_popup(self, pixmap):
-        popup = ImagePopup(pixmap, self)
-        self.addDockWidget(Qt.RightDockWidgetArea, popup)
-        popup.show()
-
-    def on_fully_loaded(self):
-        self.ui.GenerateButton.setEnabled(True)
-        self.ui.modelComboBox.setEnabled(True)
-        # this doesn't feel right, for some reason.
-        self.ui.maxJobsSpinBox.setMaximum(self.ui.maxConcurrencySpinBox.value())
-        QTimer.singleShot(150, lambda: self.ui.progressBar.hide())
-
     def closeEvent(self, event):
 
         self.api_thread.stop()
@@ -907,9 +862,30 @@ class MainWindow(QMainWindow):
             self.download_thread,
             job_config,
             self.ui.shareImagesCheckBox.isChecked(),
+            self.ui.tabWidget.currentIndex()
         )
         self.savedData.write()
         QMainWindow.closeEvent(self, event)
+
+    def on_image_fully_downloaded(self, lj: LocalJob):
+        self.add_image_to_gallery(lj.path)
+
+    def add_image_to_gallery(self, image_path):
+        image_widget = ImageWidget(image_path)
+        image_widget.imageClicked.connect(self.show_image_popup)
+        self.gallery_layout.addWidget(image_widget)
+
+    def show_image_popup(self, pixmap):
+        popup = ImagePopup(pixmap, self)
+        self.addDockWidget(Qt.RightDockWidgetArea, popup)
+        popup.show()
+
+    def on_fully_loaded(self):
+        self.ui.GenerateButton.setEnabled(True)
+        self.ui.modelComboBox.setEnabled(True)
+        # this doesn't feel right, for some reason.
+        self.ui.maxJobsSpinBox.setMaximum(self.ui.maxConcurrencySpinBox.value())
+        QTimer.singleShot(150, lambda: self.ui.progressBar.hide())
 
     def restore_job_config(self, job_config: dict):
 
@@ -1152,7 +1128,34 @@ class MainWindow(QMainWindow):
     def copy_api_key(self):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
         self.clipboard.setText(self.api_key)
-
+    def show_success_toast(self,title,message,duration=5000):
+        success_toast=Toast(self)
+        success_toast.setDuration(duration)
+        success_toast.setTitle(title)
+        success_toast.setText(message)
+        success_toast.applyPreset(ToastPreset.SUCCESS if app.styleHints()==Qt.ColorScheme.Light else ToastPreset.SUCCESS_DARK)
+        success_toast.show()
+    def show_info_toast(self,title,message,duration=5000):
+        info_toast=Toast(self)
+        info_toast.setDuration(duration)
+        info_toast.setTitle(title)
+        info_toast.setText(message)
+        info_toast.applyPreset(ToastPreset.INFORMATION if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.INFORMATION_DARK)
+        info_toast.show()
+    def show_error_toast(self,title,message,duration=5000):
+        error_toast=Toast(self)
+        error_toast.setDuration(duration)
+        error_toast.setTitle(title)
+        error_toast.setText(message)
+        error_toast.applyPreset(ToastPreset.ERROR if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.ERROR_DARK)
+        error_toast.show()
+    def show_warn_toast(self,title,message,duration=5000):
+        warn_toast=Toast(self)
+        warn_toast.setDuration(duration)
+        warn_toast.setTitle(title)
+        warn_toast.setText(message)
+        warn_toast.applyPreset(ToastPreset.WARNING if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.WARNING_DARK)
+        warn_toast.show()
     def update_row(self, row, id: str, status: str, prompt: str, model: str, eta: int):
         # ID, STATUS, PROMPT, MODEL, ETA
         table = self.ui.inProgressItemsTable
