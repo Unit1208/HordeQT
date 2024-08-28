@@ -96,6 +96,7 @@ class ImageWidget(QLabel):
 
 
 class ImagePopup(QDockWidget):
+    # TODO: Implement buttons - Signal for each.
     def __init__(self, pixmap, parent=None):
         super().__init__("Image Viewer", parent)
         self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
@@ -245,6 +246,7 @@ class Job:
         done: bool = False,
         faulted: bool = False,
         kudos: float = 0,
+        share_image: bool = True,
     ):
         self.prompt = prompt
         self.sampler_name = sampler_name
@@ -258,6 +260,7 @@ class Job:
         self.steps = steps
         self.model = model
         self.allow_nsfw = allow_nsfw
+        self.share_image = share_image
 
         # Status-related attributes
         self.job_id = create_uuid()
@@ -292,7 +295,8 @@ class Job:
             "censor_nsfw": not self.allow_nsfw,
             "models": [self.model],
             "r2": True,
-            "shared": False,
+            "shared": self.share_image,
+            # This should never need to be turned off.
             "replacement_filter": True,
         }
 
@@ -684,12 +688,13 @@ class SavedData:
         max_jobs: int,
         dlthread: DownloadThread,
         job_config: dict,
+        share_images: bool,
     ):
         self.api_state = api.serialize()
         self.current_images = dlthread.serialize()
         self.max_jobs = max_jobs
         self.nsfw_allowed = nsfw
-
+        self.share_images = share_images
         self.job_config = job_config
 
     def write(self):
@@ -699,6 +704,7 @@ class SavedData:
             "nsfw_allowed": self.nsfw_allowed,
             "current_images": self.current_images,
             "job_config": self.job_config,
+            "share_images": self.share_images,
         }
         # cbor2.dump ?
         jsondata = json.dumps(d)
@@ -715,6 +721,7 @@ class SavedData:
         self.max_jobs = j.get("max_jobs", 5)
         self.current_images = j.get("current_images", {})
         self.nsfw_allowed = j.get("nsfw_allowed", False)
+        self.share_images = j.get("share_images", True)
         self.job_config = j.get("job_config", {})
 
 
@@ -740,6 +747,7 @@ class MainWindow(QMainWindow):
         self.show()
         self.ui.maxJobsSpinBox.setValue(self.savedData.max_jobs)
         self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
+        self.ui.shareImagesCheckBox.setChecked(self.savedData.share_images)
         self.ui.GenerateButton.setEnabled(False)
         self.ui.modelComboBox.setEnabled(False)
         self.api_thread = APIManagerThread.deserialize(
@@ -845,6 +853,7 @@ class MainWindow(QMainWindow):
             self.ui.maxJobsSpinBox.value(),
             self.download_thread,
             job_config,
+            self.ui.shareImagesCheckBox.isChecked(),
         )
         self.savedData.write()
         QMainWindow.closeEvent(self, event)
@@ -962,7 +971,8 @@ class MainWindow(QMainWindow):
         model = self.model_dict[self.ui.modelComboBox.currentText()].name
         karras = True
         hires_fix = True
-        allow_nsfw = True
+        allow_nsfw = self.ui.NSFWCheckBox.isChecked()
+        share_image = self.ui.shareImagesCheckBox.isChecked()
         job = Job(
             prompt,
             sampler_name,
@@ -976,6 +986,7 @@ class MainWindow(QMainWindow):
             karras,
             hires_fix,
             allow_nsfw,
+            share_image,
         )
         return job
 

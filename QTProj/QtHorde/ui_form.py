@@ -322,7 +322,7 @@ class Ui_MainWindow(object):
         self.settings_tab.setObjectName(u"settings_tab")
         self.formLayoutWidget = QWidget(self.settings_tab)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(0, 10, 971, 141))
+        self.formLayoutWidget.setGeometry(QRect(0, 10, 971, 161))
         self.formLayout_3 = QFormLayout(self.formLayoutWidget)
         self.formLayout_3.setObjectName(u"formLayout_3")
         self.formLayout_3.setVerticalSpacing(6)
@@ -381,7 +381,7 @@ class Ui_MainWindow(object):
         self.maxJobsLabel = QLabel(self.formLayoutWidget)
         self.maxJobsLabel.setObjectName(u"maxJobsLabel")
 
-        self.formLayout_3.setWidget(2, QFormLayout.LabelRole, self.maxJobsLabel)
+        self.formLayout_3.setWidget(3, QFormLayout.LabelRole, self.maxJobsLabel)
 
         self.maxJobsSpinBox = QSpinBox(self.formLayoutWidget)
         self.maxJobsSpinBox.setObjectName(u"maxJobsSpinBox")
@@ -389,25 +389,36 @@ class Ui_MainWindow(object):
         self.maxJobsSpinBox.setMaximum(20)
         self.maxJobsSpinBox.setValue(5)
 
-        self.formLayout_3.setWidget(2, QFormLayout.FieldRole, self.maxJobsSpinBox)
+        self.formLayout_3.setWidget(3, QFormLayout.FieldRole, self.maxJobsSpinBox)
 
         self.openSavedData = QPushButton(self.formLayoutWidget)
         self.openSavedData.setObjectName(u"openSavedData")
         icon8 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentOpen))
         self.openSavedData.setIcon(icon8)
 
-        self.formLayout_3.setWidget(3, QFormLayout.FieldRole, self.openSavedData)
+        self.formLayout_3.setWidget(4, QFormLayout.FieldRole, self.openSavedData)
 
         self.openSavedDataLabel = QLabel(self.formLayoutWidget)
         self.openSavedDataLabel.setObjectName(u"openSavedDataLabel")
 
-        self.formLayout_3.setWidget(4, QFormLayout.LabelRole, self.openSavedDataLabel)
+        self.formLayout_3.setWidget(5, QFormLayout.LabelRole, self.openSavedDataLabel)
 
         self.openSavedImages = QPushButton(self.formLayoutWidget)
         self.openSavedImages.setObjectName(u"openSavedImages")
         self.openSavedImages.setIcon(icon1)
 
-        self.formLayout_3.setWidget(4, QFormLayout.FieldRole, self.openSavedImages)
+        self.formLayout_3.setWidget(5, QFormLayout.FieldRole, self.openSavedImages)
+
+        self.shareImagesLabel = QLabel(self.formLayoutWidget)
+        self.shareImagesLabel.setObjectName(u"shareImagesLabel")
+
+        self.formLayout_3.setWidget(2, QFormLayout.LabelRole, self.shareImagesLabel)
+
+        self.shareImagesCheckBox = QCheckBox(self.formLayoutWidget)
+        self.shareImagesCheckBox.setObjectName(u"shareImagesCheckBox")
+        self.shareImagesCheckBox.setChecked(True)
+
+        self.formLayout_3.setWidget(2, QFormLayout.FieldRole, self.shareImagesCheckBox)
 
         self.tabWidget.addTab(self.settings_tab, icon3, "")
         self.userInfoPage = QWidget()
@@ -849,7 +860,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(2)
+        self.tabWidget.setCurrentIndex(3)
         self.modelComboBox.setCurrentIndex(0)
 
 
@@ -943,6 +954,10 @@ class Ui_MainWindow(object):
         self.openSavedData.setText(QCoreApplication.translate("MainWindow", u"Open Saved Data", None))
         self.openSavedDataLabel.setText("")
         self.openSavedImages.setText(QCoreApplication.translate("MainWindow", u"Open Saved Images", None))
+        self.shareImagesLabel.setText(QCoreApplication.translate("MainWindow", u"Share Images", None))
+#if QT_CONFIG(tooltip)
+        self.shareImagesCheckBox.setToolTip(QCoreApplication.translate("MainWindow", u"Whether to share anonymized images with the horde to help it improve", None))
+#endif // QT_CONFIG(tooltip)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), QCoreApplication.translate("MainWindow", u"Settings", None))
         self.usernameLabel.setText(QCoreApplication.translate("MainWindow", u"Username", None))
         self.idLabel.setText(QCoreApplication.translate("MainWindow", u"ID", None))

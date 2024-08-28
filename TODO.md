@@ -9,7 +9,7 @@
 - [x] User Info
 - [x] Persistent Storage of settings
 - [ ] About Page
-- [ ] Toggle for Shared images
+- [x] Toggle for Shared images
 - [x] Handle Max jobs, get user concurrency for max
 - [ ] Evict Jobs from status after some time
 - [x] Cache models, esp. from GH as it's larger and less likely to change
