@@ -26,5 +26,7 @@
 - [ ] Insert Danbooru or similar url, get formatted result
 - [ ] Get prompt from metadata
 - [x] Preset box for sizing
-- [ ] Reset to defaults button
+- [x] Reset to defaults button
+- [x] Undo reset button
+- [ ] Prompt/Config History
 - [ ] Figure out why closing takes so long

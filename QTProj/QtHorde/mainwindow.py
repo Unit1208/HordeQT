@@ -101,8 +101,6 @@ def prompt_matrix(prompt: str) -> List[str]:
     # If no valid combinations were generated, return the original prompt
     return result_prompts if result_prompts else [prompt]
 
-    
-    
 
 class ImageWidget(QLabel):
     imageClicked = Signal(QPixmap)
@@ -825,7 +823,11 @@ class MainWindow(QMainWindow):
         self.ui.presetComboBox.currentTextChanged.connect(self.on_preset_change)
         self.ui.widthSpinBox.valueChanged.connect(self.on_width_change)
         self.ui.heightSpinBox.valueChanged.connect(self.on_height_change)
-        self.preset_being_updated=False
+        self.ui.resetSettingsButton.clicked.connect(self.reset_job_config)
+        self.ui.undoResetButton.clicked.connect(self.undo_reset_job_config)
+        self.ui.undoResetButton.setEnabled(False)
+        self.preset_being_updated = False
+        self.last_job_config:Optional[Dict]=None
         self.gallery_layout = MasonryLayout()
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
@@ -852,7 +854,20 @@ class MainWindow(QMainWindow):
 
         self.api_thread.stop()
         self.download_thread.stop()
-        job_config = {
+        self.savedData.update(
+            self.api_thread,
+            self.ui.NSFWCheckBox.isChecked(),
+            self.ui.maxJobsSpinBox.value(),
+            self.download_thread,
+            self.get_job_config(),
+            self.ui.shareImagesCheckBox.isChecked(),
+            self.ui.tabWidget.currentIndex(),
+        )
+        self.savedData.write()
+        QMainWindow.closeEvent(self, event)
+
+    def get_job_config(self):
+        return {
             "prompt": self.ui.PromptBox.toPlainText(),
             "negative_prompt": self.ui.NegativePromptBox.toPlainText(),
             "sampler_name": self.ui.samplerComboBox.currentText(),
@@ -864,35 +879,29 @@ class MainWindow(QMainWindow):
             "steps": self.ui.stepsSpinBox.value(),
             "model": self.ui.modelComboBox.currentText(),
         }
-        self.savedData.update(
-            self.api_thread,
-            self.ui.NSFWCheckBox.isChecked(),
-            self.ui.maxJobsSpinBox.value(),
-            self.download_thread,
-            job_config,
-            self.ui.shareImagesCheckBox.isChecked(),
-            self.ui.tabWidget.currentIndex(),
-        )
-        self.savedData.write()
-        QMainWindow.closeEvent(self, event)
+
     def on_width_change(self):
         if not self.preset_being_updated:
             self.ui.presetComboBox.setCurrentIndex(0)
+
     def on_height_change(self):
         if not self.preset_being_updated:
             self.ui.presetComboBox.setCurrentIndex(0)
+
     def on_preset_change(self):
-        current_model_needs_1024=self.model_dict[self.ui.modelComboBox.currentText()].details.get("baseline",None) in ["stable_diffusion_xl","stable_cascade"]
-        self.preset_being_updated=True
+        current_model_needs_1024 = self.model_dict[
+            self.ui.modelComboBox.currentText()
+        ].details.get("baseline", None) in ["stable_diffusion_xl", "stable_cascade"]
+        self.preset_being_updated = True
         match self.ui.presetComboBox.currentIndex():
             case 0:
                 pass
             case 1:
-                #LANDSCAPE (16:9)
+                # LANDSCAPE (16:9)
                 self.ui.widthSpinBox.setValue(1024)
                 self.ui.heightSpinBox.setValue(576)
             case 2:
-                #LANDSCAPE (3:2)
+                # LANDSCAPE (3:2)
                 if current_model_needs_1024:
                     self.ui.widthSpinBox.setValue(1024)
                     self.ui.heightSpinBox.setValue(704)
@@ -900,7 +909,7 @@ class MainWindow(QMainWindow):
                     self.ui.widthSpinBox.setValue(768)
                     self.ui.heightSpinBox.setValue(512)
             case 3:
-                #PORTRAIT (2:3)
+                # PORTRAIT (2:3)
                 if current_model_needs_1024:
                     self.ui.widthSpinBox.setValue(704)
                     self.ui.heightSpinBox.setValue(1024)
@@ -908,11 +917,11 @@ class MainWindow(QMainWindow):
                     self.ui.widthSpinBox.setValue(512)
                     self.ui.heightSpinBox.setValue(768)
             case 4:
-                #PHONE BACKGROUND (9:21)
+                # PHONE BACKGROUND (9:21)
                 self.ui.widthSpinBox.setValue(448)
                 self.ui.heightSpinBox.setValue(1024)
             case 5:
-                #ULTRAWIDE (21:9)
+                # ULTRAWIDE (21:9)
                 self.ui.widthSpinBox.setValue(1024)
                 self.ui.heightSpinBox.setValue(448)
             case 6:
@@ -922,7 +931,7 @@ class MainWindow(QMainWindow):
                 else:
                     self.ui.widthSpinBox.setValue(512)
                     self.ui.heightSpinBox.setValue(512)
-        self.preset_being_updated=False                    
+        self.preset_being_updated = False
 
     def on_image_fully_downloaded(self, lj: LocalJob):
         self.add_image_to_gallery(lj.path)
@@ -961,7 +970,16 @@ class MainWindow(QMainWindow):
         self.ui.stepsSpinBox.setValue(job_config.get("steps", 20))
         self.ui.modelComboBox.setCurrentText(job_config.get("model", "default"))
         self.ui.NSFWCheckBox.setChecked(job_config.get("allow_nsfw", False))
-
+    def undo_reset_job_config(self):
+        if self.last_job_config is not None:
+            self.restore_job_config(self.last_job_config)
+    def reset_job_config(self):
+        self.last_job_config=self.get_job_config()
+        self.ui.undoResetButton.setEnabled(True)
+        # Restore the job config, using the defaults for everything. Model needs to be set after, as the default is "default"
+        self.restore_job_config({})
+        self.ui.modelComboBox.setCurrentIndex(0)
+        
     def on_job_completed(self, job: LocalJob):
         print(f"Job {job.id} completed.")
         self.download_thread.add_dl(job)

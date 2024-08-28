@@ -54,29 +54,63 @@ class Ui_MainWindow(object):
         self.frame.setGeometry(QRect(0, 0, 961, 1081))
         self.gridLayoutWidget = QWidget(self.frame)
         self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayoutWidget.setGeometry(QRect(10, 9, 951, 761))
+        self.gridLayoutWidget.setGeometry(QRect(10, 9, 961, 801))
         self.createLayout = QFormLayout(self.gridLayoutWidget)
         self.createLayout.setObjectName(u"createLayout")
         self.createLayout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
         self.createLayout.setFormAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
         self.createLayout.setVerticalSpacing(6)
         self.createLayout.setContentsMargins(0, 0, 0, 0)
+        self.label = QLabel(self.gridLayoutWidget)
+        self.label.setObjectName(u"label")
+
+        self.createLayout.setWidget(1, QFormLayout.LabelRole, self.label)
+
+        self.PromptBox = QPlainTextEdit(self.gridLayoutWidget)
+        self.PromptBox.setObjectName(u"PromptBox")
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.PromptBox.sizePolicy().hasHeightForWidth())
+        self.PromptBox.setSizePolicy(sizePolicy1)
+        self.PromptBox.setTabChangesFocus(True)
+
+        self.createLayout.setWidget(1, QFormLayout.FieldRole, self.PromptBox)
+
+        self.label_2 = QLabel(self.gridLayoutWidget)
+        self.label_2.setObjectName(u"label_2")
+
+        self.createLayout.setWidget(2, QFormLayout.LabelRole, self.label_2)
+
+        self.NegativePromptBox = QPlainTextEdit(self.gridLayoutWidget)
+        self.NegativePromptBox.setObjectName(u"NegativePromptBox")
+        self.NegativePromptBox.setTabChangesFocus(True)
+
+        self.createLayout.setWidget(2, QFormLayout.FieldRole, self.NegativePromptBox)
+
+        self.GenerateButton = QPushButton(self.gridLayoutWidget)
+        self.GenerateButton.setObjectName(u"GenerateButton")
+        icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.InsertImage))
+        self.GenerateButton.setIcon(icon)
+
+        self.createLayout.setWidget(3, QFormLayout.FieldRole, self.GenerateButton)
+
         self.imagesLabel = QLabel(self.gridLayoutWidget)
         self.imagesLabel.setObjectName(u"imagesLabel")
 
-        self.createLayout.setWidget(4, QFormLayout.LabelRole, self.imagesLabel)
+        self.createLayout.setWidget(5, QFormLayout.LabelRole, self.imagesLabel)
 
         self.imagesSpinBox = QSpinBox(self.gridLayoutWidget)
         self.imagesSpinBox.setObjectName(u"imagesSpinBox")
         self.imagesSpinBox.setMinimum(1)
         self.imagesSpinBox.setMaximum(50)
 
-        self.createLayout.setWidget(4, QFormLayout.FieldRole, self.imagesSpinBox)
+        self.createLayout.setWidget(5, QFormLayout.FieldRole, self.imagesSpinBox)
 
         self.stepsLabel = QLabel(self.gridLayoutWidget)
         self.stepsLabel.setObjectName(u"stepsLabel")
 
-        self.createLayout.setWidget(5, QFormLayout.LabelRole, self.stepsLabel)
+        self.createLayout.setWidget(6, QFormLayout.LabelRole, self.stepsLabel)
 
         self.stepsSpinBox = QSpinBox(self.gridLayoutWidget)
         self.stepsSpinBox.setObjectName(u"stepsSpinBox")
@@ -84,12 +118,12 @@ class Ui_MainWindow(object):
         self.stepsSpinBox.setMaximum(150)
         self.stepsSpinBox.setValue(20)
 
-        self.createLayout.setWidget(5, QFormLayout.FieldRole, self.stepsSpinBox)
+        self.createLayout.setWidget(6, QFormLayout.FieldRole, self.stepsSpinBox)
 
         self.modelLabel = QLabel(self.gridLayoutWidget)
         self.modelLabel.setObjectName(u"modelLabel")
 
-        self.createLayout.setWidget(6, QFormLayout.LabelRole, self.modelLabel)
+        self.createLayout.setWidget(7, QFormLayout.LabelRole, self.modelLabel)
 
         self.horizontalLayout_2 = QHBoxLayout()
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
@@ -97,30 +131,30 @@ class Ui_MainWindow(object):
         self.modelComboBox.addItem("")
         self.modelComboBox.setObjectName(u"modelComboBox")
         self.modelComboBox.setEnabled(True)
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.modelComboBox.sizePolicy().hasHeightForWidth())
-        self.modelComboBox.setSizePolicy(sizePolicy1)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.modelComboBox.sizePolicy().hasHeightForWidth())
+        self.modelComboBox.setSizePolicy(sizePolicy2)
         self.modelComboBox.setEditable(True)
 
         self.horizontalLayout_2.addWidget(self.modelComboBox)
 
         self.modelDetailsButton = QPushButton(self.gridLayoutWidget)
         self.modelDetailsButton.setObjectName(u"modelDetailsButton")
-        icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.SystemSearch))
-        self.modelDetailsButton.setIcon(icon)
+        icon1 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.SystemSearch))
+        self.modelDetailsButton.setIcon(icon1)
         self.modelDetailsButton.setFlat(False)
 
         self.horizontalLayout_2.addWidget(self.modelDetailsButton)
 
 
-        self.createLayout.setLayout(6, QFormLayout.FieldRole, self.horizontalLayout_2)
+        self.createLayout.setLayout(7, QFormLayout.FieldRole, self.horizontalLayout_2)
 
         self.presetLabel = QLabel(self.gridLayoutWidget)
         self.presetLabel.setObjectName(u"presetLabel")
 
-        self.createLayout.setWidget(7, QFormLayout.LabelRole, self.presetLabel)
+        self.createLayout.setWidget(8, QFormLayout.LabelRole, self.presetLabel)
 
         self.presetComboBox = QComboBox(self.gridLayoutWidget)
         self.presetComboBox.addItem("")
@@ -133,12 +167,12 @@ class Ui_MainWindow(object):
         self.presetComboBox.setObjectName(u"presetComboBox")
         self.presetComboBox.setEditable(False)
 
-        self.createLayout.setWidget(7, QFormLayout.FieldRole, self.presetComboBox)
+        self.createLayout.setWidget(8, QFormLayout.FieldRole, self.presetComboBox)
 
         self.widthLabel = QLabel(self.gridLayoutWidget)
         self.widthLabel.setObjectName(u"widthLabel")
 
-        self.createLayout.setWidget(8, QFormLayout.LabelRole, self.widthLabel)
+        self.createLayout.setWidget(9, QFormLayout.LabelRole, self.widthLabel)
 
         self.widthSpinBox = QSpinBox(self.gridLayoutWidget)
         self.widthSpinBox.setObjectName(u"widthSpinBox")
@@ -147,12 +181,12 @@ class Ui_MainWindow(object):
         self.widthSpinBox.setSingleStep(64)
         self.widthSpinBox.setValue(768)
 
-        self.createLayout.setWidget(8, QFormLayout.FieldRole, self.widthSpinBox)
+        self.createLayout.setWidget(9, QFormLayout.FieldRole, self.widthSpinBox)
 
         self.heightLabel = QLabel(self.gridLayoutWidget)
         self.heightLabel.setObjectName(u"heightLabel")
 
-        self.createLayout.setWidget(9, QFormLayout.LabelRole, self.heightLabel)
+        self.createLayout.setWidget(10, QFormLayout.LabelRole, self.heightLabel)
 
         self.heightSpinBox = QSpinBox(self.gridLayoutWidget)
         self.heightSpinBox.setObjectName(u"heightSpinBox")
@@ -161,12 +195,12 @@ class Ui_MainWindow(object):
         self.heightSpinBox.setSingleStep(64)
         self.heightSpinBox.setValue(1024)
 
-        self.createLayout.setWidget(9, QFormLayout.FieldRole, self.heightSpinBox)
+        self.createLayout.setWidget(10, QFormLayout.FieldRole, self.heightSpinBox)
 
         self.samplerLabel = QLabel(self.gridLayoutWidget)
         self.samplerLabel.setObjectName(u"samplerLabel")
 
-        self.createLayout.setWidget(10, QFormLayout.LabelRole, self.samplerLabel)
+        self.createLayout.setWidget(11, QFormLayout.LabelRole, self.samplerLabel)
 
         self.samplerComboBox = QComboBox(self.gridLayoutWidget)
         self.samplerComboBox.addItem("")
@@ -185,24 +219,24 @@ class Ui_MainWindow(object):
         self.samplerComboBox.addItem("")
         self.samplerComboBox.setObjectName(u"samplerComboBox")
 
-        self.createLayout.setWidget(10, QFormLayout.FieldRole, self.samplerComboBox)
+        self.createLayout.setWidget(11, QFormLayout.FieldRole, self.samplerComboBox)
 
         self.seedLabel = QLabel(self.gridLayoutWidget)
         self.seedLabel.setObjectName(u"seedLabel")
 
-        self.createLayout.setWidget(11, QFormLayout.LabelRole, self.seedLabel)
+        self.createLayout.setWidget(12, QFormLayout.LabelRole, self.seedLabel)
 
         self.seedSpinBox = QSpinBox(self.gridLayoutWidget)
         self.seedSpinBox.setObjectName(u"seedSpinBox")
         self.seedSpinBox.setMaximum(2147483647)
         self.seedSpinBox.setDisplayIntegerBase(10)
 
-        self.createLayout.setWidget(11, QFormLayout.FieldRole, self.seedSpinBox)
+        self.createLayout.setWidget(12, QFormLayout.FieldRole, self.seedSpinBox)
 
         self.guidenceLabel = QLabel(self.gridLayoutWidget)
         self.guidenceLabel.setObjectName(u"guidenceLabel")
 
-        self.createLayout.setWidget(12, QFormLayout.LabelRole, self.guidenceLabel)
+        self.createLayout.setWidget(13, QFormLayout.LabelRole, self.guidenceLabel)
 
         self.guidenceDoubleSpinBox = QDoubleSpinBox(self.gridLayoutWidget)
         self.guidenceDoubleSpinBox.setObjectName(u"guidenceDoubleSpinBox")
@@ -212,53 +246,19 @@ class Ui_MainWindow(object):
         self.guidenceDoubleSpinBox.setSingleStep(0.500000000000000)
         self.guidenceDoubleSpinBox.setValue(5.000000000000000)
 
-        self.createLayout.setWidget(12, QFormLayout.FieldRole, self.guidenceDoubleSpinBox)
+        self.createLayout.setWidget(13, QFormLayout.FieldRole, self.guidenceDoubleSpinBox)
 
         self.clipSkipLabel = QLabel(self.gridLayoutWidget)
         self.clipSkipLabel.setObjectName(u"clipSkipLabel")
 
-        self.createLayout.setWidget(13, QFormLayout.LabelRole, self.clipSkipLabel)
+        self.createLayout.setWidget(14, QFormLayout.LabelRole, self.clipSkipLabel)
 
         self.clipSkipSpinBox = QSpinBox(self.gridLayoutWidget)
         self.clipSkipSpinBox.setObjectName(u"clipSkipSpinBox")
         self.clipSkipSpinBox.setMinimum(1)
         self.clipSkipSpinBox.setMaximum(12)
 
-        self.createLayout.setWidget(13, QFormLayout.FieldRole, self.clipSkipSpinBox)
-
-        self.GenerateButton = QPushButton(self.gridLayoutWidget)
-        self.GenerateButton.setObjectName(u"GenerateButton")
-        icon1 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.InsertImage))
-        self.GenerateButton.setIcon(icon1)
-
-        self.createLayout.setWidget(3, QFormLayout.FieldRole, self.GenerateButton)
-
-        self.PromptBox = QPlainTextEdit(self.gridLayoutWidget)
-        self.PromptBox.setObjectName(u"PromptBox")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.PromptBox.sizePolicy().hasHeightForWidth())
-        self.PromptBox.setSizePolicy(sizePolicy2)
-        self.PromptBox.setTabChangesFocus(True)
-
-        self.createLayout.setWidget(1, QFormLayout.FieldRole, self.PromptBox)
-
-        self.NegativePromptBox = QPlainTextEdit(self.gridLayoutWidget)
-        self.NegativePromptBox.setObjectName(u"NegativePromptBox")
-        self.NegativePromptBox.setTabChangesFocus(True)
-
-        self.createLayout.setWidget(2, QFormLayout.FieldRole, self.NegativePromptBox)
-
-        self.label = QLabel(self.gridLayoutWidget)
-        self.label.setObjectName(u"label")
-
-        self.createLayout.setWidget(1, QFormLayout.LabelRole, self.label)
-
-        self.label_2 = QLabel(self.gridLayoutWidget)
-        self.label_2.setObjectName(u"label_2")
-
-        self.createLayout.setWidget(2, QFormLayout.LabelRole, self.label_2)
+        self.createLayout.setWidget(14, QFormLayout.FieldRole, self.clipSkipSpinBox)
 
         self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
@@ -271,7 +271,24 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.addWidget(self.progressBar)
 
 
-        self.createLayout.setLayout(14, QFormLayout.FieldRole, self.horizontalLayout_3)
+        self.createLayout.setLayout(17, QFormLayout.FieldRole, self.horizontalLayout_3)
+
+        self.horizontalLayout_5 = QHBoxLayout()
+        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.resetSettingsButton = QPushButton(self.gridLayoutWidget)
+        self.resetSettingsButton.setObjectName(u"resetSettingsButton")
+
+        self.horizontalLayout_5.addWidget(self.resetSettingsButton)
+
+        self.undoResetButton = QPushButton(self.gridLayoutWidget)
+        self.undoResetButton.setObjectName(u"undoResetButton")
+        self.undoResetButton.setEnabled(False)
+        self.undoResetButton.setCheckable(False)
+
+        self.horizontalLayout_5.addWidget(self.undoResetButton)
+
+
+        self.createLayout.setLayout(16, QFormLayout.FieldRole, self.horizontalLayout_5)
 
         icon2 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.ListAdd))
         self.tabWidget.addTab(self.create_tab, icon2, "")
@@ -322,7 +339,7 @@ class Ui_MainWindow(object):
         self.settings_tab.setObjectName(u"settings_tab")
         self.formLayoutWidget = QWidget(self.settings_tab)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(0, 10, 971, 161))
+        self.formLayoutWidget.setGeometry(QRect(0, 10, 971, 162))
         self.formLayout_3 = QFormLayout(self.formLayoutWidget)
         self.formLayout_3.setObjectName(u"formLayout_3")
         self.formLayout_3.setVerticalSpacing(6)
@@ -405,7 +422,7 @@ class Ui_MainWindow(object):
 
         self.openSavedImages = QPushButton(self.formLayoutWidget)
         self.openSavedImages.setObjectName(u"openSavedImages")
-        self.openSavedImages.setIcon(icon1)
+        self.openSavedImages.setIcon(icon)
 
         self.formLayout_3.setWidget(5, QFormLayout.FieldRole, self.openSavedImages)
 
@@ -870,6 +887,17 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.actionSave.setText(QCoreApplication.translate("MainWindow", u"Save", None))
+        self.label.setText(QCoreApplication.translate("MainWindow", u"Prompt", None))
+        self.PromptBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Prompt", None))
+        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Negative Prompt", None))
+        self.NegativePromptBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Negative Prompt", None))
+#if QT_CONFIG(tooltip)
+        self.GenerateButton.setToolTip(QCoreApplication.translate("MainWindow", u"Shortcut Ctrl + Enter", None))
+#endif // QT_CONFIG(tooltip)
+        self.GenerateButton.setText(QCoreApplication.translate("MainWindow", u"Generate", None))
+#if QT_CONFIG(shortcut)
+        self.GenerateButton.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+Return", None))
+#endif // QT_CONFIG(shortcut)
         self.imagesLabel.setText(QCoreApplication.translate("MainWindow", u"Images", None))
         self.stepsLabel.setText(QCoreApplication.translate("MainWindow", u"Steps", None))
         self.modelLabel.setText(QCoreApplication.translate("MainWindow", u"Model", None))
@@ -914,17 +942,8 @@ class Ui_MainWindow(object):
 #endif // QT_CONFIG(statustip)
         self.guidenceLabel.setText(QCoreApplication.translate("MainWindow", u"Guidence", None))
         self.clipSkipLabel.setText(QCoreApplication.translate("MainWindow", u"Clip Skip", None))
-#if QT_CONFIG(tooltip)
-        self.GenerateButton.setToolTip(QCoreApplication.translate("MainWindow", u"Shortcut Ctrl + Enter", None))
-#endif // QT_CONFIG(tooltip)
-        self.GenerateButton.setText(QCoreApplication.translate("MainWindow", u"Generate", None))
-#if QT_CONFIG(shortcut)
-        self.GenerateButton.setShortcut(QCoreApplication.translate("MainWindow", u"Ctrl+Return", None))
-#endif // QT_CONFIG(shortcut)
-        self.PromptBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Prompt", None))
-        self.NegativePromptBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Negative Prompt", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"Prompt", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Negative Prompt", None))
+        self.resetSettingsButton.setText(QCoreApplication.translate("MainWindow", u"Reset Settings", None))
+        self.undoResetButton.setText(QCoreApplication.translate("MainWindow", u"Undo Reset", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.create_tab), QCoreApplication.translate("MainWindow", u"Create", None))
         self.groupBox_2.setTitle("")
         ___qtablewidgetitem = self.inProgressItemsTable.horizontalHeaderItem(0)
