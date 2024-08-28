@@ -614,6 +614,9 @@ class SavedData:
     current_images: List[dict]
     nsfw_allowed: bool
     max_jobs: int
+    window_geometry: QByteArray
+    window_state: QByteArray
+    job_config: dict
 
     def __init__(self) -> None:
 
@@ -626,6 +629,7 @@ class SavedData:
         max_jobs: int,
         dlthread: DownloadThread,
         window: QMainWindow,
+        job_config: dict,
     ):
         self.api_state = api.serialize()
         self.current_images = dlthread.serialize()
@@ -633,6 +637,7 @@ class SavedData:
         self.nsfw_allowed = nsfw
         self.window_geometry = window.saveGeometry()
         self.window_state = window.saveState()
+        self.job_config = job_config
 
     def write(self):
         d = {
@@ -642,6 +647,7 @@ class SavedData:
             "current_images": self.current_images,
             "window_geometry": str(self.window_geometry.toBase64()),
             "window_state": str(self.window_state.toBase64()),
+            "job_config": self.job_config,
         }
         # cbor2.dump ?
         jsondata = json.dumps(d)
@@ -658,6 +664,7 @@ class SavedData:
         self.max_jobs = j.get("max_jobs", 5)
         self.current_images = j.get("current_images", {})
         self.nsfw_allowed = j.get("nsfw_allowed", False)
+        self.job_config = j.get("job_config", {})
         wg = j.get("window_geometry", None)
         if wg is not None:
             self.window_geometry = QByteArray.fromBase64(bytes(wg, "utf-8"))
@@ -694,28 +701,61 @@ class MainWindow(QMainWindow):
 
         self.api_thread.stop()
         self.download_thread.stop()
+        job_config = {
+            "prompt": self.ui.PromptBox.toPlainText(),
+            "negative_prompt": self.ui.NegativePromptBox.toPlainText(),
+            "sampler_name": self.ui.samplerComboBox.currentText(),
+            "cfg_scale": self.ui.guidenceDoubleSpinBox.value(),
+            "seed": self.ui.seedSpinBox.value(),
+            "width": self.ui.widthSpinBox.value(),
+            "height": self.ui.heightSpinBox.value(),
+            "clip_skip": self.ui.clipSkipSpinBox.value(),
+            "steps": self.ui.stepsSpinBox.value(),
+            "model": self.ui.modelComboBox.currentText(),
+        }
         self.savedData.update(
             self.api_thread,
             self.ui.NSFWCheckBox.isChecked(),
             self.ui.maxJobsSpinBox.value(),
             self.download_thread,
             self,
+            job_config,
         )
         self.savedData.write()
         QMainWindow.closeEvent(self, event)
+
+    def restore_job_config(self, job_config: dict):
+
+        # Restore job configuration
+
+        self.ui.PromptBox.setPlainText(job_config.get("prompt", ""))
+        self.ui.NegativePromptBox.setPlainText(job_config.get("negative_prompt", ""))
+        self.ui.samplerComboBox.setCurrentText(
+            job_config.get("sampler_name", "k_euler")
+        )
+        self.ui.guidenceDoubleSpinBox.setValue(job_config.get("cfg_scale", 5.0))
+        self.ui.seedSpinBox.setValue(job_config.get("seed", 0))
+        self.ui.widthSpinBox.setValue(job_config.get("width", 512))
+        self.ui.heightSpinBox.setValue(job_config.get("height", 512))
+        self.ui.clipSkipSpinBox.setValue(job_config.get("clip_skip", 1))
+        self.ui.stepsSpinBox.setValue(job_config.get("steps", 20))
+        self.ui.modelComboBox.setCurrentText(job_config.get("model", "default"))
+        self.ui.NSFWCheckBox.setChecked(job_config.get("allow_nsfw", False))
 
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
         self.savedData = SavedData()
         self.savedData.read()
-        if self.savedData.window_state is not None:
-            self.restoreGeometry(self.savedData.window_state)
-        if self.savedData.window_geometry is not None:
-            self.restoreGeometry(self.savedData.window_geometry)
+
         self.clipboard = app.clipboard()
         self.model_dict: Dict[str, Model] = {}
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
+        if self.savedData.window_state is not None:
+            self.restoreGeometry(self.savedData.window_state)
+        if self.savedData.window_geometry is not None:
+            self.restoreGeometry(self.savedData.window_geometry)
+        self.restore_job_config(self.savedData.job_config)
         self.loading_thread = QThread()
         self.worker = LoadWorker()
         self.show()

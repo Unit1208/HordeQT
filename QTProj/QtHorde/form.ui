@@ -433,6 +433,9 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
+            <property name="tabChangesFocus">
+             <bool>true</bool>
+            </property>
             <property name="placeholderText">
              <string>Prompt</string>
             </property>
@@ -440,6 +443,9 @@
           </item>
           <item row="2" column="1">
            <widget class="QPlainTextEdit" name="NegativePromptBox">
+            <property name="tabChangesFocus">
+             <bool>true</bool>
+            </property>
             <property name="placeholderText">
              <string>Negative Prompt</string>
             </property>

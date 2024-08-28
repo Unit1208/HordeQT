@@ -240,11 +240,13 @@ class Ui_MainWindow(object):
         sizePolicy2.setVerticalStretch(0)
         sizePolicy2.setHeightForWidth(self.PromptBox.sizePolicy().hasHeightForWidth())
         self.PromptBox.setSizePolicy(sizePolicy2)
+        self.PromptBox.setTabChangesFocus(True)
 
         self.createLayout.setWidget(1, QFormLayout.FieldRole, self.PromptBox)
 
         self.NegativePromptBox = QPlainTextEdit(self.gridLayoutWidget)
         self.NegativePromptBox.setObjectName(u"NegativePromptBox")
+        self.NegativePromptBox.setTabChangesFocus(True)
 
         self.createLayout.setWidget(2, QFormLayout.FieldRole, self.NegativePromptBox)
 
