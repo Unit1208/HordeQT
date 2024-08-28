@@ -19,3 +19,7 @@
 - [x] Button to open locally saved data folder
 - [ ] Multiple Images (e.g. for loop on addjob)
   - [ ] Prompt Matrices
+- [ ] Conversion from NAI prompt formatting
+- [ ] DeepDanbooru integration
+- [ ] Insert Danbooru or similar url, get formatted result
+- [ ] Get prompt from metadata
