@@ -626,6 +626,7 @@ class LoadThread(QThread):
         self.model_info.emit(j)
         self.progress.emit(100)
 
+
 class SavedData:
     api_state: dict
     current_images: List[dict]
@@ -634,7 +635,8 @@ class SavedData:
     window_geometry: QByteArray
     window_state: QByteArray
     job_config: dict
-    finished_jobs:list[Dict]
+    finished_jobs: list[Dict]
+
     def __init__(self) -> None:
 
         os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
@@ -754,6 +756,7 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
+
     def show_error(self, message):
 
         QMessageBox.critical(self, "Error", message)
@@ -988,12 +991,21 @@ class MainWindow(QMainWindow):
     def copy_api_key(self):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
         self.clipboard.setText(self.api_key)
+
     def update_row(self, row, id: str, status: str, prompt: str, model: str, eta: int):
         # ID, STATUS, PROMPT, MODEL, ETA
         table = self.ui.inProgressItemsTable
         table.setSortingEnabled(False)
 
-        for col, value in enumerate([id, status, prompt, model, hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta))]):
+        for col, value in enumerate(
+            [
+                id,
+                status,
+                prompt,
+                model,
+                hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta)),
+            ]
+        ):
             item = table.item(row, col)
             if item is None:
                 item = QTableWidgetItem()
