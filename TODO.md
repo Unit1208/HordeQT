@@ -25,4 +25,6 @@
 - [ ] DeepDanbooru integration
 - [ ] Insert Danbooru or similar url, get formatted result
 - [ ] Get prompt from metadata
-- [ ] Preset box for sizing
+- [x] Preset box for sizing
+- [ ] Reset to defaults button
+- [ ] Figure out why closing takes so long

@@ -1,5 +1,7 @@
 # This Python file uses the following encoding: utf-8
+from dataclasses import dataclass
 import datetime as dt
+import enum
 import re
 import uuid
 import human_readable as hr
@@ -99,6 +101,8 @@ def prompt_matrix(prompt: str) -> List[str]:
     # If no valid combinations were generated, return the original prompt
     return result_prompts if result_prompts else [prompt]
 
+    
+    
 
 class ImageWidget(QLabel):
     imageClicked = Signal(QPixmap)
@@ -818,6 +822,10 @@ class MainWindow(QMainWindow):
             lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
         )
         self.ui.progressBar.setValue(0)
+        self.ui.presetComboBox.currentTextChanged.connect(self.on_preset_change)
+        self.ui.widthSpinBox.valueChanged.connect(self.on_width_change)
+        self.ui.heightSpinBox.valueChanged.connect(self.on_height_change)
+        self.preset_being_updated=False
         self.gallery_layout = MasonryLayout()
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
@@ -867,6 +875,54 @@ class MainWindow(QMainWindow):
         )
         self.savedData.write()
         QMainWindow.closeEvent(self, event)
+    def on_width_change(self):
+        if not self.preset_being_updated:
+            self.ui.presetComboBox.setCurrentIndex(0)
+    def on_height_change(self):
+        if not self.preset_being_updated:
+            self.ui.presetComboBox.setCurrentIndex(0)
+    def on_preset_change(self):
+        current_model_needs_1024=self.model_dict[self.ui.modelComboBox.currentText()].details.get("baseline",None) in ["stable_diffusion_xl","stable_cascade"]
+        self.preset_being_updated=True
+        match self.ui.presetComboBox.currentIndex():
+            case 0:
+                pass
+            case 1:
+                #LANDSCAPE (16:9)
+                self.ui.widthSpinBox.setValue(1024)
+                self.ui.heightSpinBox.setValue(576)
+            case 2:
+                #LANDSCAPE (3:2)
+                if current_model_needs_1024:
+                    self.ui.widthSpinBox.setValue(1024)
+                    self.ui.heightSpinBox.setValue(704)
+                else:
+                    self.ui.widthSpinBox.setValue(768)
+                    self.ui.heightSpinBox.setValue(512)
+            case 3:
+                #PORTRAIT (2:3)
+                if current_model_needs_1024:
+                    self.ui.widthSpinBox.setValue(704)
+                    self.ui.heightSpinBox.setValue(1024)
+                else:
+                    self.ui.widthSpinBox.setValue(512)
+                    self.ui.heightSpinBox.setValue(768)
+            case 4:
+                #PHONE BACKGROUND (9:21)
+                self.ui.widthSpinBox.setValue(448)
+                self.ui.heightSpinBox.setValue(1024)
+            case 5:
+                #ULTRAWIDE (21:9)
+                self.ui.widthSpinBox.setValue(1024)
+                self.ui.heightSpinBox.setValue(448)
+            case 6:
+                if current_model_needs_1024:
+                    self.ui.widthSpinBox.setValue(1024)
+                    self.ui.heightSpinBox.setValue(1024)
+                else:
+                    self.ui.widthSpinBox.setValue(512)
+                    self.ui.heightSpinBox.setValue(512)
+        self.preset_being_updated=False                    
 
     def on_image_fully_downloaded(self, lj: LocalJob):
         self.add_image_to_gallery(lj.path)

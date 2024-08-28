@@ -186,32 +186,32 @@
             </item>
             <item>
              <property name="text">
-              <string>Portrait</string>
+              <string>Landscape (16:9)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Landscape</string>
+              <string>Landscape (3:2)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Large Portrait</string>
+              <string>Portrait (2:3)</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Large Landscape</string>
+              <string>Phone Background (9:21)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Ultrawide (21:9)</string>
              </property>
             </item>
             <item>
              <property name="text">
               <string>Square</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>Large Square</string>
              </property>
             </item>
            </widget>
