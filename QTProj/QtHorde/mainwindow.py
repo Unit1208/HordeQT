@@ -569,14 +569,18 @@ class ModelPopup(QDialog):
         self.ui.requirementsLineEdit.setText(req_str)
 
 
-class LoadWorker(QObject):
+class LoadThread(QThread):
     progress = Signal(int)
     model_info = Signal(dict)
     user_info = Signal(requests.Response)
 
-    def run(self, api_key):
+    def __init__(self, api_key: str, parent: QObject | None = None) -> None:
+        super().__init__(parent)
+        self.api_key = api_key
+
+    def run(self):
         self.user_info.emit(
-            requests.get(BASE_URL + "find_user", headers=get_headers(api_key))
+            requests.get(BASE_URL + "find_user", headers=get_headers(self.api_key))
         )
         self.progress.emit(50)
         # QSaveFile("model_ref.json").
@@ -678,6 +682,65 @@ class SavedData:
 
 
 class MainWindow(QMainWindow):
+
+    def __init__(self, app: QApplication, parent=None):
+        super().__init__(parent)
+        self.savedData = SavedData()
+        self.savedData.read()
+
+        self.clipboard = app.clipboard()
+        self.model_dict: Dict[str, Model] = {}
+        self.ui: Ui_MainWindow = Ui_MainWindow()
+        self.ui.setupUi(self)
+        if self.savedData.window_state is not None:
+            self.restoreGeometry(self.savedData.window_state)
+        if self.savedData.window_geometry is not None:
+            self.restoreGeometry(self.savedData.window_geometry)
+        self.restore_job_config(self.savedData.job_config)
+        if (k := keyring.get_password("HordeQT", "HordeQTUser")) is not None:
+            self.ui.apiKeyEntry.setText(k)
+            self.api_key = k
+        else:
+            self.api_key = None
+        self.loading_thread = LoadThread(self.api_key)
+        self.show()
+        self.ui.maxJobsSpinBox.setValue(self.savedData.max_jobs)
+        self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
+        self.ui.GenerateButton.setEnabled(False)
+        self.ui.modelComboBox.setEnabled(False)
+        self.api_thread = APIManagerThread.deserialize(
+            self.savedData.api_state,
+            api_key=self.api_key,
+            max_requests=self.savedData.max_jobs,
+        )
+        self.download_thread: DownloadThread = DownloadThread.deserialize(
+            self.savedData.current_images
+        )
+        self.api_thread.job_completed.connect(self.on_job_completed)
+
+        # Connect signals
+        self.loading_thread.progress.connect(self.update_progress)
+        self.loading_thread.model_info.connect(self.construct_model_dict)
+        self.loading_thread.user_info.connect(self.update_user_info)
+
+        self.ui.GenerateButton.clicked.connect(self.on_generate_click)
+        self.ui.modelDetailsButton.clicked.connect(self.on_model_open_click)
+
+        self.ui.apiKeyEntry.returnPressed.connect(self.save_api_key)
+        self.ui.saveAPIkey.clicked.connect(self.save_api_key)
+        self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
+        self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
+        self.ui.openSavedData.clicked.connect(
+            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_DATA_DIR_PATH))
+        )
+        self.ui.openSavedImages.clicked.connect(
+            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
+        )
+        self.ui.progressBar.setValue(0)
+        QTimer.singleShot(0, self.loading_thread.start)
+        QTimer.singleShot(0, self.download_thread.start)
+        QTimer.singleShot(0, self.api_thread.start)
+
     def show_error(self, message):
 
         QMessageBox.critical(self, "Error", message)
@@ -741,68 +804,6 @@ class MainWindow(QMainWindow):
         self.ui.stepsSpinBox.setValue(job_config.get("steps", 20))
         self.ui.modelComboBox.setCurrentText(job_config.get("model", "default"))
         self.ui.NSFWCheckBox.setChecked(job_config.get("allow_nsfw", False))
-
-    def __init__(self, app: QApplication, parent=None):
-        super().__init__(parent)
-        self.savedData = SavedData()
-        self.savedData.read()
-
-        self.clipboard = app.clipboard()
-        self.model_dict: Dict[str, Model] = {}
-        self.ui: Ui_MainWindow = Ui_MainWindow()
-        self.ui.setupUi(self)
-        if self.savedData.window_state is not None:
-            self.restoreGeometry(self.savedData.window_state)
-        if self.savedData.window_geometry is not None:
-            self.restoreGeometry(self.savedData.window_geometry)
-        self.restore_job_config(self.savedData.job_config)
-        self.loading_thread = QThread()
-        self.worker = LoadWorker()
-        self.show()
-        if (k := keyring.get_password("HordeQT", "HordeQTUser")) is not None:
-            self.ui.apiKeyEntry.setText(k)
-            self.api_key = k
-        else:
-            self.api_key = None
-        self.ui.maxJobsSpinBox.setValue(self.savedData.max_jobs)
-        self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
-        self.ui.GenerateButton.setEnabled(False)
-        self.ui.modelComboBox.setEnabled(False)
-        self.api_thread = APIManagerThread.deserialize(
-            self.savedData.api_state,
-            api_key=self.api_key,
-            max_requests=self.savedData.max_jobs,
-        )
-        self.download_thread: DownloadThread = DownloadThread.deserialize(
-            self.savedData.current_images
-        )
-        self.api_thread.job_completed.connect(self.on_job_completed)
-
-        # Connect signals
-        self.worker.progress.connect(self.update_progress)
-        self.worker.model_info.connect(self.construct_model_dict)
-        self.worker.user_info.connect(self.update_user_info)
-        self.worker.moveToThread(self.loading_thread)
-        self.loading_thread.started.connect(lambda: self.worker.run(self.api_key))
-
-        self.ui.GenerateButton.clicked.connect(self.on_generate_click)
-        self.ui.modelDetailsButton.clicked.connect(self.on_model_open_click)
-
-        self.ui.apiKeyEntry.returnPressed.connect(self.save_api_key)
-        self.ui.saveAPIkey.clicked.connect(self.save_api_key)
-        self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
-        self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
-        self.ui.openSavedData.clicked.connect(
-            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_DATA_DIR_PATH))
-        )
-        self.ui.openSavedImages.clicked.connect(
-            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
-        )
-
-        self.ui.progressBar.setValue(0)
-        QTimer.singleShot(0, self.loading_thread.start)
-        QTimer.singleShot(0, self.download_thread.start)
-        QTimer.singleShot(0, self.api_thread.start)
 
     def on_job_completed(self, job: LocalJob):
         print(f"Job {job.id} completed.")
