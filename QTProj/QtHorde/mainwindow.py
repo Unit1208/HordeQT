@@ -13,7 +13,6 @@ from typing import List, Dict, Optional, Self
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
-    QMessageBox,
     QDialog,
     QLineEdit,
     QWidget,
@@ -36,10 +35,11 @@ from PySide6.QtCore import (
     QRect,
     Qt,
     QUrl,
+    
 
 )
 from pyqttoast import Toast, ToastPreset,toast_enums
-from PySide6.QtGui import QPixmap, QDesktopServices
+from PySide6.QtGui import QPixmap, QDesktopServices,QFont
 
 from queue import Queue
 
@@ -835,17 +835,6 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
 
-    def show_error_message(self, message):
-
-        QMessageBox.critical(self, "Error", message)
-
-    def show_warn_message(self, message):
-
-        QMessageBox.warning(self, "Warning", message)
-
-    def show_info_message(self, message):
-
-        QMessageBox.information(self, "Info", message)
     def show_success_toast(self,title,message,duration=5000):
         success_toast=Toast(self)
         success_toast.setDuration(duration)
@@ -952,7 +941,7 @@ class MainWindow(QMainWindow):
 
     def update_user_info(self, r: requests.Response):
         if r.status_code == 404:
-            self.show_error_message("Invalid API key; User could not be found.")
+            self.show_error_toast("Invalid API key; User could not be found.")
             return
         j = r.json()
         self.user_info = j
@@ -1064,10 +1053,12 @@ class MainWindow(QMainWindow):
                 if steps>maxs:
                     self.show_warn_toast("Max Steps",f"This model requires at most {maxs} steps, currently {steps}")
                     self.ui.stepsSpinBox.setValue(maxs)
+                    return
             if (cfgreq:=reqs.get("cfg_scale",None)) is not None:
                 if cfg_scale!=cfgreq:
-                    self.show_warn_toast("Min Steps",f"This model requires a CFG value of {cfgreq} steps, currently {cfg_scale}")
+                    self.show_warn_toast("Min Steps",f"This model requires a CFG value of {cfgreq}, currently {cfg_scale}")
                     self.ui.guidenceDoubleSpinBox.setValue(float(cfgreq))
+                    return
             if (rsamplers:=reqs.get("samplers",None)) is not None:
                 if sampler_name not in rsamplers:
                     samplertext=""
@@ -1075,6 +1066,8 @@ class MainWindow(QMainWindow):
                         samplertext+="\""+n+"\","
                     samplertext=samplertext[:-1]
                     self.show_warn_toast("Wrong Sampler", "This mode requires the use of one of "+samplertext+" samplers")
+                    self.ui.samplerComboBox=rsamplers[0]
+                    return
         karras = True
         hires_fix = True
         allow_nsfw = self.ui.NSFWCheckBox.isChecked()
@@ -1153,7 +1146,7 @@ class MainWindow(QMainWindow):
         self.hide_api_key()
         self.api_key = self.ui.apiKeyEntry.text()
         keyring.set_password("HordeQT", "HordeQTUser", self.api_key)
-        self.show_info_toast("API Key saved sucessfully.")
+        self.show_error_toast("API Key saved sucessfully.")
         self.update_user_info()
 
     def copy_api_key(self):
@@ -1179,9 +1172,15 @@ class MainWindow(QMainWindow):
             ]
         ):
             item = table.item(row, col)
+                
             if item is None:
                 item = QTableWidgetItem()
                 table.setItem(row, col, item)
+            if item==id:
+                font = QFont()
+                font.setStyleHint(QFont.StyleHint.Monospace)  # Set the style hint to Monospace
+                font.setFamily("Monospace")         # This ensures a fallback to a common monospace font
+                item.setFont(font)
             item.setText(value)
 
         table.setSortingEnabled(True)
