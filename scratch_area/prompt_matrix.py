@@ -6,7 +6,8 @@ import re
 tests = """A green bus
 A {purple|orange} boat
 A {red|blue} {bicycle|car}
-A {scarlet|cerulean} {bus|cart|train}"""
+A {scarlet|cerulean} {bus|cart|train}
+A {very|incredibly|stupidly} {long|girthy|deep} {negative prompt|neg prompt|pos prompt}"""
 test_cases = tests.split("\n")
 
 ## Logic adapted from Artbot's implementation
@@ -33,9 +34,19 @@ def prompt_matrix(prompt:str):
             new_prompts_array.append(x)
     for match in matched_matrix:
         parse_prompt(match.group())
-    if len(new_prompts_array)==0:
-        new_prompts_array.append(prompt)
-    return new_prompts_array    
+    #This might be the most hacky solution I could find, but it "works"
+    newer_prompts_array=[]
+    for n in range(len(new_prompts_array)):
+        p=new_prompts_array[n]
+        if p.count("{")+p.count("}")==0:
+            newer_prompts_array.append(p)
+
+
+    if len(newer_prompts_array)==0:
+        newer_prompts_array.append(prompt)
+    
+    
+    return newer_prompts_array    
                 
 
 for test in test_cases:
