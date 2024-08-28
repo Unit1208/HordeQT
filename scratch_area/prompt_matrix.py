@@ -1,46 +1,34 @@
 from typing import List
-import uuid
-import re
 import re
 
 
-## Logic adapted from Artbot's implementation
-
-
-def prompt_matrix(prompt: str):
+def prompt_matrix(prompt: str) -> List[str]:
     matched_matrix = re.finditer(r"\{.+?\}", prompt, re.M)
+    
+    def generate_prompts(current_prompt: str, matches: List[str]) -> List[str]:
+        if not matches:
+            return [current_prompt]
+        
+        matched = matches[0]
+        remaining_matches = matches[1:]
+        
+        # Strip brackets and split by '|'
+        options = matched[1:-1].split("|")
+        
+        # Recursively generate all combinations
+        generated_prompts = []
+        for option in options:
+            new_prompt = current_prompt.replace(matched, option, 1)
+            generated_prompts.extend(generate_prompts(new_prompt, remaining_matches))
+        
+        return generated_prompts
+    
+    matches = [match.group() for match in matched_matrix]
+    result_prompts = generate_prompts(prompt, matches)
+    
+    # If no valid combinations were generated, return the original prompt
+    return result_prompts if result_prompts else [prompt]
 
-    new_prompts_array: List[str] = []
-
-    def parse_prompt(matched: str):
-        update_prompts: List[str] = []
-        strip_brackets = matched.replace("{", "").replace("}", "")
-        matched_word_array = strip_brackets.split("|") or []
-        if len(new_prompts_array) == 0:
-            for word in matched_word_array:
-                s = prompt.replace(matched, word)
-                update_prompts.append(s)
-        else:
-            for s in new_prompts_array:
-                for word in matched_word_array:
-                    new_string = s.replace(matched, word)
-                    update_prompts.append(new_string)
-        for x in update_prompts:
-            new_prompts_array.append(x)
-
-    for match in matched_matrix:
-        parse_prompt(match.group())
-    # This might be the most hacky solution I could find, but it "works"
-    newer_prompts_array = []
-    for n in range(len(new_prompts_array)):
-        p = new_prompts_array[n]
-        if p.count("{") + p.count("}") == 0:
-            newer_prompts_array.append(p)
-
-    if len(newer_prompts_array) == 0:
-        newer_prompts_array.append(prompt)
-
-    return newer_prompts_array
 
 
 if __name__ == "__main__":
