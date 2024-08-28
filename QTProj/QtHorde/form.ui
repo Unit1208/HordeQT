@@ -27,7 +27,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -66,7 +66,7 @@
            <height>661</height>
           </rect>
          </property>
-         <layout class="QFormLayout" name="formLayout">
+         <layout class="QFormLayout" name="createLayout">
           <property name="sizeConstraint">
            <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
           </property>

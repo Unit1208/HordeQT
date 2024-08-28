@@ -29,6 +29,7 @@ from PySide6.QtCore import (
     QRect,
     Qt,
     QUrl,
+    QByteArray,
 )
 from PySide6.QtGui import QPixmap, QDesktopServices
 
@@ -619,12 +620,19 @@ class SavedData:
         os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
 
     def update(
-        self, api: APIManagerThread, nsfw: bool, max_jobs: int, dlthread: DownloadThread
+        self,
+        api: APIManagerThread,
+        nsfw: bool,
+        max_jobs: int,
+        dlthread: DownloadThread,
+        window: QMainWindow,
     ):
         self.api_state = api.serialize()
         self.current_images = dlthread.serialize()
         self.max_jobs = max_jobs
         self.nsfw_allowed = nsfw
+        self.window_geometry = window.saveGeometry()
+        self.window_state = window.saveState()
 
     def write(self):
         d = {
@@ -632,6 +640,8 @@ class SavedData:
             "max_jobs": self.max_jobs,
             "nsfw_allowed": self.nsfw_allowed,
             "current_images": self.current_images,
+            "window_geometry": str(self.window_geometry.toBase64()),
+            "window_state": str(self.window_state.toBase64()),
         }
         # cbor2.dump ?
         jsondata = json.dumps(d)
@@ -648,6 +658,16 @@ class SavedData:
         self.max_jobs = j.get("max_jobs", 5)
         self.current_images = j.get("current_images", {})
         self.nsfw_allowed = j.get("nsfw_allowed", False)
+        wg = j.get("window_geometry", None)
+        if wg is not None:
+            self.window_geometry = QByteArray.fromBase64(bytes(wg, "utf-8"))
+        else:
+            self.window_geometry = None
+        ws = j.get("window_state", None)
+        if ws is not None:
+            self.window_state = QByteArray.fromBase64(bytes(ws, "utf-8"))
+        else:
+            self.window_state = None
 
 
 class MainWindow(QMainWindow):
@@ -679,6 +699,7 @@ class MainWindow(QMainWindow):
             self.ui.NSFWCheckBox.isChecked(),
             self.ui.maxJobsSpinBox.value(),
             self.download_thread,
+            self,
         )
         self.savedData.write()
         QMainWindow.closeEvent(self, event)
@@ -687,6 +708,10 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.savedData = SavedData()
         self.savedData.read()
+        if self.savedData.window_state is not None:
+            self.restoreGeometry(self.savedData.window_state)
+        if self.savedData.window_geometry is not None:
+            self.restoreGeometry(self.savedData.window_geometry)
         self.clipboard = app.clipboard()
         self.model_dict: Dict[str, Model] = {}
         self.ui: Ui_MainWindow = Ui_MainWindow()
