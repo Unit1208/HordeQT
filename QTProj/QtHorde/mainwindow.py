@@ -827,7 +827,7 @@ class MainWindow(QMainWindow):
         self.ui.undoResetButton.clicked.connect(self.undo_reset_job_config)
         self.ui.undoResetButton.setEnabled(False)
         self.preset_being_updated = False
-        self.last_job_config:Optional[Dict]=None
+        self.last_job_config: Optional[Dict] = None
         self.gallery_layout = MasonryLayout()
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
@@ -970,16 +970,18 @@ class MainWindow(QMainWindow):
         self.ui.stepsSpinBox.setValue(job_config.get("steps", 20))
         self.ui.modelComboBox.setCurrentText(job_config.get("model", "default"))
         self.ui.NSFWCheckBox.setChecked(job_config.get("allow_nsfw", False))
+
     def undo_reset_job_config(self):
         if self.last_job_config is not None:
             self.restore_job_config(self.last_job_config)
+
     def reset_job_config(self):
-        self.last_job_config=self.get_job_config()
+        self.last_job_config = self.get_job_config()
         self.ui.undoResetButton.setEnabled(True)
         # Restore the job config, using the defaults for everything. Model needs to be set after, as the default is "default"
         self.restore_job_config({})
         self.ui.modelComboBox.setCurrentIndex(0)
-        
+
     def on_job_completed(self, job: LocalJob):
         print(f"Job {job.id} completed.")
         self.download_thread.add_dl(job)

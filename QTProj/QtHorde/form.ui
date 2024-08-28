@@ -62,7 +62,7 @@
           <rect>
            <x>10</x>
            <y>9</y>
-           <width>961</width>
+           <width>951</width>
            <height>801</height>
           </rect>
          </property>
@@ -486,8 +486,17 @@
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
              <widget class="QPushButton" name="resetSettingsButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Reset Settings</string>
+              </property>
+              <property name="icon">
+               <iconset theme="QIcon::ThemeIcon::EditClear"/>
               </property>
              </widget>
             </item>
@@ -496,8 +505,17 @@
               <property name="enabled">
                <bool>false</bool>
               </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="text">
                <string>Undo Reset</string>
+              </property>
+              <property name="icon">
+               <iconset theme="QIcon::ThemeIcon::EditUndo"/>
               </property>
               <property name="checkable">
                <bool>false</bool>
