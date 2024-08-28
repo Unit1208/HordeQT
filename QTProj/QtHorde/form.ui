@@ -27,7 +27,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -63,7 +63,7 @@
            <x>10</x>
            <y>9</y>
            <width>951</width>
-           <height>731</height>
+           <height>761</height>
           </rect>
          </property>
          <layout class="QFormLayout" name="createLayout">
@@ -465,33 +465,25 @@
             </property>
            </widget>
           </item>
+          <item row="14" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QProgressBar" name="progressBar">
+              <property name="value">
+               <number>0</number>
+              </property>
+              <property name="textVisible">
+               <bool>true</bool>
+              </property>
+              <property name="invertedAppearance">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
          </layout>
         </widget>
-       </widget>
-       <widget class="QWidget" name="horizontalLayoutWidget">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>1090</y>
-          <width>951</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <layout class="QHBoxLayout" name="horizontalLayout_3">
-         <item>
-          <widget class="QProgressBar" name="progressBar">
-           <property name="value">
-            <number>0</number>
-           </property>
-           <property name="textVisible">
-            <bool>true</bool>
-           </property>
-           <property name="invertedAppearance">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
        </widget>
       </widget>
       <widget class="QWidget" name="curr_items_tab">
@@ -576,16 +568,26 @@
        <attribute name="title">
         <string>Gallery</string>
        </attribute>
-       <widget class="QWidget" name="gridLayoutWidget_2">
+       <widget class="QFrame" name="galleryViewFrame">
         <property name="geometry">
          <rect>
-          <x>0</x>
-          <y>0</y>
-          <width>2</width>
-          <height>2</height>
+          <x>10</x>
+          <y>10</y>
+          <width>961</width>
+          <height>1111</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="galleryView"/>
+        <widget class="QWidget" name="verticalLayoutWidget_2">
+         <property name="geometry">
+          <rect>
+           <x>0</x>
+           <y>0</y>
+           <width>961</width>
+           <height>1111</height>
+          </rect>
+         </property>
+         <layout class="QVBoxLayout" name="galleryView"/>
+        </widget>
        </widget>
       </widget>
       <widget class="QWidget" name="settings_tab">

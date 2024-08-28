@@ -146,27 +146,9 @@ class MasonryLayout(QLayout):
             widget.setGeometry(QRect(x, y, self.column_width, height))
             self.column_heights[min_col] += height + self.spacing
 
-
-class MasonryGallery(QWidget):
-    def __init__(self):
-        super().__init__()
-
-        self.mlayout = MasonryLayout(self)
-        scroll_area = QScrollArea(self)
-        scroll_area.setWidgetResizable(True)
-
-        content_widget = QWidget()
-        content_widget.setLayout(self.mlayout)
-
-        scroll_area.setWidget(content_widget)
-
-        main_layout = QVBoxLayout(self)
-        main_layout.addWidget(scroll_area)
-        self.setLayout(main_layout)
-
     def addImage(self, path: os.PathLike):
         image_widget = ImageWidget(path)
-        self.mlayout.addWidget(image_widget)
+        self.addWidget(image_widget)
 
 
 class Model:
@@ -341,7 +323,7 @@ class LocalJob:
     @classmethod
     def deserialize(cls, value: dict) -> Self:
         job = value.get("original")
-        return cls(job)
+        return cls(Job.deserialize(job))
 
 
 class APIManagerThread(QThread):
@@ -752,11 +734,20 @@ class MainWindow(QMainWindow):
             lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
         )
         self.ui.progressBar.setValue(0)
-        self.gallery = MasonryGallery()
-        self.ui.galleryView.addWidget(self.gallery)
-        for lj in self.download_thread.completed_downloads:
+        self.gallery_layout = MasonryLayout()
+        scroll_area = QScrollArea(self)
+        scroll_area.setWidgetResizable(True)
 
-            self.gallery.addImage(lj.path)
+        content_widget = QWidget()
+        content_widget.setLayout(self.gallery_layout)
+
+        scroll_area.setWidget(content_widget)
+
+        self.ui.galleryView.addWidget(scroll_area)
+
+        for lj in self.download_thread.completed_downloads:
+            print(lj.path)
+            self.gallery_layout.addImage(lj.path)
         # =MasonryGallery()
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
@@ -1058,9 +1049,9 @@ class MainWindow(QMainWindow):
 
             self.update_row(
                 row,
-                job_id,
+                lj.id,
                 "Done",
-                lj.original.prompt[: min(len(job.prompt), 50)],
+                lj.original.prompt[: min(len(lj.original.prompt), 50)],
                 lj.original.model,
                 -1,
             )

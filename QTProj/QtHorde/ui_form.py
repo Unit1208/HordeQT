@@ -21,15 +21,15 @@ from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QCheckBox, QCombo
     QGroupBox, QHBoxLayout, QHeaderView, QLabel,
     QLayout, QLineEdit, QMainWindow, QMenuBar,
     QPlainTextEdit, QProgressBar, QPushButton, QSizePolicy,
-    QSpacerItem, QSpinBox, QTabWidget, QTableWidget,
-    QTableWidgetItem, QTreeView, QVBoxLayout, QWidget)
+    QSpinBox, QTabWidget, QTableWidget, QTableWidgetItem,
+    QTreeView, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.setWindowModality(Qt.WindowModality.ApplicationModal)
-        MainWindow.resize(792, 879)
+        MainWindow.resize(1000, 1200)
         self.actionSave = QAction(MainWindow)
         self.actionSave.setObjectName(u"actionSave")
         self.centralwidget = QWidget(MainWindow)
@@ -51,10 +51,10 @@ class Ui_MainWindow(object):
         self.create_tab.setObjectName(u"create_tab")
         self.frame = QFrame(self.create_tab)
         self.frame.setObjectName(u"frame")
-        self.frame.setGeometry(QRect(0, 0, 771, 751))
+        self.frame.setGeometry(QRect(0, 0, 961, 1081))
         self.gridLayoutWidget = QWidget(self.frame)
         self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayoutWidget.setGeometry(QRect(10, 9, 751, 661))
+        self.gridLayoutWidget.setGeometry(QRect(10, 9, 951, 761))
         self.createLayout = QFormLayout(self.gridLayoutWidget)
         self.createLayout.setObjectName(u"createLayout")
         self.createLayout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
@@ -260,19 +260,18 @@ class Ui_MainWindow(object):
 
         self.createLayout.setWidget(2, QFormLayout.LabelRole, self.label_2)
 
-        self.horizontalLayoutWidget = QWidget(self.create_tab)
-        self.horizontalLayoutWidget.setObjectName(u"horizontalLayoutWidget")
-        self.horizontalLayoutWidget.setGeometry(QRect(20, 769, 721, 41))
-        self.horizontalLayout_3 = QHBoxLayout(self.horizontalLayoutWidget)
+        self.horizontalLayout_3 = QHBoxLayout()
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.progressBar = QProgressBar(self.horizontalLayoutWidget)
+        self.progressBar = QProgressBar(self.gridLayoutWidget)
         self.progressBar.setObjectName(u"progressBar")
         self.progressBar.setValue(0)
         self.progressBar.setTextVisible(True)
         self.progressBar.setInvertedAppearance(False)
 
         self.horizontalLayout_3.addWidget(self.progressBar)
+
+
+        self.createLayout.setLayout(14, QFormLayout.FieldRole, self.horizontalLayout_3)
 
         icon2 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.ListAdd))
         self.tabWidget.addTab(self.create_tab, icon2, "")
@@ -295,7 +294,12 @@ class Ui_MainWindow(object):
         __qtablewidgetitem4 = QTableWidgetItem()
         self.inProgressItemsTable.setHorizontalHeaderItem(4, __qtablewidgetitem4)
         self.inProgressItemsTable.setObjectName(u"inProgressItemsTable")
-        self.inProgressItemsTable.setGeometry(QRect(0, 0, 751, 771))
+        self.inProgressItemsTable.setGeometry(QRect(0, 0, 951, 1091))
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Expanding)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.inProgressItemsTable.sizePolicy().hasHeightForWidth())
+        self.inProgressItemsTable.setSizePolicy(sizePolicy3)
         self.label_4 = QLabel(self.curr_items_tab)
         self.label_4.setObjectName(u"label_4")
         self.label_4.setGeometry(QRect(10, 10, 211, 16))
@@ -303,10 +307,13 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.curr_items_tab, icon3, "")
         self.gallery_tab = QWidget()
         self.gallery_tab.setObjectName(u"gallery_tab")
-        self.gridLayoutWidget_2 = QWidget(self.gallery_tab)
-        self.gridLayoutWidget_2.setObjectName(u"gridLayoutWidget_2")
-        self.gridLayoutWidget_2.setGeometry(QRect(9, 9, 751, 791))
-        self.galleryView = QGridLayout(self.gridLayoutWidget_2)
+        self.galleryViewFrame = QFrame(self.gallery_tab)
+        self.galleryViewFrame.setObjectName(u"galleryViewFrame")
+        self.galleryViewFrame.setGeometry(QRect(10, 10, 961, 1111))
+        self.verticalLayoutWidget_2 = QWidget(self.galleryViewFrame)
+        self.verticalLayoutWidget_2.setObjectName(u"verticalLayoutWidget_2")
+        self.verticalLayoutWidget_2.setGeometry(QRect(0, 0, 961, 1111))
+        self.galleryView = QVBoxLayout(self.verticalLayoutWidget_2)
         self.galleryView.setObjectName(u"galleryView")
         self.galleryView.setContentsMargins(0, 0, 0, 0)
         icon4 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentPrintPreview))
@@ -315,7 +322,7 @@ class Ui_MainWindow(object):
         self.settings_tab.setObjectName(u"settings_tab")
         self.formLayoutWidget = QWidget(self.settings_tab)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(0, 10, 761, 140))
+        self.formLayoutWidget.setGeometry(QRect(0, 10, 971, 141))
         self.formLayout_3 = QFormLayout(self.formLayoutWidget)
         self.formLayout_3.setObjectName(u"formLayout_3")
         self.formLayout_3.setVerticalSpacing(6)
@@ -407,7 +414,7 @@ class Ui_MainWindow(object):
         self.userInfoPage.setObjectName(u"userInfoPage")
         self.formLayoutWidget_2 = QWidget(self.userInfoPage)
         self.formLayoutWidget_2.setObjectName(u"formLayoutWidget_2")
-        self.formLayoutWidget_2.setGeometry(QRect(-1, 9, 771, 801))
+        self.formLayoutWidget_2.setGeometry(QRect(9, 9, 961, 1111))
         self.formLayout_2 = QFormLayout(self.formLayoutWidget_2)
         self.formLayout_2.setObjectName(u"formLayout_2")
         self.formLayout_2.setContentsMargins(0, 0, 0, 0)
@@ -817,7 +824,7 @@ class Ui_MainWindow(object):
         self.Stats_Tab.setObjectName(u"Stats_Tab")
         self.localStats = QTreeView(self.Stats_Tab)
         self.localStats.setObjectName(u"localStats")
-        self.localStats.setGeometry(QRect(0, 10, 771, 801))
+        self.localStats.setGeometry(QRect(0, 10, 971, 801))
         icon10 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
         self.tabWidget.addTab(self.Stats_Tab, icon10, "")
         self.About_tab = QWidget()
@@ -828,10 +835,6 @@ class Ui_MainWindow(object):
         self.verticalLayout = QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setObjectName(u"verticalLayout")
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.verticalLayout.addItem(self.horizontalSpacer)
-
         icon11 = QIcon()
         icon11.addFile(u"QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.tabWidget.addTab(self.About_tab, icon11, "")
@@ -841,7 +844,7 @@ class Ui_MainWindow(object):
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 792, 21))
+        self.menubar.setGeometry(QRect(0, 0, 1000, 21))
         MainWindow.setMenuBar(self.menubar)
 
         self.retranslateUi(MainWindow)
