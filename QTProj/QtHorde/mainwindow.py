@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
     QTableWidgetItem,
     QVBoxLayout,
     QHBoxLayout,
-    QPushButton,
+    QPushButton
 )
 from PySide6.QtCore import (
     QObject,
@@ -38,6 +38,7 @@ from PySide6.QtCore import (
     QUrl,
 
 )
+from pyqttoast import Toast, ToastPreset,toast_enums
 from PySide6.QtGui import QPixmap, QDesktopServices
 
 from queue import Queue
@@ -824,23 +825,54 @@ class MainWindow(QMainWindow):
         for lj in self.download_thread.completed_downloads:
             print(lj.path)
             self.add_image_to_gallery(lj.path)
+        Toast.setAlwaysOnMainScreen(True)
+        Toast.setPosition(toast_enums.ToastPosition.TOP_RIGHT)
+        Toast.setPositionRelativeToWidget(self)
         # =MasonryGallery()
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
 
-    def show_error(self, message):
+    def show_error_message(self, message):
 
         QMessageBox.critical(self, "Error", message)
 
-    def show_warn(self, message):
+    def show_warn_message(self, message):
 
         QMessageBox.warning(self, "Warning", message)
 
-    def show_info(self, message):
+    def show_info_message(self, message):
 
         QMessageBox.information(self, "Info", message)
-
+    def show_success_toast(self,title,message,duration=5000):
+        success_toast=Toast(self)
+        success_toast.setDuration(duration)
+        success_toast.setTitle(title)
+        success_toast.setText(message)
+        success_toast.applyPreset(ToastPreset.SUCCESS if app.styleHints()==Qt.ColorScheme.Light else ToastPreset.SUCCESS_DARK)
+        success_toast.show()
+    def show_info_toast(self,title,message,duration=5000):
+        info_toast=Toast(self)
+        info_toast.setDuration(duration)
+        info_toast.setTitle(title)
+        info_toast.setText(message)
+        info_toast.applyPreset(ToastPreset.INFORMATION if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.INFORMATION_DARK)
+        info_toast.show()
+    def show_error_toast(self,title,message,duration=5000):
+        error_toast=Toast(self)
+        error_toast.setDuration(duration)
+        error_toast.setTitle(title)
+        error_toast.setText(message)
+        error_toast.applyPreset(ToastPreset.ERROR if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.ERROR_DARK)
+        error_toast.show()
+    def show_warn_toast(self,title,message,duration=5000):
+        warn_toast=Toast(self)
+        warn_toast.setDuration(duration)
+        warn_toast.setTitle(title)
+        warn_toast.setText(message)
+        warn_toast.applyPreset(ToastPreset.WARNING if app.styleHints()==Qt.ColorScheme.Light  else ToastPreset.WARNING_DARK)
+        warn_toast.show()
+    
     def on_image_fully_downloaded(self, lj: LocalJob):
         self.add_image_to_gallery(lj.path)
 
@@ -918,7 +950,7 @@ class MainWindow(QMainWindow):
 
     def update_user_info(self, r: requests.Response):
         if r.status_code == 404:
-            self.show_error("Invalid API key; User could not be found.")
+            self.show_error_message("Invalid API key; User could not be found.")
             return
         j = r.json()
         self.user_info = j
@@ -983,7 +1015,7 @@ class MainWindow(QMainWindow):
     def create_jobs(self)->Optional[List[Job]]:
         prompt = self.ui.PromptBox.toPlainText()
         if prompt.strip() == "":
-            self.show_error("Prompt can not be empty")
+            self.show_error_toast("Prompt error","Prompt cannot be empty")
             return None
         np = self.ui.NegativePromptBox.toPlainText()
         if np.strip() != "":
@@ -1078,16 +1110,17 @@ class MainWindow(QMainWindow):
         ModelPopup(curr_model.details)
 
     def on_generate_click(self):
-        # self.show_info("Generate was clicked!")
         jobs = self.create_jobs()
         if jobs is not None:
             for n in range(len(jobs)):
                 self.api_thread.add_job(jobs[n])
+                # print(jobs[n])
+            self.show_success_toast("Created!","Jobs were created and put into queue")
     def save_api_key(self):
         self.hide_api_key()
         self.api_key = self.ui.apiKeyEntry.text()
         keyring.set_password("HordeQT", "HordeQTUser", self.api_key)
-        self.show_info("API Key saved sucessfully.")
+        self.show_info_toast("API Key saved sucessfully.")
         self.update_user_info()
 
     def copy_api_key(self):
