@@ -669,8 +669,7 @@ class SavedData:
     current_images: List[dict]
     nsfw_allowed: bool
     max_jobs: int
-    window_geometry: QByteArray
-    window_state: QByteArray
+
     job_config: dict
     finished_jobs: list[Dict]
 
@@ -684,15 +683,13 @@ class SavedData:
         nsfw: bool,
         max_jobs: int,
         dlthread: DownloadThread,
-        window: QMainWindow,
         job_config: dict,
     ):
         self.api_state = api.serialize()
         self.current_images = dlthread.serialize()
         self.max_jobs = max_jobs
         self.nsfw_allowed = nsfw
-        self.window_geometry = window.saveGeometry()
-        self.window_state = window.saveState()
+
         self.job_config = job_config
 
     def write(self):
@@ -701,8 +698,6 @@ class SavedData:
             "max_jobs": self.max_jobs,
             "nsfw_allowed": self.nsfw_allowed,
             "current_images": self.current_images,
-            "window_geometry": str(self.window_geometry.toBase64()),
-            "window_state": str(self.window_state.toBase64()),
             "job_config": self.job_config,
         }
         # cbor2.dump ?
@@ -721,16 +716,6 @@ class SavedData:
         self.current_images = j.get("current_images", {})
         self.nsfw_allowed = j.get("nsfw_allowed", False)
         self.job_config = j.get("job_config", {})
-        wg = j.get("window_geometry", None)
-        if wg is not None:
-            self.window_geometry = QByteArray.fromBase64(bytes(wg, "utf-8"))
-        else:
-            self.window_geometry = None
-        ws = j.get("window_state", None)
-        if ws is not None:
-            self.window_state = QByteArray.fromBase64(bytes(ws, "utf-8"))
-        else:
-            self.window_state = None
 
 
 class MainWindow(QMainWindow):
@@ -744,10 +729,7 @@ class MainWindow(QMainWindow):
         self.model_dict: Dict[str, Model] = {}
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
-        if self.savedData.window_state is not None:
-            self.restoreGeometry(self.savedData.window_state)
-        if self.savedData.window_geometry is not None:
-            self.restoreGeometry(self.savedData.window_geometry)
+
         self.restore_job_config(self.savedData.job_config)
         if (k := keyring.get_password("HordeQT", "HordeQTUser")) is not None:
             self.ui.apiKeyEntry.setText(k)
@@ -862,7 +844,6 @@ class MainWindow(QMainWindow):
             self.ui.NSFWCheckBox.isChecked(),
             self.ui.maxJobsSpinBox.value(),
             self.download_thread,
-            self,
             job_config,
         )
         self.savedData.write()
