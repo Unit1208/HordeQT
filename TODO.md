@@ -30,3 +30,7 @@
 - [x] Undo reset button
 - [ ] Prompt/Config History
 - [ ] Figure out why closing takes so long
+- [ ] Reload button for user details
+- [ ] Preview kudos cost
+- [ ] Toggle for done jobs
+- [ ] Why isn't the scrollbar working on the Masonry layout?

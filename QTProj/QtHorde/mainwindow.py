@@ -69,7 +69,6 @@ def get_headers(api_key: str):
         "Content-Type": "application/json",
     }
 
-
 def prompt_matrix(prompt: str) -> List[str]:
     # fails with nested brackets, but that shouldn't be an issue?
     # Writing this out, {{1|2}|{3|4}} would evalutate to e.g [1,2,3,4], and I doubt that anyone would the former. If they do, I'll fix it. Maybe.
@@ -398,6 +397,7 @@ class LocalJob:
     original: Job
     fileType: str
     downloadURL: str
+    completed_at:int
 
     def __init__(self, job: Job) -> None:
         self.id = job.job_id
@@ -411,14 +411,15 @@ class LocalJob:
             "original": self.original.serialize(),
             "fileType": self.fileType,
             "path": str(self.path),
+            "completed_at":self.completed_at
         }
 
     @classmethod
     def deserialize(cls, value: dict) -> Self:
         job = value.get("original")
-        return cls(Job.deserialize(job))
-
-
+        lj= cls(Job.deserialize(job))
+        lj.completed_at=value.get("completed_at",time.time())
+        return lj
 class APIManagerThread(QThread):
     job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
     updated = Signal()
@@ -490,7 +491,7 @@ class APIManagerThread(QThread):
         self._get_download_paths()
 
     def _send_new_jobs(self):
-        while (
+        if (
             len(self.current_requests) < self.max_requests
             and not self.job_queue.empty()
         ):
@@ -556,7 +557,7 @@ class APIManagerThread(QThread):
                 r.raise_for_status()
                 rj = r.json()
                 lj.downloadURL = rj["generations"][0]["img"]
-
+                lj.completed_at=time.time()
                 self.job_completed.emit(lj)
 
                 self.last_status_time = time.time()
@@ -667,7 +668,11 @@ class LoadThread(QThread):
     def __init__(self, api_key: str, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self.api_key = api_key
-
+    def reload_user_info(self,api_key):
+        self.api_key=api_key
+        self.user_info.emit(
+            requests.get(BASE_URL + "find_user", headers=get_headers(api_key))
+        )
     def run(self):
         self.user_info.emit(
             requests.get(BASE_URL + "find_user", headers=get_headers(self.api_key))
@@ -1080,9 +1085,7 @@ class MainWindow(QMainWindow):
         cfg_scale = self.ui.guidenceDoubleSpinBox.value()
 
         seed = self.ui.seedSpinBox.value()
-        if seed == 0:
-            # technically, seed is a string. But it makes it easier to just deal with ints.
-            seed = random.randint(0, 2**31 - 1)
+
         width = self.ui.widthSpinBox.value()
         height = self.ui.heightSpinBox.value()
         clip_skip = self.ui.clipSkipSpinBox.value()
@@ -1148,11 +1151,17 @@ class MainWindow(QMainWindow):
         prompts *= self.ui.imagesSpinBox.value()
         jobs = []
         for nprompt in prompts:
+            #if the user hasn't provided a seed, pick one. It must be under 2**31 so that we can display it on a spinbox eventually.
+            #something something C++.
+            if seed == 0:
+                sj_seed = random.randint(0, 2**31 - 1)
+            else:
+                sj_seed=seed
             job = Job(
                 nprompt,
                 sampler_name,
                 cfg_scale,
-                seed,
+                sj_seed,
                 width,
                 height,
                 clip_skip,
@@ -1219,8 +1228,8 @@ class MainWindow(QMainWindow):
         self.hide_api_key()
         self.api_key = self.ui.apiKeyEntry.text()
         keyring.set_password("HordeQT", "HordeQTUser", self.api_key)
-        self.show_error_toast("API Key saved sucessfully.")
-        self.update_user_info()
+        self.show_success_toast("Saved","API Key saved sucessfully.")
+        self.loading_thread.reload_user_info(self.api_key)
 
     def copy_api_key(self):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
@@ -1286,9 +1295,10 @@ class MainWindow(QMainWindow):
                 prompt,
                 model,
                 (
+                    # FIXME: This is hacky, I don't like it.
                     "Done"
                     if eta == -1
-                    else hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta))
+                    else ("Unknown" if eta==-2 else hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta))+ " ago" if eta<0 else "")
                 ),
             ]
         ):
@@ -1297,15 +1307,14 @@ class MainWindow(QMainWindow):
             if item is None:
                 item = QTableWidgetItem()
                 table.setItem(row, col, item)
-            if item == id:
-                font = QFont()
-                font.setStyleHint(
-                    QFont.StyleHint.Monospace
-                )  # Set the style hint to Monospace
-                font.setFamily(
-                    "Monospace"
-                )  # This ensures a fallback to a common monospace font
-                item.setFont(font)
+            font = QFont()
+            font.setStyleHint(
+                QFont.StyleHint.Monospace
+            )  # Set the style hint to Monospace
+            font.setFamily(
+                "Monospace"
+            )  # This ensures a fallback to a common monospace font
+            item.setFont(font)
             item.setText(value)
 
         table.setSortingEnabled(True)
@@ -1313,6 +1322,24 @@ class MainWindow(QMainWindow):
     def update_inprogess_table(self):
         table = self.ui.inProgressItemsTable
         table.setUpdatesEnabled(True)
+        for job in self.api_thread.job_queue.queue:
+            r = table.findItems(job.id, Qt.MatchFlag.MatchFixedString)
+            if len(r) == 0:
+                if table.columnCount() == 0:
+                    table.setColumnCount(5)  # Set the number of columns
+                row = table.rowCount()
+                table.insertRow(row)
+            else:
+                row = r[0].row()
+
+            self.update_row(
+                row,
+                job.id,
+                "Queued",
+                job.original.prompt[: min(len(lj.original.prompt), 50)],
+                job.original.model,
+                -2,
+            )
         current_jobs = self.api_thread.current_requests
         for job_id in current_jobs.keys():
             job = current_jobs[job_id]
@@ -1349,7 +1376,7 @@ class MainWindow(QMainWindow):
                 "Done",
                 lj.original.prompt[: min(len(lj.original.prompt), 50)],
                 lj.original.model,
-                -1,
+                lj.completed_at-time.time(),
             )
 
 
