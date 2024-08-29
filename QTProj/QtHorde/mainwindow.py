@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QPushButton,
+    QLayoutItem
 )
 from PySide6.QtCore import (
     QObject,
@@ -305,10 +306,10 @@ class ImageWidget(QLabel):
             )
             self.setPixmap(scaled_pixmap)
 
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.MouseButton.LeftButton:
+    def mouseReleaseEvent(self, ev):
+        if ev.button() == Qt.MouseButton.LeftButton:
             self.imageClicked.emit(self.original_pixmap)
-        super().mouseReleaseEvent(event)
+        super().mouseReleaseEvent(ev)
 
 
 class ImagePopup(QDockWidget):
@@ -371,10 +372,11 @@ class MasonryLayout(QLayout):
         super(MasonryLayout, self).__init__(parent)
         self.margin = margin
         self.m_spacing = spacing
-        self.items = []
+        self.items:List[QLayoutItem] = []
 
-    def addItem(self, item):
-        self.items.append(item)
+    def addItem(self, arg__1):
+        
+        self.items.append(arg__1)
 
     def count(self):
         return len(self.items)
@@ -382,16 +384,19 @@ class MasonryLayout(QLayout):
     def sizeHint(self):
         return self.minimumSize()
 
-    def itemAt(self, index):
-        return self.items[index] if 0 <= index < len(self.items) else None
+    def itemAt(self, index)->QLayoutItem:
+        if ( 0 <= index < len(self.items)):
+            return self.items[index] 
+        raise IndexError(f"oob index {index}, size {len(self.items)}")
 
     def takeAt(self, index):
         if 0 <= index < len(self.items):
             return self.items.pop(index)
-        return None
+        raise IndexError(f"oob index {index}, size {len(self.items)}")
 
-    def setGeometry(self, rect):
-        super(MasonryLayout, self).setGeometry(rect)
+
+    def setGeometry(self, arg__1):
+        super(MasonryLayout, self).setGeometry(arg__1)
         self.updateGeometry()
 
     def updateGeometry(self):
@@ -413,7 +418,7 @@ class MasonryLayout(QLayout):
             i * (self.column_width + self.m_spacing) for i in range(self.num_columns)
         ]
         for item in self.items:
-            widget = item.widget()
+            widget:ImageWidget = item.widget() # type: ignore
             pixmap = widget.pixmap()
             aspect_ratio = (
                 pixmap.width() / pixmap.height()

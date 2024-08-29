@@ -1,4 +1,4 @@
 mypy
 types-requests
 black
-pylint
+autopep8
