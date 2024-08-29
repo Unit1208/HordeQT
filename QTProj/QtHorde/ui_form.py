@@ -16,147 +16,186 @@ from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
     QIcon, QImage, QKeySequence, QLinearGradient,
     QPainter, QPalette, QPixmap, QRadialGradient,
     QTransform)
-from PySide6.QtWidgets import (QAbstractSpinBox, QApplication, QCheckBox, QComboBox,
-    QDoubleSpinBox, QFormLayout, QFrame, QGridLayout,
+from PySide6.QtWidgets import (QAbstractScrollArea, QAbstractSpinBox, QApplication, QCheckBox,
+    QComboBox, QDoubleSpinBox, QFormLayout, QFrame,
     QGroupBox, QHBoxLayout, QHeaderView, QLabel,
     QLayout, QLineEdit, QMainWindow, QMenuBar,
-    QPlainTextEdit, QProgressBar, QPushButton, QSizePolicy,
-    QSpinBox, QTabWidget, QTableWidget, QTableWidgetItem,
-    QTreeView, QVBoxLayout, QWidget)
+    QPlainTextEdit, QProgressBar, QPushButton, QScrollArea,
+    QSizePolicy, QSpinBox, QTabWidget, QTableWidget,
+    QTableWidgetItem, QTreeView, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.setWindowModality(Qt.WindowModality.ApplicationModal)
+        MainWindow.setWindowModality(Qt.NonModal)
         MainWindow.resize(1000, 1200)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
+        MainWindow.setSizePolicy(sizePolicy)
         self.actionSave = QAction(MainWindow)
         self.actionSave.setObjectName(u"actionSave")
         self.centralwidget = QWidget(MainWindow)
         self.centralwidget.setObjectName(u"centralwidget")
-        self.gridLayout = QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName(u"gridLayout")
+        sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
+        self.centralwidget.setSizePolicy(sizePolicy)
+        self.verticalLayout_3 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.tabWidget = QTabWidget(self.centralwidget)
         self.tabWidget.setObjectName(u"tabWidget")
-        sizePolicy = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
-        self.tabWidget.setSizePolicy(sizePolicy)
+        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
+        sizePolicy1.setHorizontalStretch(0)
+        sizePolicy1.setVerticalStretch(0)
+        sizePolicy1.setHeightForWidth(self.tabWidget.sizePolicy().hasHeightForWidth())
+        self.tabWidget.setSizePolicy(sizePolicy1)
         self.tabWidget.setDocumentMode(False)
         self.tabWidget.setTabsClosable(False)
         self.tabWidget.setMovable(False)
         self.tabWidget.setTabBarAutoHide(False)
         self.create_tab = QWidget()
         self.create_tab.setObjectName(u"create_tab")
+        sizePolicy.setHeightForWidth(self.create_tab.sizePolicy().hasHeightForWidth())
+        self.create_tab.setSizePolicy(sizePolicy)
+        self.verticalLayout_2 = QVBoxLayout(self.create_tab)
+        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
         self.frame = QFrame(self.create_tab)
         self.frame.setObjectName(u"frame")
-        self.frame.setGeometry(QRect(0, 0, 961, 1081))
-        self.gridLayoutWidget = QWidget(self.frame)
-        self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
-        self.gridLayoutWidget.setGeometry(QRect(10, 9, 951, 801))
-        self.createLayout = QFormLayout(self.gridLayoutWidget)
-        self.createLayout.setObjectName(u"createLayout")
-        self.createLayout.setSizeConstraint(QLayout.SizeConstraint.SetMinimumSize)
-        self.createLayout.setFormAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignTop)
-        self.createLayout.setVerticalSpacing(6)
-        self.createLayout.setContentsMargins(0, 0, 0, 0)
-        self.label = QLabel(self.gridLayoutWidget)
-        self.label.setObjectName(u"label")
+        sizePolicy.setHeightForWidth(self.frame.sizePolicy().hasHeightForWidth())
+        self.frame.setSizePolicy(sizePolicy)
+        self.scrollArea = QScrollArea(self.frame)
+        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setGeometry(QRect(10, 10, 941, 931))
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.scrollArea.sizePolicy().hasHeightForWidth())
+        self.scrollArea.setSizePolicy(sizePolicy2)
+        self.scrollArea.setFrameShadow(QFrame.Sunken)
+        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.scrollArea.setSizeAdjustPolicy(QAbstractScrollArea.AdjustIgnored)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollAreaWidgetContents_2 = QWidget()
+        self.scrollAreaWidgetContents_2.setObjectName(u"scrollAreaWidgetContents_2")
+        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 925, 929))
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.scrollAreaWidgetContents_2.sizePolicy().hasHeightForWidth())
+        self.scrollAreaWidgetContents_2.setSizePolicy(sizePolicy3)
+        self.formLayout = QFormLayout(self.scrollAreaWidgetContents_2)
+        self.formLayout.setObjectName(u"formLayout")
+        self.formLayout.setSizeConstraint(QLayout.SetMinimumSize)
+        self.label_3 = QLabel(self.scrollAreaWidgetContents_2)
+        self.label_3.setObjectName(u"label_3")
 
-        self.createLayout.setWidget(1, QFormLayout.LabelRole, self.label)
+        self.formLayout.setWidget(3, QFormLayout.LabelRole, self.label_3)
 
-        self.PromptBox = QPlainTextEdit(self.gridLayoutWidget)
+        self.PromptBox = QPlainTextEdit(self.scrollAreaWidgetContents_2)
         self.PromptBox.setObjectName(u"PromptBox")
-        sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        sizePolicy1.setHorizontalStretch(0)
-        sizePolicy1.setVerticalStretch(0)
-        sizePolicy1.setHeightForWidth(self.PromptBox.sizePolicy().hasHeightForWidth())
-        self.PromptBox.setSizePolicy(sizePolicy1)
+        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        sizePolicy4.setHorizontalStretch(0)
+        sizePolicy4.setVerticalStretch(2)
+        sizePolicy4.setHeightForWidth(self.PromptBox.sizePolicy().hasHeightForWidth())
+        self.PromptBox.setSizePolicy(sizePolicy4)
         self.PromptBox.setTabChangesFocus(True)
 
-        self.createLayout.setWidget(1, QFormLayout.FieldRole, self.PromptBox)
+        self.formLayout.setWidget(3, QFormLayout.FieldRole, self.PromptBox)
 
-        self.label_2 = QLabel(self.gridLayoutWidget)
-        self.label_2.setObjectName(u"label_2")
+        self.label_5 = QLabel(self.scrollAreaWidgetContents_2)
+        self.label_5.setObjectName(u"label_5")
 
-        self.createLayout.setWidget(2, QFormLayout.LabelRole, self.label_2)
+        self.formLayout.setWidget(7, QFormLayout.LabelRole, self.label_5)
 
-        self.NegativePromptBox = QPlainTextEdit(self.gridLayoutWidget)
+        self.NegativePromptBox = QPlainTextEdit(self.scrollAreaWidgetContents_2)
         self.NegativePromptBox.setObjectName(u"NegativePromptBox")
+        sizePolicy4.setHeightForWidth(self.NegativePromptBox.sizePolicy().hasHeightForWidth())
+        self.NegativePromptBox.setSizePolicy(sizePolicy4)
         self.NegativePromptBox.setTabChangesFocus(True)
 
-        self.createLayout.setWidget(2, QFormLayout.FieldRole, self.NegativePromptBox)
+        self.formLayout.setWidget(7, QFormLayout.FieldRole, self.NegativePromptBox)
 
-        self.GenerateButton = QPushButton(self.gridLayoutWidget)
+        self.GenerateButton = QPushButton(self.scrollAreaWidgetContents_2)
         self.GenerateButton.setObjectName(u"GenerateButton")
-        icon = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.InsertImage))
+        icon = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.InsertImage):
+            icon = QIcon.fromTheme(QIcon.ThemeIcon.InsertImage)
+        else:
+            icon.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
         self.GenerateButton.setIcon(icon)
 
-        self.createLayout.setWidget(3, QFormLayout.FieldRole, self.GenerateButton)
+        self.formLayout.setWidget(8, QFormLayout.FieldRole, self.GenerateButton)
 
-        self.imagesLabel = QLabel(self.gridLayoutWidget)
+        self.imagesLabel = QLabel(self.scrollAreaWidgetContents_2)
         self.imagesLabel.setObjectName(u"imagesLabel")
 
-        self.createLayout.setWidget(5, QFormLayout.LabelRole, self.imagesLabel)
+        self.formLayout.setWidget(10, QFormLayout.LabelRole, self.imagesLabel)
 
-        self.imagesSpinBox = QSpinBox(self.gridLayoutWidget)
+        self.imagesSpinBox = QSpinBox(self.scrollAreaWidgetContents_2)
         self.imagesSpinBox.setObjectName(u"imagesSpinBox")
         self.imagesSpinBox.setMinimum(1)
         self.imagesSpinBox.setMaximum(50)
 
-        self.createLayout.setWidget(5, QFormLayout.FieldRole, self.imagesSpinBox)
+        self.formLayout.setWidget(10, QFormLayout.FieldRole, self.imagesSpinBox)
 
-        self.stepsLabel = QLabel(self.gridLayoutWidget)
+        self.stepsLabel = QLabel(self.scrollAreaWidgetContents_2)
         self.stepsLabel.setObjectName(u"stepsLabel")
 
-        self.createLayout.setWidget(6, QFormLayout.LabelRole, self.stepsLabel)
+        self.formLayout.setWidget(12, QFormLayout.LabelRole, self.stepsLabel)
 
-        self.stepsSpinBox = QSpinBox(self.gridLayoutWidget)
+        self.stepsSpinBox = QSpinBox(self.scrollAreaWidgetContents_2)
         self.stepsSpinBox.setObjectName(u"stepsSpinBox")
         self.stepsSpinBox.setMinimum(1)
         self.stepsSpinBox.setMaximum(150)
         self.stepsSpinBox.setValue(20)
 
-        self.createLayout.setWidget(6, QFormLayout.FieldRole, self.stepsSpinBox)
+        self.formLayout.setWidget(12, QFormLayout.FieldRole, self.stepsSpinBox)
 
-        self.modelLabel = QLabel(self.gridLayoutWidget)
+        self.modelLabel = QLabel(self.scrollAreaWidgetContents_2)
         self.modelLabel.setObjectName(u"modelLabel")
 
-        self.createLayout.setWidget(7, QFormLayout.LabelRole, self.modelLabel)
+        self.formLayout.setWidget(13, QFormLayout.LabelRole, self.modelLabel)
 
-        self.horizontalLayout_2 = QHBoxLayout()
-        self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
-        self.modelComboBox = QComboBox(self.gridLayoutWidget)
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.modelComboBox = QComboBox(self.scrollAreaWidgetContents_2)
         self.modelComboBox.addItem("")
         self.modelComboBox.setObjectName(u"modelComboBox")
         self.modelComboBox.setEnabled(True)
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.modelComboBox.sizePolicy().hasHeightForWidth())
-        self.modelComboBox.setSizePolicy(sizePolicy2)
+        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        sizePolicy5.setHorizontalStretch(0)
+        sizePolicy5.setVerticalStretch(0)
+        sizePolicy5.setHeightForWidth(self.modelComboBox.sizePolicy().hasHeightForWidth())
+        self.modelComboBox.setSizePolicy(sizePolicy5)
         self.modelComboBox.setEditable(True)
 
-        self.horizontalLayout_2.addWidget(self.modelComboBox)
+        self.horizontalLayout_6.addWidget(self.modelComboBox)
 
-        self.modelDetailsButton = QPushButton(self.gridLayoutWidget)
+        self.modelDetailsButton = QPushButton(self.scrollAreaWidgetContents_2)
         self.modelDetailsButton.setObjectName(u"modelDetailsButton")
-        icon1 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.SystemSearch))
+        self.modelDetailsButton.setEnabled(False)
+        icon1 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.SystemSearch):
+            icon1 = QIcon.fromTheme(QIcon.ThemeIcon.SystemSearch)
+        else:
+            icon1.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
         self.modelDetailsButton.setIcon(icon1)
         self.modelDetailsButton.setFlat(False)
 
-        self.horizontalLayout_2.addWidget(self.modelDetailsButton)
+        self.horizontalLayout_6.addWidget(self.modelDetailsButton)
 
 
-        self.createLayout.setLayout(7, QFormLayout.FieldRole, self.horizontalLayout_2)
+        self.formLayout.setLayout(13, QFormLayout.FieldRole, self.horizontalLayout_6)
 
-        self.presetLabel = QLabel(self.gridLayoutWidget)
+        self.presetLabel = QLabel(self.scrollAreaWidgetContents_2)
         self.presetLabel.setObjectName(u"presetLabel")
 
-        self.createLayout.setWidget(8, QFormLayout.LabelRole, self.presetLabel)
+        self.formLayout.setWidget(16, QFormLayout.LabelRole, self.presetLabel)
 
-        self.presetComboBox = QComboBox(self.gridLayoutWidget)
+        self.presetComboBox = QComboBox(self.scrollAreaWidgetContents_2)
         self.presetComboBox.addItem("")
         self.presetComboBox.addItem("")
         self.presetComboBox.addItem("")
@@ -167,42 +206,42 @@ class Ui_MainWindow(object):
         self.presetComboBox.setObjectName(u"presetComboBox")
         self.presetComboBox.setEditable(False)
 
-        self.createLayout.setWidget(8, QFormLayout.FieldRole, self.presetComboBox)
+        self.formLayout.setWidget(16, QFormLayout.FieldRole, self.presetComboBox)
 
-        self.widthLabel = QLabel(self.gridLayoutWidget)
+        self.widthLabel = QLabel(self.scrollAreaWidgetContents_2)
         self.widthLabel.setObjectName(u"widthLabel")
 
-        self.createLayout.setWidget(9, QFormLayout.LabelRole, self.widthLabel)
+        self.formLayout.setWidget(18, QFormLayout.LabelRole, self.widthLabel)
 
-        self.widthSpinBox = QSpinBox(self.gridLayoutWidget)
+        self.widthSpinBox = QSpinBox(self.scrollAreaWidgetContents_2)
         self.widthSpinBox.setObjectName(u"widthSpinBox")
         self.widthSpinBox.setMinimum(64)
         self.widthSpinBox.setMaximum(3072)
         self.widthSpinBox.setSingleStep(64)
         self.widthSpinBox.setValue(768)
 
-        self.createLayout.setWidget(9, QFormLayout.FieldRole, self.widthSpinBox)
+        self.formLayout.setWidget(18, QFormLayout.FieldRole, self.widthSpinBox)
 
-        self.heightLabel = QLabel(self.gridLayoutWidget)
+        self.heightLabel = QLabel(self.scrollAreaWidgetContents_2)
         self.heightLabel.setObjectName(u"heightLabel")
 
-        self.createLayout.setWidget(10, QFormLayout.LabelRole, self.heightLabel)
+        self.formLayout.setWidget(20, QFormLayout.LabelRole, self.heightLabel)
 
-        self.heightSpinBox = QSpinBox(self.gridLayoutWidget)
+        self.heightSpinBox = QSpinBox(self.scrollAreaWidgetContents_2)
         self.heightSpinBox.setObjectName(u"heightSpinBox")
         self.heightSpinBox.setMinimum(64)
         self.heightSpinBox.setMaximum(3072)
         self.heightSpinBox.setSingleStep(64)
         self.heightSpinBox.setValue(1024)
 
-        self.createLayout.setWidget(10, QFormLayout.FieldRole, self.heightSpinBox)
+        self.formLayout.setWidget(20, QFormLayout.FieldRole, self.heightSpinBox)
 
-        self.samplerLabel = QLabel(self.gridLayoutWidget)
+        self.samplerLabel = QLabel(self.scrollAreaWidgetContents_2)
         self.samplerLabel.setObjectName(u"samplerLabel")
 
-        self.createLayout.setWidget(11, QFormLayout.LabelRole, self.samplerLabel)
+        self.formLayout.setWidget(22, QFormLayout.LabelRole, self.samplerLabel)
 
-        self.samplerComboBox = QComboBox(self.gridLayoutWidget)
+        self.samplerComboBox = QComboBox(self.scrollAreaWidgetContents_2)
         self.samplerComboBox.addItem("")
         self.samplerComboBox.addItem("")
         self.samplerComboBox.addItem("")
@@ -219,26 +258,26 @@ class Ui_MainWindow(object):
         self.samplerComboBox.addItem("")
         self.samplerComboBox.setObjectName(u"samplerComboBox")
 
-        self.createLayout.setWidget(11, QFormLayout.FieldRole, self.samplerComboBox)
+        self.formLayout.setWidget(22, QFormLayout.FieldRole, self.samplerComboBox)
 
-        self.seedLabel = QLabel(self.gridLayoutWidget)
+        self.seedLabel = QLabel(self.scrollAreaWidgetContents_2)
         self.seedLabel.setObjectName(u"seedLabel")
 
-        self.createLayout.setWidget(12, QFormLayout.LabelRole, self.seedLabel)
+        self.formLayout.setWidget(24, QFormLayout.LabelRole, self.seedLabel)
 
-        self.seedSpinBox = QSpinBox(self.gridLayoutWidget)
+        self.seedSpinBox = QSpinBox(self.scrollAreaWidgetContents_2)
         self.seedSpinBox.setObjectName(u"seedSpinBox")
         self.seedSpinBox.setMaximum(2147483647)
         self.seedSpinBox.setDisplayIntegerBase(10)
 
-        self.createLayout.setWidget(12, QFormLayout.FieldRole, self.seedSpinBox)
+        self.formLayout.setWidget(24, QFormLayout.FieldRole, self.seedSpinBox)
 
-        self.guidenceLabel = QLabel(self.gridLayoutWidget)
+        self.guidenceLabel = QLabel(self.scrollAreaWidgetContents_2)
         self.guidenceLabel.setObjectName(u"guidenceLabel")
 
-        self.createLayout.setWidget(13, QFormLayout.LabelRole, self.guidenceLabel)
+        self.formLayout.setWidget(26, QFormLayout.LabelRole, self.guidenceLabel)
 
-        self.guidenceDoubleSpinBox = QDoubleSpinBox(self.gridLayoutWidget)
+        self.guidenceDoubleSpinBox = QDoubleSpinBox(self.scrollAreaWidgetContents_2)
         self.guidenceDoubleSpinBox.setObjectName(u"guidenceDoubleSpinBox")
         self.guidenceDoubleSpinBox.setDecimals(1)
         self.guidenceDoubleSpinBox.setMinimum(0.000000000000000)
@@ -246,71 +285,94 @@ class Ui_MainWindow(object):
         self.guidenceDoubleSpinBox.setSingleStep(0.500000000000000)
         self.guidenceDoubleSpinBox.setValue(5.000000000000000)
 
-        self.createLayout.setWidget(13, QFormLayout.FieldRole, self.guidenceDoubleSpinBox)
+        self.formLayout.setWidget(26, QFormLayout.FieldRole, self.guidenceDoubleSpinBox)
 
-        self.clipSkipLabel = QLabel(self.gridLayoutWidget)
+        self.clipSkipLabel = QLabel(self.scrollAreaWidgetContents_2)
         self.clipSkipLabel.setObjectName(u"clipSkipLabel")
 
-        self.createLayout.setWidget(14, QFormLayout.LabelRole, self.clipSkipLabel)
+        self.formLayout.setWidget(28, QFormLayout.LabelRole, self.clipSkipLabel)
 
-        self.clipSkipSpinBox = QSpinBox(self.gridLayoutWidget)
+        self.clipSkipSpinBox = QSpinBox(self.scrollAreaWidgetContents_2)
         self.clipSkipSpinBox.setObjectName(u"clipSkipSpinBox")
         self.clipSkipSpinBox.setMinimum(1)
         self.clipSkipSpinBox.setMaximum(12)
 
-        self.createLayout.setWidget(14, QFormLayout.FieldRole, self.clipSkipSpinBox)
+        self.formLayout.setWidget(28, QFormLayout.FieldRole, self.clipSkipSpinBox)
 
-        self.horizontalLayout_3 = QHBoxLayout()
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.progressBar = QProgressBar(self.gridLayoutWidget)
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.resetSettingsButton = QPushButton(self.scrollAreaWidgetContents_2)
+        self.resetSettingsButton.setObjectName(u"resetSettingsButton")
+        sizePolicy6 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
+        sizePolicy6.setHorizontalStretch(0)
+        sizePolicy6.setVerticalStretch(0)
+        sizePolicy6.setHeightForWidth(self.resetSettingsButton.sizePolicy().hasHeightForWidth())
+        self.resetSettingsButton.setSizePolicy(sizePolicy6)
+        icon2 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.EditClear):
+            icon2 = QIcon.fromTheme(QIcon.ThemeIcon.EditClear)
+        else:
+            icon2.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
+        self.resetSettingsButton.setIcon(icon2)
+
+        self.horizontalLayout_7.addWidget(self.resetSettingsButton)
+
+        self.undoResetButton = QPushButton(self.scrollAreaWidgetContents_2)
+        self.undoResetButton.setObjectName(u"undoResetButton")
+        self.undoResetButton.setEnabled(False)
+        sizePolicy7 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
+        sizePolicy7.setHorizontalStretch(0)
+        sizePolicy7.setVerticalStretch(0)
+        sizePolicy7.setHeightForWidth(self.undoResetButton.sizePolicy().hasHeightForWidth())
+        self.undoResetButton.setSizePolicy(sizePolicy7)
+        icon3 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.EditUndo):
+            icon3 = QIcon.fromTheme(QIcon.ThemeIcon.EditUndo)
+        else:
+            icon3.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
+        self.undoResetButton.setIcon(icon3)
+        self.undoResetButton.setCheckable(False)
+
+        self.horizontalLayout_7.addWidget(self.undoResetButton)
+
+
+        self.formLayout.setLayout(29, QFormLayout.FieldRole, self.horizontalLayout_7)
+
+        self.horizontalLayout_4 = QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+
+        self.formLayout.setLayout(5, QFormLayout.FieldRole, self.horizontalLayout_4)
+
+        self.progressBar = QProgressBar(self.scrollAreaWidgetContents_2)
         self.progressBar.setObjectName(u"progressBar")
         self.progressBar.setValue(0)
         self.progressBar.setTextVisible(True)
         self.progressBar.setInvertedAppearance(False)
 
-        self.horizontalLayout_3.addWidget(self.progressBar)
+        self.formLayout.setWidget(0, QFormLayout.FieldRole, self.progressBar)
 
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents_2)
 
-        self.createLayout.setLayout(17, QFormLayout.FieldRole, self.horizontalLayout_3)
+        self.verticalLayout_2.addWidget(self.frame)
 
-        self.horizontalLayout_5 = QHBoxLayout()
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.resetSettingsButton = QPushButton(self.gridLayoutWidget)
-        self.resetSettingsButton.setObjectName(u"resetSettingsButton")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Fixed)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.resetSettingsButton.sizePolicy().hasHeightForWidth())
-        self.resetSettingsButton.setSizePolicy(sizePolicy3)
-        icon2 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditClear))
-        self.resetSettingsButton.setIcon(icon2)
+        icon4 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.ListAdd):
+            icon4 = QIcon.fromTheme(QIcon.ThemeIcon.ListAdd)
+        else:
+            icon4.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
 
-        self.horizontalLayout_5.addWidget(self.resetSettingsButton)
-
-        self.undoResetButton = QPushButton(self.gridLayoutWidget)
-        self.undoResetButton.setObjectName(u"undoResetButton")
-        self.undoResetButton.setEnabled(False)
-        sizePolicy4 = QSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
-        sizePolicy4.setHorizontalStretch(0)
-        sizePolicy4.setVerticalStretch(0)
-        sizePolicy4.setHeightForWidth(self.undoResetButton.sizePolicy().hasHeightForWidth())
-        self.undoResetButton.setSizePolicy(sizePolicy4)
-        icon3 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditUndo))
-        self.undoResetButton.setIcon(icon3)
-        self.undoResetButton.setCheckable(False)
-
-        self.horizontalLayout_5.addWidget(self.undoResetButton)
-
-
-        self.createLayout.setLayout(16, QFormLayout.FieldRole, self.horizontalLayout_5)
-
-        icon4 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.ListAdd))
         self.tabWidget.addTab(self.create_tab, icon4, "")
         self.curr_items_tab = QWidget()
         self.curr_items_tab.setObjectName(u"curr_items_tab")
+        sizePolicy.setHeightForWidth(self.curr_items_tab.sizePolicy().hasHeightForWidth())
+        self.curr_items_tab.setSizePolicy(sizePolicy)
         self.groupBox_2 = QGroupBox(self.curr_items_tab)
         self.groupBox_2.setObjectName(u"groupBox_2")
-        self.groupBox_2.setGeometry(QRect(10, 30, 761, 771))
+        self.groupBox_2.setGeometry(QRect(10, 30, 951, 1091))
+        sizePolicy.setHeightForWidth(self.groupBox_2.sizePolicy().hasHeightForWidth())
+        self.groupBox_2.setSizePolicy(sizePolicy)
         self.inProgressItemsTable = QTableWidget(self.groupBox_2)
         if (self.inProgressItemsTable.columnCount() < 5):
             self.inProgressItemsTable.setColumnCount(5)
@@ -326,18 +388,25 @@ class Ui_MainWindow(object):
         self.inProgressItemsTable.setHorizontalHeaderItem(4, __qtablewidgetitem4)
         self.inProgressItemsTable.setObjectName(u"inProgressItemsTable")
         self.inProgressItemsTable.setGeometry(QRect(0, 0, 951, 1091))
-        sizePolicy5 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Expanding)
-        sizePolicy5.setHorizontalStretch(0)
-        sizePolicy5.setVerticalStretch(0)
-        sizePolicy5.setHeightForWidth(self.inProgressItemsTable.sizePolicy().hasHeightForWidth())
-        self.inProgressItemsTable.setSizePolicy(sizePolicy5)
+        sizePolicy8 = QSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Expanding)
+        sizePolicy8.setHorizontalStretch(0)
+        sizePolicy8.setVerticalStretch(0)
+        sizePolicy8.setHeightForWidth(self.inProgressItemsTable.sizePolicy().hasHeightForWidth())
+        self.inProgressItemsTable.setSizePolicy(sizePolicy8)
         self.label_4 = QLabel(self.curr_items_tab)
         self.label_4.setObjectName(u"label_4")
         self.label_4.setGeometry(QRect(10, 10, 211, 16))
-        icon5 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentProperties))
+        icon5 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.DocumentProperties):
+            icon5 = QIcon.fromTheme(QIcon.ThemeIcon.DocumentProperties)
+        else:
+            icon5.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
         self.tabWidget.addTab(self.curr_items_tab, icon5, "")
         self.gallery_tab = QWidget()
         self.gallery_tab.setObjectName(u"gallery_tab")
+        sizePolicy.setHeightForWidth(self.gallery_tab.sizePolicy().hasHeightForWidth())
+        self.gallery_tab.setSizePolicy(sizePolicy)
         self.galleryViewFrame = QFrame(self.gallery_tab)
         self.galleryViewFrame.setObjectName(u"galleryViewFrame")
         self.galleryViewFrame.setGeometry(QRect(10, 10, 961, 1111))
@@ -347,13 +416,20 @@ class Ui_MainWindow(object):
         self.galleryView = QVBoxLayout(self.verticalLayoutWidget_2)
         self.galleryView.setObjectName(u"galleryView")
         self.galleryView.setContentsMargins(0, 0, 0, 0)
-        icon6 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentPrintPreview))
+        icon6 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.DocumentPrintPreview):
+            icon6 = QIcon.fromTheme(QIcon.ThemeIcon.DocumentPrintPreview)
+        else:
+            icon6.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
         self.tabWidget.addTab(self.gallery_tab, icon6, "")
         self.settings_tab = QWidget()
         self.settings_tab.setObjectName(u"settings_tab")
+        sizePolicy.setHeightForWidth(self.settings_tab.sizePolicy().hasHeightForWidth())
+        self.settings_tab.setSizePolicy(sizePolicy)
         self.formLayoutWidget = QWidget(self.settings_tab)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(0, 10, 971, 162))
+        self.formLayoutWidget.setGeometry(QRect(0, 10, 971, 169))
         self.formLayout_3 = QFormLayout(self.formLayoutWidget)
         self.formLayout_3.setObjectName(u"formLayout_3")
         self.formLayout_3.setVerticalSpacing(6)
@@ -368,28 +444,43 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.apiKeyEntry = QLineEdit(self.formLayoutWidget)
         self.apiKeyEntry.setObjectName(u"apiKeyEntry")
-        self.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Password)
+        self.apiKeyEntry.setEchoMode(QLineEdit.Normal)
         self.apiKeyEntry.setClearButtonEnabled(True)
 
         self.horizontalLayout.addWidget(self.apiKeyEntry)
 
         self.showAPIKey = QPushButton(self.formLayoutWidget)
         self.showAPIKey.setObjectName(u"showAPIKey")
-        icon7 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditFind))
+        icon7 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.EditFind):
+            icon7 = QIcon.fromTheme(QIcon.ThemeIcon.EditFind)
+        else:
+            icon7.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
         self.showAPIKey.setIcon(icon7)
 
         self.horizontalLayout.addWidget(self.showAPIKey)
 
         self.saveAPIkey = QPushButton(self.formLayoutWidget)
         self.saveAPIkey.setObjectName(u"saveAPIkey")
-        icon8 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentSave))
+        icon8 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.DocumentSave):
+            icon8 = QIcon.fromTheme(QIcon.ThemeIcon.DocumentSave)
+        else:
+            icon8.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
         self.saveAPIkey.setIcon(icon8)
 
         self.horizontalLayout.addWidget(self.saveAPIkey)
 
         self.copyAPIkey = QPushButton(self.formLayoutWidget)
         self.copyAPIkey.setObjectName(u"copyAPIkey")
-        icon9 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.EditCopy))
+        icon9 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.EditCopy):
+            icon9 = QIcon.fromTheme(QIcon.ThemeIcon.EditCopy)
+        else:
+            icon9.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
         self.copyAPIkey.setIcon(icon9)
         self.copyAPIkey.setFlat(False)
 
@@ -424,7 +515,12 @@ class Ui_MainWindow(object):
 
         self.openSavedData = QPushButton(self.formLayoutWidget)
         self.openSavedData.setObjectName(u"openSavedData")
-        icon10 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentOpen))
+        icon10 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.DocumentOpen):
+            icon10 = QIcon.fromTheme(QIcon.ThemeIcon.DocumentOpen)
+        else:
+            icon10.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
         self.openSavedData.setIcon(icon10)
 
         self.formLayout_3.setWidget(4, QFormLayout.FieldRole, self.openSavedData)
@@ -454,6 +550,8 @@ class Ui_MainWindow(object):
         self.tabWidget.addTab(self.settings_tab, icon5, "")
         self.userInfoPage = QWidget()
         self.userInfoPage.setObjectName(u"userInfoPage")
+        sizePolicy.setHeightForWidth(self.userInfoPage.sizePolicy().hasHeightForWidth())
+        self.userInfoPage.setSizePolicy(sizePolicy)
         self.formLayoutWidget_2 = QWidget(self.userInfoPage)
         self.formLayoutWidget_2.setObjectName(u"formLayoutWidget_2")
         self.formLayoutWidget_2.setGeometry(QRect(9, 9, 961, 1111))
@@ -493,7 +591,7 @@ class Ui_MainWindow(object):
         self.kudosSpinBox.setObjectName(u"kudosSpinBox")
         self.kudosSpinBox.setEnabled(True)
         self.kudosSpinBox.setReadOnly(True)
-        self.kudosSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.kudosSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.kudosSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(2, QFormLayout.FieldRole, self.kudosSpinBox)
@@ -506,7 +604,7 @@ class Ui_MainWindow(object):
         self.trustedCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.trustedCheckBox.setObjectName(u"trustedCheckBox")
         self.trustedCheckBox.setEnabled(False)
-        self.trustedCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.trustedCheckBox.setFocusPolicy(Qt.NoFocus)
         self.trustedCheckBox.setCheckable(True)
 
         self.formLayout_2.setWidget(3, QFormLayout.FieldRole, self.trustedCheckBox)
@@ -520,7 +618,7 @@ class Ui_MainWindow(object):
         self.maxConcurrencySpinBox.setObjectName(u"maxConcurrencySpinBox")
         self.maxConcurrencySpinBox.setEnabled(True)
         self.maxConcurrencySpinBox.setReadOnly(True)
-        self.maxConcurrencySpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.maxConcurrencySpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.maxConcurrencySpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(4, QFormLayout.FieldRole, self.maxConcurrencySpinBox)
@@ -533,7 +631,7 @@ class Ui_MainWindow(object):
         self.moderatorCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.moderatorCheckBox.setObjectName(u"moderatorCheckBox")
         self.moderatorCheckBox.setEnabled(False)
-        self.moderatorCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.moderatorCheckBox.setFocusPolicy(Qt.NoFocus)
         self.moderatorCheckBox.setCheckable(True)
 
         self.formLayout_2.setWidget(5, QFormLayout.FieldRole, self.moderatorCheckBox)
@@ -547,14 +645,14 @@ class Ui_MainWindow(object):
         self.numberOfWorkersSpinBox.setObjectName(u"numberOfWorkersSpinBox")
         self.numberOfWorkersSpinBox.setEnabled(True)
         self.numberOfWorkersSpinBox.setReadOnly(True)
-        self.numberOfWorkersSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.numberOfWorkersSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.numberOfWorkersSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(6, QFormLayout.FieldRole, self.numberOfWorkersSpinBox)
 
         self.line_4 = QFrame(self.formLayoutWidget_2)
         self.line_4.setObjectName(u"line_4")
-        self.line_4.setFrameShape(QFrame.Shape.HLine)
+        self.line_4.setFrameShape(QFrame.Shape.VLine)
         self.line_4.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.formLayout_2.setWidget(7, QFormLayout.LabelRole, self.line_4)
@@ -567,7 +665,7 @@ class Ui_MainWindow(object):
         self.flaggedCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.flaggedCheckBox.setObjectName(u"flaggedCheckBox")
         self.flaggedCheckBox.setEnabled(False)
-        self.flaggedCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.flaggedCheckBox.setFocusPolicy(Qt.NoFocus)
         self.flaggedCheckBox.setCheckable(True)
         self.flaggedCheckBox.setChecked(False)
 
@@ -581,7 +679,7 @@ class Ui_MainWindow(object):
         self.VPNCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.VPNCheckBox.setObjectName(u"VPNCheckBox")
         self.VPNCheckBox.setEnabled(False)
-        self.VPNCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.VPNCheckBox.setFocusPolicy(Qt.NoFocus)
         self.VPNCheckBox.setCheckable(True)
         self.VPNCheckBox.setChecked(False)
 
@@ -595,7 +693,7 @@ class Ui_MainWindow(object):
         self.serviceCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.serviceCheckBox.setObjectName(u"serviceCheckBox")
         self.serviceCheckBox.setEnabled(False)
-        self.serviceCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.serviceCheckBox.setFocusPolicy(Qt.NoFocus)
         self.serviceCheckBox.setCheckable(True)
         self.serviceCheckBox.setChecked(False)
 
@@ -609,7 +707,7 @@ class Ui_MainWindow(object):
         self.educationCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.educationCheckBox.setObjectName(u"educationCheckBox")
         self.educationCheckBox.setEnabled(False)
-        self.educationCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.educationCheckBox.setFocusPolicy(Qt.NoFocus)
         self.educationCheckBox.setCheckable(True)
         self.educationCheckBox.setChecked(False)
 
@@ -623,7 +721,7 @@ class Ui_MainWindow(object):
         self.customizerCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.customizerCheckBox.setObjectName(u"customizerCheckBox")
         self.customizerCheckBox.setEnabled(False)
-        self.customizerCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.customizerCheckBox.setFocusPolicy(Qt.NoFocus)
         self.customizerCheckBox.setCheckable(True)
         self.customizerCheckBox.setChecked(False)
 
@@ -637,7 +735,7 @@ class Ui_MainWindow(object):
         self.specialCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.specialCheckBox.setObjectName(u"specialCheckBox")
         self.specialCheckBox.setEnabled(False)
-        self.specialCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.specialCheckBox.setFocusPolicy(Qt.NoFocus)
         self.specialCheckBox.setCheckable(True)
         self.specialCheckBox.setChecked(False)
 
@@ -651,7 +749,7 @@ class Ui_MainWindow(object):
         self.pseudonymousCheckBox = QCheckBox(self.formLayoutWidget_2)
         self.pseudonymousCheckBox.setObjectName(u"pseudonymousCheckBox")
         self.pseudonymousCheckBox.setEnabled(False)
-        self.pseudonymousCheckBox.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.pseudonymousCheckBox.setFocusPolicy(Qt.NoFocus)
         self.pseudonymousCheckBox.setCheckable(True)
         self.pseudonymousCheckBox.setChecked(False)
 
@@ -659,7 +757,7 @@ class Ui_MainWindow(object):
 
         self.line_3 = QFrame(self.formLayoutWidget_2)
         self.line_3.setObjectName(u"line_3")
-        self.line_3.setFrameShape(QFrame.Shape.HLine)
+        self.line_3.setFrameShape(QFrame.Shape.VLine)
         self.line_3.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.formLayout_2.setWidget(15, QFormLayout.LabelRole, self.line_3)
@@ -690,7 +788,7 @@ class Ui_MainWindow(object):
 
         self.line_2 = QFrame(self.formLayoutWidget_2)
         self.line_2.setObjectName(u"line_2")
-        self.line_2.setFrameShape(QFrame.Shape.HLine)
+        self.line_2.setFrameShape(QFrame.Shape.VLine)
         self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.formLayout_2.setWidget(18, QFormLayout.LabelRole, self.line_2)
@@ -704,7 +802,7 @@ class Ui_MainWindow(object):
         self.textGeneratedSpinBox.setObjectName(u"textGeneratedSpinBox")
         self.textGeneratedSpinBox.setEnabled(True)
         self.textGeneratedSpinBox.setReadOnly(True)
-        self.textGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.textGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.textGeneratedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(19, QFormLayout.FieldRole, self.textGeneratedSpinBox)
@@ -718,7 +816,7 @@ class Ui_MainWindow(object):
         self.imageGeneratedSpinBox.setObjectName(u"imageGeneratedSpinBox")
         self.imageGeneratedSpinBox.setEnabled(True)
         self.imageGeneratedSpinBox.setReadOnly(True)
-        self.imageGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.imageGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.imageGeneratedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(20, QFormLayout.FieldRole, self.imageGeneratedSpinBox)
@@ -732,14 +830,14 @@ class Ui_MainWindow(object):
         self.interrogationGeneratedSpinBox.setObjectName(u"interrogationGeneratedSpinBox")
         self.interrogationGeneratedSpinBox.setEnabled(True)
         self.interrogationGeneratedSpinBox.setReadOnly(True)
-        self.interrogationGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.interrogationGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.interrogationGeneratedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(21, QFormLayout.FieldRole, self.interrogationGeneratedSpinBox)
 
         self.line = QFrame(self.formLayoutWidget_2)
         self.line.setObjectName(u"line")
-        self.line.setFrameShape(QFrame.Shape.HLine)
+        self.line.setFrameShape(QFrame.Shape.VLine)
         self.line.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.formLayout_2.setWidget(22, QFormLayout.LabelRole, self.line)
@@ -753,7 +851,7 @@ class Ui_MainWindow(object):
         self.textRequestedSpinBox.setObjectName(u"textRequestedSpinBox")
         self.textRequestedSpinBox.setEnabled(True)
         self.textRequestedSpinBox.setReadOnly(True)
-        self.textRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.textRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.textRequestedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(23, QFormLayout.FieldRole, self.textRequestedSpinBox)
@@ -767,7 +865,7 @@ class Ui_MainWindow(object):
         self.imagesRequestedSpinBox.setObjectName(u"imagesRequestedSpinBox")
         self.imagesRequestedSpinBox.setEnabled(True)
         self.imagesRequestedSpinBox.setReadOnly(True)
-        self.imagesRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.imagesRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.imagesRequestedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(24, QFormLayout.FieldRole, self.imagesRequestedSpinBox)
@@ -781,7 +879,7 @@ class Ui_MainWindow(object):
         self.interrogationRequestedSpinBox.setObjectName(u"interrogationRequestedSpinBox")
         self.interrogationRequestedSpinBox.setEnabled(True)
         self.interrogationRequestedSpinBox.setReadOnly(True)
-        self.interrogationRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.interrogationRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.interrogationRequestedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(25, QFormLayout.FieldRole, self.interrogationRequestedSpinBox)
@@ -795,7 +893,7 @@ class Ui_MainWindow(object):
         self.tokensRequestedSpinBox.setObjectName(u"tokensRequestedSpinBox")
         self.tokensRequestedSpinBox.setEnabled(True)
         self.tokensRequestedSpinBox.setReadOnly(True)
-        self.tokensRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.tokensRequestedSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.tokensRequestedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(27, QFormLayout.FieldRole, self.tokensRequestedSpinBox)
@@ -809,10 +907,10 @@ class Ui_MainWindow(object):
         self.megapixelstepsRequestedDoubleSpinBox.setObjectName(u"megapixelstepsRequestedDoubleSpinBox")
         self.megapixelstepsRequestedDoubleSpinBox.setEnabled(True)
         self.megapixelstepsRequestedDoubleSpinBox.setReadOnly(True)
-        self.megapixelstepsRequestedDoubleSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.megapixelstepsRequestedDoubleSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.megapixelstepsRequestedDoubleSpinBox.setMaximum(2147483647.000000000000000)
         self.megapixelstepsRequestedDoubleSpinBox.setSingleStep(0.000000000000000)
-        self.megapixelstepsRequestedDoubleSpinBox.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
+        self.megapixelstepsRequestedDoubleSpinBox.setStepType(QAbstractSpinBox.DefaultStepType)
 
         self.formLayout_2.setWidget(28, QFormLayout.FieldRole, self.megapixelstepsRequestedDoubleSpinBox)
 
@@ -825,7 +923,7 @@ class Ui_MainWindow(object):
         self.tokensGeneratedSpinBox.setObjectName(u"tokensGeneratedSpinBox")
         self.tokensGeneratedSpinBox.setEnabled(True)
         self.tokensGeneratedSpinBox.setReadOnly(True)
-        self.tokensGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.tokensGeneratedSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.tokensGeneratedSpinBox.setMaximum(2147483647)
 
         self.formLayout_2.setWidget(30, QFormLayout.FieldRole, self.tokensGeneratedSpinBox)
@@ -839,38 +937,52 @@ class Ui_MainWindow(object):
         self.megapixelstepsGeneratedDoubleSpinBox.setObjectName(u"megapixelstepsGeneratedDoubleSpinBox")
         self.megapixelstepsGeneratedDoubleSpinBox.setEnabled(True)
         self.megapixelstepsGeneratedDoubleSpinBox.setReadOnly(True)
-        self.megapixelstepsGeneratedDoubleSpinBox.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.megapixelstepsGeneratedDoubleSpinBox.setButtonSymbols(QAbstractSpinBox.UpDownArrows)
         self.megapixelstepsGeneratedDoubleSpinBox.setMaximum(2147483647.000000000000000)
         self.megapixelstepsGeneratedDoubleSpinBox.setSingleStep(0.000000000000000)
-        self.megapixelstepsGeneratedDoubleSpinBox.setStepType(QAbstractSpinBox.StepType.AdaptiveDecimalStepType)
+        self.megapixelstepsGeneratedDoubleSpinBox.setStepType(QAbstractSpinBox.DefaultStepType)
 
         self.formLayout_2.setWidget(31, QFormLayout.FieldRole, self.megapixelstepsGeneratedDoubleSpinBox)
 
         self.line_5 = QFrame(self.formLayoutWidget_2)
         self.line_5.setObjectName(u"line_5")
-        self.line_5.setFrameShape(QFrame.Shape.HLine)
+        self.line_5.setFrameShape(QFrame.Shape.VLine)
         self.line_5.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.formLayout_2.setWidget(29, QFormLayout.LabelRole, self.line_5)
 
         self.line_6 = QFrame(self.formLayoutWidget_2)
         self.line_6.setObjectName(u"line_6")
-        self.line_6.setFrameShape(QFrame.Shape.HLine)
+        self.line_6.setFrameShape(QFrame.Shape.VLine)
         self.line_6.setFrameShadow(QFrame.Shadow.Sunken)
 
         self.formLayout_2.setWidget(26, QFormLayout.LabelRole, self.line_6)
 
-        icon11 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.UserOffline))
+        icon11 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.UserOffline):
+            icon11 = QIcon.fromTheme(QIcon.ThemeIcon.UserOffline)
+        else:
+            icon11.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
         self.tabWidget.addTab(self.userInfoPage, icon11, "")
         self.Stats_Tab = QWidget()
         self.Stats_Tab.setObjectName(u"Stats_Tab")
+        sizePolicy.setHeightForWidth(self.Stats_Tab.sizePolicy().hasHeightForWidth())
+        self.Stats_Tab.setSizePolicy(sizePolicy)
         self.localStats = QTreeView(self.Stats_Tab)
         self.localStats.setObjectName(u"localStats")
         self.localStats.setGeometry(QRect(0, 10, 971, 801))
-        icon12 = QIcon(QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout))
+        icon12 = QIcon()
+        if QIcon.hasThemeIcon(QIcon.ThemeIcon.HelpAbout):
+            icon12 = QIcon.fromTheme(QIcon.ThemeIcon.HelpAbout)
+        else:
+            icon12.addFile(u".", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
+
         self.tabWidget.addTab(self.Stats_Tab, icon12, "")
         self.About_tab = QWidget()
         self.About_tab.setObjectName(u"About_tab")
+        sizePolicy.setHeightForWidth(self.About_tab.sizePolicy().hasHeightForWidth())
+        self.About_tab.setSizePolicy(sizePolicy)
         self.verticalLayoutWidget = QWidget(self.About_tab)
         self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
         self.verticalLayoutWidget.setGeometry(QRect(-1, -1, 771, 691))
@@ -881,12 +993,12 @@ class Ui_MainWindow(object):
         icon13.addFile(u"QTHordeAssets/IconSmaller.png", QSize(), QIcon.Mode.Normal, QIcon.State.Off)
         self.tabWidget.addTab(self.About_tab, icon13, "")
 
-        self.gridLayout.addWidget(self.tabWidget, 0, 0, 1, 1)
+        self.verticalLayout_3.addWidget(self.tabWidget)
 
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 1000, 21))
+        self.menubar.setGeometry(QRect(0, 0, 1000, 22))
         MainWindow.setMenuBar(self.menubar)
 
         self.retranslateUi(MainWindow)
@@ -901,9 +1013,9 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"MainWindow", None))
         self.actionSave.setText(QCoreApplication.translate("MainWindow", u"Save", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"Prompt", None))
+        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Prompt", None))
         self.PromptBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Prompt", None))
-        self.label_2.setText(QCoreApplication.translate("MainWindow", u"Negative Prompt", None))
+        self.label_5.setText(QCoreApplication.translate("MainWindow", u"Negative Prompt", None))
         self.NegativePromptBox.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Negative Prompt", None))
 #if QT_CONFIG(tooltip)
         self.GenerateButton.setToolTip(QCoreApplication.translate("MainWindow", u"Shortcut Ctrl + Enter", None))

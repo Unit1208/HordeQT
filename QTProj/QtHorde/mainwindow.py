@@ -1316,7 +1316,8 @@ class MainWindow(QMainWindow):
             )  # This ensures a fallback to a common monospace font
             item.setFont(font)
             item.setText(value)
-
+        table.resizeColumnsToContents()
+        # self.ui.groupBox_2.resize()
         table.setSortingEnabled(True)
 
     def update_inprogess_table(self):
