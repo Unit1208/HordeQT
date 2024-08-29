@@ -2,7 +2,6 @@ PySide6
 keyring
 keyrings.alt
 requests
-black
 nuitka
 zstandard
 human-readable

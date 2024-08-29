@@ -39,7 +39,7 @@ from PySide6.QtCore import (
     QUrl,
 )
 from pyqttoast import Toast, ToastPreset, toast_enums
-from PySide6.QtGui import QPixmap, QDesktopServices, QFont
+from PySide6.QtGui import QPixmap, QDesktopServices, QFont, QClipboard
 
 from queue import Queue
 
@@ -99,146 +99,6 @@ def prompt_matrix(prompt: str) -> List[str]:
 
     # If no valid combinations were generated, return the original prompt
     return result_prompts if result_prompts else [prompt]
-
-
-class ImageWidget(QLabel):
-    imageClicked = Signal(QPixmap)
-
-    def __init__(self, image_path):
-        super().__init__()
-        self.original_pixmap = QPixmap(image_path)
-        self.setPixmap(self.original_pixmap)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setAlignment(Qt.AlignCenter)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        self.update_pixmap()
-
-    def update_pixmap(self):
-        if self.original_pixmap:
-            scaled_pixmap = self.original_pixmap.scaled(
-                self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
-            )
-            self.setPixmap(scaled_pixmap)
-
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
-            self.imageClicked.emit(self.original_pixmap)
-        super().mouseReleaseEvent(event)
-
-
-class ImagePopup(QDockWidget):
-    # TODO: Implement buttons - Signal for each.
-    def __init__(self, pixmap, parent=None):
-        super().__init__("Image Viewer", parent)
-        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
-
-        # Create a label to display the image
-        self.label = QLabel(self)
-        self.label.setPixmap(pixmap)
-        self.label.setAlignment(Qt.AlignCenter)
-        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-        # Create buttons
-        use_prompt = QPushButton("Use Prompt")
-        use_all = QPushButton("Use All")
-        copy_prompt = QPushButton("Copy Prompt")
-        copy_all = QPushButton("Copy All")
-        show_details = QPushButton("Show Details")
-
-        # Create horizontal layouts for button pairs
-        copy_layout = QHBoxLayout()
-        copy_layout.addWidget(copy_prompt)
-        copy_layout.addWidget(copy_all)
-
-        use_layout = QHBoxLayout()
-        use_layout.addWidget(use_prompt)
-        use_layout.addWidget(use_all)
-
-        # Create a main vertical layout and add widgets
-        layout = QVBoxLayout()
-        layout.addWidget(self.label)
-        layout.addLayout(copy_layout)
-        layout.addLayout(use_layout)
-        layout.addWidget(show_details)
-
-        # Create a central widget to set the layout
-        widget = QWidget()
-        widget.setLayout(layout)
-
-        # Set the widget for the QDockWidget
-        self.setWidget(widget)
-
-        self.setFloating(True)
-        self.resize(400, 400)  # Adjust the size of the popup window
-
-
-class MasonryLayout(QLayout):
-    def __init__(self, parent=None, margin=10, spacing=10):
-        super(MasonryLayout, self).__init__(parent)
-        self.margin = margin
-        self.spacing = spacing
-        self.items = []
-
-    def addItem(self, item):
-        self.items.append(item)
-
-    def count(self):
-        return len(self.items)
-
-    def sizeHint(self):
-        return self.minimumSize()
-
-    def itemAt(self, index):
-        return self.items[index] if 0 <= index < len(self.items) else None
-
-    def takeAt(self, index):
-        if 0 <= index < len(self.items):
-            return self.items.pop(index)
-        return None
-
-    def setGeometry(self, rect):
-        super(MasonryLayout, self).setGeometry(rect)
-        self.updateGeometry()
-
-    def updateGeometry(self):
-        if not self.items:
-            return
-        width = self.geometry().width()
-        self.calculateColumnLayout(width)
-        self.arrangeItems()
-
-    def calculateColumnLayout(self, width):
-        self.num_columns = max(1, width // (200 + self.spacing))
-        self.column_width = (
-            width - (self.num_columns - 1) * self.spacing
-        ) // self.num_columns
-        self.column_heights = [0] * self.num_columns
-
-    def arrangeItems(self):
-        x_offsets = [
-            i * (self.column_width + self.spacing) for i in range(self.num_columns)
-        ]
-        for item in self.items:
-            widget = item.widget()
-            pixmap = widget.pixmap()
-            aspect_ratio = (
-                pixmap.width() / pixmap.height()
-                if pixmap
-                else widget.sizeHint().width() / widget.sizeHint().height()
-            )
-            height = self.column_width / aspect_ratio
-            min_col = self.column_heights.index(min(self.column_heights))
-            x = x_offsets[min_col]
-            y = self.column_heights[min_col]
-            widget.setGeometry(QRect(x, y, self.column_width, height))
-            self.column_heights[min_col] += height + self.spacing
-
-    def addImage(self, path: os.PathLike):
-        image_widget = ImageWidget(path)
-        self.addWidget(image_widget)
-
 
 class Model:
     performance: float
@@ -420,6 +280,156 @@ class LocalJob:
         lj= cls(Job.deserialize(job))
         lj.completed_at=value.get("completed_at",time.time())
         return lj
+
+
+class ImageWidget(QLabel):
+    imageClicked = Signal(QPixmap)
+
+    def __init__(self, lj:LocalJob):
+        super().__init__()
+        self.lj=lj
+        self.original_pixmap = QPixmap(lj.path)
+        self.setPixmap(self.original_pixmap)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setAlignment(Qt.AlignCenter)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.update_pixmap()
+
+    def update_pixmap(self):
+        if self.original_pixmap:
+            scaled_pixmap = self.original_pixmap.scaled(
+                self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
+            self.setPixmap(scaled_pixmap)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.imageClicked.emit(self.original_pixmap)
+        super().mouseReleaseEvent(event)
+
+
+class ImagePopup(QDockWidget):
+    def copy_prompt(self):
+        print("Copying")
+        self._parent.clipboard.setText(self.lj.original.prompt)
+        
+    
+    def copy_all(self):
+        pass
+    # TODO: Implement buttons - Signal for each.
+    def __init__(self, pixmap:QPixmap, lj:LocalJob, parent=None):
+        super().__init__("Image Viewer", parent)
+        self._parent=parent
+        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.lj=lj
+        # Create a label to display the image
+        self.label = QLabel(self)
+        self.label.setPixmap(pixmap)
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+        # Create buttons
+        use_prompt = QPushButton("Use Prompt")
+        use_all = QPushButton("Use All")
+        copy_prompt = QPushButton("Copy Prompt")
+        copy_prompt.clicked.connect(self.copy_prompt)
+        copy_all = QPushButton("Copy All")
+        show_details = QPushButton("Show Details")
+
+        # Create horizontal layouts for button pairs
+        copy_layout = QHBoxLayout()
+        copy_layout.addWidget(copy_prompt)
+        copy_layout.addWidget(copy_all)
+
+        use_layout = QHBoxLayout()
+        use_layout.addWidget(use_prompt)
+        use_layout.addWidget(use_all)
+
+        # Create a main vertical layout and add widgets
+        layout = QVBoxLayout()
+        layout.addWidget(self.label)
+        layout.addLayout(copy_layout)
+        layout.addLayout(use_layout)
+        layout.addWidget(show_details)
+
+        # Create a central widget to set the layout
+        widget = QWidget()
+        widget.setLayout(layout)
+
+        # Set the widget for the QDockWidget
+        self.setWidget(widget)
+
+        self.setFloating(True)
+        self.resize(400, 400)  # Adjust the size of the popup window
+
+
+class MasonryLayout(QLayout):
+    def __init__(self, parent=None, margin=10, spacing=10):
+        super(MasonryLayout, self).__init__(parent)
+        self.margin = margin
+        self.spacing = spacing
+        self.items = []
+
+    def addItem(self, item):
+        self.items.append(item)
+
+    def count(self):
+        return len(self.items)
+
+    def sizeHint(self):
+        return self.minimumSize()
+
+    def itemAt(self, index):
+        return self.items[index] if 0 <= index < len(self.items) else None
+
+    def takeAt(self, index):
+        if 0 <= index < len(self.items):
+            return self.items.pop(index)
+        return None
+
+    def setGeometry(self, rect):
+        super(MasonryLayout, self).setGeometry(rect)
+        self.updateGeometry()
+
+    def updateGeometry(self):
+        if not self.items:
+            return
+        width = self.geometry().width()
+        self.calculateColumnLayout(width)
+        self.arrangeItems()
+
+    def calculateColumnLayout(self, width):
+        self.num_columns = max(1, width // (200 + self.spacing))
+        self.column_width = (
+            width - (self.num_columns - 1) * self.spacing
+        ) // self.num_columns
+        self.column_heights = [0] * self.num_columns
+
+    def arrangeItems(self):
+        x_offsets = [
+            i * (self.column_width + self.spacing) for i in range(self.num_columns)
+        ]
+        for item in self.items:
+            widget = item.widget()
+            pixmap = widget.pixmap()
+            aspect_ratio = (
+                pixmap.width() / pixmap.height()
+                if pixmap
+                else widget.sizeHint().width() / widget.sizeHint().height()
+            )
+            height = self.column_width / aspect_ratio
+            min_col = self.column_heights.index(min(self.column_heights))
+            x = x_offsets[min_col]
+            y = self.column_heights[min_col]
+            widget.setGeometry(QRect(x, y, self.column_width, height))
+            self.column_heights[min_col] += height + self.spacing
+
+    def addImage(self, path: os.PathLike,lj:LocalJob):
+        image_widget = ImageWidget(path,lj)
+        self.addWidget(image_widget)
+
 class APIManagerThread(QThread):
     job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
     updated = Signal()
@@ -787,7 +797,9 @@ class MainWindow(QMainWindow):
             self.api_key = k
         else:
             self.api_key = None
+        
         self.loading_thread = LoadThread(self.api_key)
+        self.hide_api_key()
         self.show()
         self.ui.maxJobsSpinBox.setValue(self.savedData.max_jobs)
         self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
@@ -846,7 +858,7 @@ class MainWindow(QMainWindow):
 
         for lj in self.download_thread.completed_downloads:
             print(lj.path)
-            self.add_image_to_gallery(lj.path)
+            self.add_image_to_gallery(lj)
         Toast.setAlwaysOnMainScreen(True)
         Toast.setPosition(toast_enums.ToastPosition.TOP_RIGHT)
         Toast.setPositionRelativeToWidget(self)
@@ -939,15 +951,15 @@ class MainWindow(QMainWindow):
         self.preset_being_updated = False
 
     def on_image_fully_downloaded(self, lj: LocalJob):
-        self.add_image_to_gallery(lj.path)
+        self.add_image_to_gallery(lj)
 
-    def add_image_to_gallery(self, image_path):
-        image_widget = ImageWidget(image_path)
-        image_widget.imageClicked.connect(self.show_image_popup)
+    def add_image_to_gallery(self, lj:LocalJob):
+        image_widget = ImageWidget(lj)
+        image_widget.imageClicked.connect(lambda v:self.show_image_popup(v,lj))
         self.gallery_layout.addWidget(image_widget)
 
-    def show_image_popup(self, pixmap):
-        popup = ImagePopup(pixmap, self)
+    def show_image_popup(self, pixmap, lj):
+        popup = ImagePopup(pixmap, lj,self)
         self.addDockWidget(Qt.RightDockWidgetArea, popup)
         popup.show()
 
