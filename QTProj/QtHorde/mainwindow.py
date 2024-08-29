@@ -11,7 +11,7 @@ import os
 import random
 import sys
 import time
-from typing import List, Dict, Optional, Self
+from typing import List, Dict, Optional, Self, Type
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -112,7 +112,7 @@ class Model:
 
     def get(self, name, default=None):
         if hasattr(self, name):
-            return self["name"]
+            return self.__getattribute__(name)
         elif default != None:
             return default
         raise KeyError(self, name)
@@ -198,7 +198,8 @@ class Job:
 
     @classmethod
     def from_json(cls, data: Dict) -> Self:
-        prompt = data.get("prompt")
+        prompt = data.get("prompt","")
+
         params = data.get("params", {})
         return cls(
             prompt=prompt,
@@ -229,7 +230,7 @@ class Job:
         return b
 
     @classmethod
-    def deserialize(cls, value: Dict) -> Self:
+    def deserialize(cls:type[Self], value: Dict) -> Self:
         v = cls.from_json(value)
         v.done = value.get("done", False)
         v.faulted = value.get("faulted", False)
@@ -257,7 +258,7 @@ class LocalJob:
     original: Job
     fileType: str
     downloadURL: str
-    completed_at:int
+    completed_at:float
 
     def __init__(self, job: Job) -> None:
         self.id = job.job_id
@@ -276,7 +277,7 @@ class LocalJob:
 
     @classmethod
     def deserialize(cls, value: dict) -> Self:
-        job = value.get("original")
+        job = value.get("original",{})
         lj= cls(Job.deserialize(job))
         lj.completed_at=value.get("completed_at",time.time())
         return lj
@@ -290,8 +291,8 @@ class ImageWidget(QLabel):
         self.lj=lj
         self.original_pixmap = QPixmap(lj.path)
         self.setPixmap(self.original_pixmap)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setAlignment(Qt.AlignCenter)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -300,12 +301,12 @@ class ImageWidget(QLabel):
     def update_pixmap(self):
         if self.original_pixmap:
             scaled_pixmap = self.original_pixmap.scaled(
-                self.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation
+                self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
             )
             self.setPixmap(scaled_pixmap)
 
     def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self.imageClicked.emit(self.original_pixmap)
         super().mouseReleaseEvent(event)
 
@@ -319,16 +320,16 @@ class ImagePopup(QDockWidget):
     def copy_all(self):
         pass
     # TODO: Implement buttons - Signal for each.
-    def __init__(self, pixmap:QPixmap, lj:LocalJob, parent=None):
+    def __init__(self, pixmap:QPixmap, lj:LocalJob, parent:"MainWindow"):
         super().__init__("Image Viewer", parent)
         self._parent=parent
-        self.setAllowedAreas(Qt.LeftDockWidgetArea | Qt.RightDockWidgetArea)
+        self.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea)
         self.lj=lj
         # Create a label to display the image
         self.label = QLabel(self)
         self.label.setPixmap(pixmap)
-        self.label.setAlignment(Qt.AlignCenter)
-        self.label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         # Create buttons
         use_prompt = QPushButton("Use Prompt")
@@ -369,7 +370,7 @@ class MasonryLayout(QLayout):
     def __init__(self, parent=None, margin=10, spacing=10):
         super(MasonryLayout, self).__init__(parent)
         self.margin = margin
-        self.spacing = spacing
+        self.m_spacing = spacing
         self.items = []
 
     def addItem(self, item):
@@ -401,15 +402,15 @@ class MasonryLayout(QLayout):
         self.arrangeItems()
 
     def calculateColumnLayout(self, width):
-        self.num_columns = max(1, width // (200 + self.spacing))
+        self.num_columns = max(1, width // (200 + self.m_spacing))
         self.column_width = (
-            width - (self.num_columns - 1) * self.spacing
+            width - (self.num_columns - 1) * self.m_spacing
         ) // self.num_columns
         self.column_heights = [0] * self.num_columns
 
     def arrangeItems(self):
         x_offsets = [
-            i * (self.column_width + self.spacing) for i in range(self.num_columns)
+            i * (self.column_width + self.m_spacing) for i in range(self.num_columns)
         ]
         for item in self.items:
             widget = item.widget()
@@ -427,7 +428,7 @@ class MasonryLayout(QLayout):
             self.column_heights[min_col] += height + self.spacing
 
     def addImage(self, path: os.PathLike,lj:LocalJob):
-        image_widget = ImageWidget(path,lj)
+        image_widget = ImageWidget(lj)
         self.addWidget(image_widget)
 
 class APIManagerThread(QThread):
@@ -630,7 +631,7 @@ class DownloadThread(QThread):
         }
 
     @classmethod
-    def deserialize(cls: Self, value: Dict):
+    def deserialize(cls: type[Self], value: Dict):
         if (cd := value.get("completed_downloads", None)) is None:
             ncd = []
         else:
@@ -655,13 +656,13 @@ class ModelPopup(QDialog):
 
         self.ui: Ui_Dialog = Ui_Dialog()
         self.ui.setupUi(self)
-        self.ui.baselineLineEdit.setText(data.get("baseline"))
-        self.ui.nameLineEdit.setText(data.get("name"))
-        self.ui.inpaintingCheckBox.setChecked(data.get("inpainting"))
-        self.ui.descriptionBox.setText(data.get("description"))
-        self.ui.versionLineEdit.setText(data.get("version"))
-        self.ui.styleLineEdit.setText(data.get("style"))
-        self.ui.nsfwCheckBox.setChecked(data.get("nsfw"))
+        self.ui.baselineLineEdit.setText(data.get("baseline","stable_diffusion_xl"))
+        self.ui.nameLineEdit.setText(data.get("name","AlbedoBase XL (SDXL)"))
+        self.ui.inpaintingCheckBox.setChecked(data.get("inpainting",False))
+        self.ui.descriptionBox.setText(data.get("description","SDXL Model that doesn't require a refiner"))
+        self.ui.versionLineEdit.setText(data.get("version","2.1"))
+        self.ui.styleLineEdit.setText(data.get("style","generalist"))
+        self.ui.nsfwCheckBox.setChecked(data.get("nsfw",False))
         self.ui.unsupportedFeaturesLineEdit.setText(
             ", ".join(data.get("features_not_supported", []))
         )
@@ -742,7 +743,9 @@ class SavedData:
         current_open_tab: int,
     ):
         self.api_state = api.serialize()
-        self.current_images = dlthread.serialize()
+        self.current_images = (dlv:=dlthread.serialize()).get(("completed_downloads"),[])
+        self.queued_downloads = dlv.get(("queued_downloads"),[])
+        
         self.max_jobs = max_jobs
         self.nsfw_allowed = nsfw
         self.share_images = share_images
@@ -755,6 +758,7 @@ class SavedData:
             "max_jobs": self.max_jobs,
             "nsfw_allowed": self.nsfw_allowed,
             "current_images": self.current_images,
+            "queued_downloads":self.queued_downloads,
             "job_config": self.job_config,
             "share_images": self.share_images,
             "current_open_tab": self.current_open_tab,
@@ -773,6 +777,7 @@ class SavedData:
         self.api_state = j.get("api_state", {})
         self.max_jobs = j.get("max_jobs", 5)
         self.current_images = j.get("current_images", {})
+        self.queued_downloads=j.get("queued_downloads",[])
         self.nsfw_allowed = j.get("nsfw_allowed", False)
         self.share_images = j.get("share_images", True)
         self.job_config = j.get("job_config", {})
@@ -796,7 +801,8 @@ class MainWindow(QMainWindow):
             self.ui.apiKeyEntry.setText(k)
             self.api_key = k
         else:
-            self.api_key = None
+            self.api_key = ANON_API_KEY
+            self.show_warn_toast("Anonymous API key","Warning: No API key set. Large generations may fail, and images will take a long time to generate")
         
         self.loading_thread = LoadThread(self.api_key)
         self.hide_api_key()
@@ -813,7 +819,8 @@ class MainWindow(QMainWindow):
             max_requests=self.savedData.max_jobs,
         )
         self.download_thread: DownloadThread = DownloadThread.deserialize(
-            self.savedData.current_images
+            
+            {"completed_downloads":self.savedData.current_images,"queued_downloads":self.savedData.queued_downloads}
         )
         self.download_thread.completed.connect(self.on_image_fully_downloaded)
         self.api_thread.job_completed.connect(self.on_job_completed)
@@ -960,7 +967,7 @@ class MainWindow(QMainWindow):
 
     def show_image_popup(self, pixmap, lj):
         popup = ImagePopup(pixmap, lj,self)
-        self.addDockWidget(Qt.RightDockWidgetArea, popup)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, popup)
         popup.show()
 
     def on_fully_loaded(self):
@@ -1011,7 +1018,7 @@ class MainWindow(QMainWindow):
 
     def update_user_info(self, r: requests.Response):
         if r.status_code == 404:
-            self.show_error_toast("Invalid API key; User could not be found.")
+            self.show_error_toast("Invalid API key", "User could not be found.")
             return
         j = r.json()
         self.user_info = j
@@ -1090,7 +1097,7 @@ class MainWindow(QMainWindow):
 
             prompt matrix: [This is a test, this is a  ### negative test]
             "###" delineates prompt from negative prompt in the horde. i.e prompt ### negative prompt
-            *To be fair*, you'd either be an idiot or know exactly what you're doing to encounter this. -\_o_/-
+            *To be fair*, you'd either be an idiot or know exactly what you're doing to encounter this. :shrug:
             """
             prompt = prompt + " ### " + np
         sampler_name = self.ui.samplerComboBox.currentText()
@@ -1116,22 +1123,22 @@ class MainWindow(QMainWindow):
                     )
                     self.ui.clipSkipSpinBox.setValue(2)
                     return
-            if (mins := reqs.get("min_steps", None)) is not None:
-                if steps < mins:
+            if (mins := reqs.get("min_steps", 0)) != 0:
+                if steps <int(mins):
                     self.show_warn_toast(
                         "Min Steps",
                         f"This model requires at least {mins} steps, currently {steps}",
                     )
-                    self.ui.stepsSpinBox.setValue(mins)
+                    self.ui.stepsSpinBox.setValue(int(mins))
                     return
 
-            if (maxs := reqs.get("max_steps", None)) is not None:
-                if steps > maxs:
+            if (maxs := reqs.get("max_steps", 150 )) !=150:
+                if steps > int(maxs):
                     self.show_warn_toast(
                         "Max Steps",
                         f"This model requires at most {maxs} steps, currently {steps}",
                     )
-                    self.ui.stepsSpinBox.setValue(maxs)
+                    self.ui.stepsSpinBox.setValue(int(maxs))
                     return
             if (cfgreq := reqs.get("cfg_scale", None)) is not None:
                 if cfg_scale != cfgreq:
@@ -1141,20 +1148,24 @@ class MainWindow(QMainWindow):
                     )
                     self.ui.guidenceDoubleSpinBox.setValue(float(cfgreq))
                     return
-            if (rsamplers := reqs.get("samplers", None)) is not None:
-                if sampler_name not in rsamplers:
-                    samplertext = ""
-                    for n in rsamplers:
-                        samplertext += '"' + n + '",'
-                    samplertext = samplertext[:-1]
-                    self.show_warn_toast(
-                        "Wrong Sampler",
-                        "This mode requires the use of one of "
-                        + samplertext
-                        + " samplers",
-                    )
-                    self.ui.samplerComboBox = rsamplers[0]
-                    return
+            if (rsamplers := reqs.get("samplers", [])) !=[]: # type: ignore
+                if type(rsamplers)==type(str):
+                    rsamplers=[rsamplers]
+                if type(rsamplers)!=type(int):
+                    rsamplers:list[str]=rsamplers
+                    if sampler_name not in rsamplers:
+                        samplertext = ""
+                        for n in rsamplers:
+                            samplertext += '"' + n + '",'
+                        samplertext = samplertext[:-1]
+                        self.show_warn_toast(
+                            "Wrong Sampler",
+                            "This mode requires the use of one of "
+                            + samplertext
+                            + " samplers",
+                        )
+                        self.ui.samplerComboBox.setCurrentText( rsamplers[0])
+                        return
         karras = True
         hires_fix = True
         allow_nsfw = self.ui.NSFWCheckBox.isChecked()
@@ -1170,19 +1181,19 @@ class MainWindow(QMainWindow):
             else:
                 sj_seed=seed
             job = Job(
-                nprompt,
-                sampler_name,
-                cfg_scale,
-                sj_seed,
-                width,
-                height,
-                clip_skip,
-                steps,
-                model,
-                karras,
-                hires_fix,
-                allow_nsfw,
-                share_image,
+                prompt=nprompt,
+                sampler_name=sampler_name,
+                cfg_scale=cfg_scale,
+                seed=str(sj_seed),
+                width=width,
+                height=height,
+                clip_skip=clip_skip,
+                steps=steps,
+                model=model,
+                karras=karras,
+                hires_fix=hires_fix,
+                allow_nsfw=allow_nsfw,
+                share_image=share_image,
             )
             jobs.append(job)
         return jobs
@@ -1192,7 +1203,7 @@ class MainWindow(QMainWindow):
 
         # mod = sd_mod_ref
         models: List[Model] = self.get_available_models()
-        models.sort(key=lambda k: k["count"], reverse=True)
+        models.sort(key=lambda k: k.get("count"), reverse=True)
         model_dict: Dict[str, Model] = {}
         for n in models:
             name = n.get("name", "Unknown")
@@ -1295,7 +1306,7 @@ class MainWindow(QMainWindow):
         )
         warn_toast.show()
 
-    def update_row(self, row, id: str, status: str, prompt: str, model: str, eta: int):
+    def update_row(self, row, id: str, status: str, prompt: str, model: str, eta: float):
         # ID, STATUS, PROMPT, MODEL, ETA
         table = self.ui.inProgressItemsTable
         table.setSortingEnabled(False)
@@ -1336,7 +1347,8 @@ class MainWindow(QMainWindow):
         table = self.ui.inProgressItemsTable
         table.setUpdatesEnabled(True)
         for job in self.api_thread.job_queue.queue:
-            r = table.findItems(job.id, Qt.MatchFlag.MatchFixedString)
+            job:Job=job
+            r = table.findItems(job.job_id, Qt.MatchFlag.MatchFixedString)
             if len(r) == 0:
                 if table.columnCount() == 0:
                     table.setColumnCount(5)  # Set the number of columns
@@ -1347,10 +1359,10 @@ class MainWindow(QMainWindow):
 
             self.update_row(
                 row,
-                job.id,
+                job.job_id,
                 "Queued",
-                job.original.prompt[: min(len(lj.original.prompt), 50)],
-                job.original.model,
+                job.prompt[: min(len(job.prompt), 50)],
+                job.model,
                 -2,
             )
         current_jobs = self.api_thread.current_requests
@@ -1371,7 +1383,7 @@ class MainWindow(QMainWindow):
                 "In Progress",
                 job.prompt[: min(len(job.prompt), 50)],
                 job.model,
-                job.wait_time,
+                float(job.wait_time),
             )
         for lj in self.download_thread.completed_downloads:
             r = table.findItems(lj.id, Qt.MatchFlag.MatchFixedString)
