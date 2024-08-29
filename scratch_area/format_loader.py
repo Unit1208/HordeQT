@@ -9,12 +9,13 @@
             "height": 1024,
             "clip_skip": 1,
             "steps": 20,
-            "model": "AlbedoBase (SDXL)",
+            "model": "AlbedoBase XL (SDXL)",
         }
 """
 
 import enum
 import json
+import re
 from PIL import Image
 from PIL.ExifTags import Base
 
@@ -23,25 +24,39 @@ from PIL.ExifTags import Base
 ### WILL WORK:
 # ARTBOT pngs jpegs
 # HORDENG jpegs
-def _artbot_png(img: Image.Image):
-    "Comment"
-    """
-    A brilliant sunflower, beautiful detailed oil painting, bright yellow sunflowers, verdant leaves, by (Vincent Van Gogh:1.4),
-Steps: 20, Sampler: k_euler, CFG scale: 5, Seed: 3758616032, Size: 448x1024, model: AlbedoBase XL (SDXL)"""
-    pass
+def _artbot(img: Image.Image):
 
+    lines = img.info.get("Comment").strip().splitlines()
+    print(lines)
 
-def _artbot_jpeg(img: Image.Image):
-    "Comment"
-    """A brilliant sunflower, beautiful detailed oil painting, bright yellow sunflowers, verdant leaves, by (Vincent Van Gogh:1.4),
-Steps: 20, Sampler: k_euler, CFG scale: 5, Seed: 3775856534, Size: 512x768, model: AlbedoBase XL (SDXL)"""
-    pass
+    prompt = lines[0].strip()
+    param_line = 1
+    if len(lines) == 2:
+        negative_prompt = ""
+    else:
+        negative_prompt = lines[1].replace("Negative Prompt:", "").strip()
+        param_line = 2
+    parameters = {}
+    for item in lines[param_line].split(","):
+        key, value = item.split(":")
+        parameters[key.strip()] = value.strip()
+
+    output_dict = {
+        "prompt": prompt,
+        "negative_prompt": negative_prompt,
+        "sampler_name": parameters["Sampler"],
+        "cfg_scale": float(parameters["CFG scale"]),
+        "seed": int(parameters["Seed"]),
+        "width": int(parameters["Size"].split("x")[0]),
+        "height": int(parameters["Size"].split("x")[1]),
+        "clip_skip": 2 if "pony" in parameters["model"].lower() else 1,
+        "steps": int(parameters["Steps"]),
+        "model": parameters["model"].strip(),
+    }
+    return output_dict
 
 
 def _hordeng_jpeg(img: Image.Image):
-    "EXIF"
-    """
-    {"id":"c807827b-46d6-4942-a3a9-60d3d8cd3598","worker":{"id":"121514dd-b317-47f6-8d9b-bdcb7d679a51","name":"Conczins ReGen Dreamer"},"requestId":"e8039e84-0150-4ae6-9241-13294174da24","prompt":"A beautiful oil painting of the Devil with thick messy brush strokes, motif of death, somber, the Devil waits with his firey sword, angry, souls of the damned flowing up from below, death, epic oil painting, mural","negativePrompt":"(worst quality, low quality:1.4), EasyNegative, bad anatomy, bad hands, cropped, missing fingers, missing toes, too many toes, too many fingers, missing arms, long neck, Humpbacked, deformed, disfigured, poorly drawn face, distorted face, mutation, mutated, extra limb, ugly, poorly drawn hands, missing limb, floating limbs, disconnected limbs, malformed hands, out of focus, long body, monochrome, symbol, text, logo, door frame, window frame, mirror frame","sampler":"k_dpm_fast","cfgScale":2,"denoisingStrength":0.75,"height":960,"width":576,"steps":20,"model":"AlbedoBase XL (SDXL)","karras":true,"postProcessors":[],"seed":"661455155","hiresFix":false,"faceFixerStrength":0.75,"nsfw":false,"censorNsfw":false,"slowWorkers":true,"trustedWorkers":false,"allowDowngrade":false,"clipSkip":1,"loraList":[],"styleName":null,"onlyMyWorkers":false,"amount":1,"textualInversionList":[],"qrCode":{"text":null,"positionY":null,"positionX":null,"markersPrompt":null},"transparent":false,"generator":"HordeNG (https://horde-ng.org)"}"""
     e = img.getexif()
     desc = e.get(Base.ImageDescription.value, None)
     if desc is not None:
@@ -64,9 +79,74 @@ def _hordeng_jpeg(img: Image.Image):
             raise ValueError("Invalid HordeNG jpg")
 
 
+def _from_nai_prompt(prompt: str):
+    def process_weight(segment: str, multiplier=1.0):
+        result = []
+        i = 0
+        while i < len(segment):
+            if segment[i] == "{":
+                count = 1
+                j = i + 1
+                while j < len(segment) and count > 0:
+                    if segment[j] == "{":
+                        count += 1
+                    elif segment[j] == "}":
+                        count -= 1
+                    j += 1
+                inner_segment = segment[i + 1 : j - 1]
+                result.append(process_weight(inner_segment, multiplier * 1.05))
+                i = j
+            elif segment[i] == "[":
+                count = 1
+                j = i + 1
+                while j < len(segment) and count > 0:
+                    if segment[j] == "[":
+                        count += 1
+                    elif segment[j] == "]":
+                        count -= 1
+                    j += 1
+                inner_segment = segment[i + 1 : j - 1]
+                result.append(process_weight(inner_segment, multiplier / 1.05))
+                i = j
+            else:
+                j = i
+                while j < len(segment) and segment[j] not in "{}[]":
+                    j += 1
+                item = segment[i:j].strip().replace(" ", "_")
+                if item:
+                    if multiplier != 1.0:
+                        result.append(f"({item}:{multiplier:.2f})")
+                    else:
+                        result.append(item)
+                i = j
+        return " ".join(result)
+
+    cleaned_description = re.sub(r"\s*,\s*", ",", prompt)
+    return process_weight(cleaned_description)
+
+
+def _nai_png(img: Image.Image):
+
+    line = img.info.get("Comment").strip()
+    j: dict = json.loads(line)
+    return {
+        "prompt": _from_nai_prompt(j.get("prompt")),
+        "negative_prompt": _from_nai_prompt(j.get("uc")),
+        "sampler_name": j.get("sampler"),
+        "cfg_scale": j.get("scale"),
+        "seed": 0,
+        "model": "AMPonyXL",
+        "clip_skip": 2,
+        "steps": j.get("steps"),
+        "width": j.get("width"),
+        "height": j.get("height"),
+    }
+
+
 class ImageType(enum.IntEnum):
     HORDENG_JPG = 0
-    ARTBOT_PNG = 1
+    ARTBOT = 1
+    NAI_PNG = 2
 
 
 def _detect_format(img: Image.Image):
@@ -78,6 +158,17 @@ def _detect_format(img: Image.Image):
             return ImageType.HORDENG_JPG
         except:
             pass
+    i = img.info
+    if (sw := i.get("Software", None)) is not None:
+        if "ArtBot" in sw:
+            return ImageType.ARTBOT
+
+    if (comm := i.get("Comment", None)) is not None:
+        try:
+            json.loads(comm)
+            return ImageType.NAI_PNG
+        except:
+            pass
 
 
 def get_prompt(img: Image.Image):
@@ -85,5 +176,8 @@ def get_prompt(img: Image.Image):
     match img_format:
         case ImageType.HORDENG_JPG:
             return _hordeng_jpeg(img)
-        case ImageType.ARTBOT_PNG:
-            return _artbot_png(img)
+        case ImageType.ARTBOT:
+            return _artbot(img)
+        case ImageType.NAI_PNG:
+            return _nai_png(img)
+

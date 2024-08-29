@@ -21,10 +21,10 @@
 - [x] Button to open locally saved data folder
 - [x] Multiple Images (e.g. for loop on addjob)
   - [x] Prompt Matrices
-- [ ] Conversion from NAI prompt formatting
+- [x] Conversion from NAI prompt formatting
 - [ ] DeepDanbooru integration
 - [ ] Insert Danbooru or similar url, get formatted result
-- [ ] Get prompt from metadata
+- [ ] Get prompt from metadata (DnD interface)
 - [x] Preset box for sizing
 - [x] Reset to defaults button
 - [x] Undo reset button
