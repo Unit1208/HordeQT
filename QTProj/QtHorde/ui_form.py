@@ -429,7 +429,7 @@ class Ui_MainWindow(object):
         self.settings_tab.setSizePolicy(sizePolicy)
         self.formLayoutWidget = QWidget(self.settings_tab)
         self.formLayoutWidget.setObjectName(u"formLayoutWidget")
-        self.formLayoutWidget.setGeometry(QRect(0, 10, 971, 169))
+        self.formLayoutWidget.setGeometry(QRect(0, 10, 971, 201))
         self.formLayout_3 = QFormLayout(self.formLayoutWidget)
         self.formLayout_3.setObjectName(u"formLayout_3")
         self.formLayout_3.setVerticalSpacing(6)
@@ -500,6 +500,17 @@ class Ui_MainWindow(object):
 
         self.formLayout_3.setWidget(1, QFormLayout.FieldRole, self.NSFWCheckBox)
 
+        self.shareImagesLabel = QLabel(self.formLayoutWidget)
+        self.shareImagesLabel.setObjectName(u"shareImagesLabel")
+
+        self.formLayout_3.setWidget(2, QFormLayout.LabelRole, self.shareImagesLabel)
+
+        self.shareImagesCheckBox = QCheckBox(self.formLayoutWidget)
+        self.shareImagesCheckBox.setObjectName(u"shareImagesCheckBox")
+        self.shareImagesCheckBox.setChecked(True)
+
+        self.formLayout_3.setWidget(2, QFormLayout.FieldRole, self.shareImagesCheckBox)
+
         self.maxJobsLabel = QLabel(self.formLayoutWidget)
         self.maxJobsLabel.setObjectName(u"maxJobsLabel")
 
@@ -523,29 +534,31 @@ class Ui_MainWindow(object):
 
         self.openSavedData.setIcon(icon10)
 
-        self.formLayout_3.setWidget(4, QFormLayout.FieldRole, self.openSavedData)
+        self.formLayout_3.setWidget(5, QFormLayout.FieldRole, self.openSavedData)
 
         self.openSavedDataLabel = QLabel(self.formLayoutWidget)
         self.openSavedDataLabel.setObjectName(u"openSavedDataLabel")
 
-        self.formLayout_3.setWidget(5, QFormLayout.LabelRole, self.openSavedDataLabel)
+        self.formLayout_3.setWidget(6, QFormLayout.LabelRole, self.openSavedDataLabel)
 
         self.openSavedImages = QPushButton(self.formLayoutWidget)
         self.openSavedImages.setObjectName(u"openSavedImages")
         self.openSavedImages.setIcon(icon)
 
-        self.formLayout_3.setWidget(5, QFormLayout.FieldRole, self.openSavedImages)
+        self.formLayout_3.setWidget(6, QFormLayout.FieldRole, self.openSavedImages)
 
-        self.shareImagesLabel = QLabel(self.formLayoutWidget)
-        self.shareImagesLabel.setObjectName(u"shareImagesLabel")
+        self.saveFormatComboBox = QComboBox(self.formLayoutWidget)
+        self.saveFormatComboBox.addItem("")
+        self.saveFormatComboBox.addItem("")
+        self.saveFormatComboBox.addItem("")
+        self.saveFormatComboBox.setObjectName(u"saveFormatComboBox")
 
-        self.formLayout_3.setWidget(2, QFormLayout.LabelRole, self.shareImagesLabel)
+        self.formLayout_3.setWidget(4, QFormLayout.FieldRole, self.saveFormatComboBox)
 
-        self.shareImagesCheckBox = QCheckBox(self.formLayoutWidget)
-        self.shareImagesCheckBox.setObjectName(u"shareImagesCheckBox")
-        self.shareImagesCheckBox.setChecked(True)
+        self.saveFormatLabel = QLabel(self.formLayoutWidget)
+        self.saveFormatLabel.setObjectName(u"saveFormatLabel")
 
-        self.formLayout_3.setWidget(2, QFormLayout.FieldRole, self.shareImagesCheckBox)
+        self.formLayout_3.setWidget(4, QFormLayout.LabelRole, self.saveFormatLabel)
 
         self.tabWidget.addTab(self.settings_tab, icon5, "")
         self.userInfoPage = QWidget()
@@ -1003,7 +1016,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(3)
         self.modelComboBox.setCurrentIndex(0)
 
 
@@ -1095,14 +1108,19 @@ class Ui_MainWindow(object):
         self.NSFWCheckBox.setToolTip(QCoreApplication.translate("MainWindow", u"Whether to allow the generation of NSFW content. Accidental NSFW content will be censored by workers.", None))
 #endif // QT_CONFIG(tooltip)
         self.NSFWCheckBox.setText("")
-        self.maxJobsLabel.setText(QCoreApplication.translate("MainWindow", u"Max jobs", None))
-        self.openSavedData.setText(QCoreApplication.translate("MainWindow", u"Open Saved Data", None))
-        self.openSavedDataLabel.setText("")
-        self.openSavedImages.setText(QCoreApplication.translate("MainWindow", u"Open Saved Images", None))
         self.shareImagesLabel.setText(QCoreApplication.translate("MainWindow", u"Share Images", None))
 #if QT_CONFIG(tooltip)
         self.shareImagesCheckBox.setToolTip(QCoreApplication.translate("MainWindow", u"Whether to share anonymized images with the horde to help it improve", None))
 #endif // QT_CONFIG(tooltip)
+        self.maxJobsLabel.setText(QCoreApplication.translate("MainWindow", u"Max jobs", None))
+        self.openSavedData.setText(QCoreApplication.translate("MainWindow", u"Open Saved Data", None))
+        self.openSavedDataLabel.setText("")
+        self.openSavedImages.setText(QCoreApplication.translate("MainWindow", u"Open Saved Images", None))
+        self.saveFormatComboBox.setItemText(0, QCoreApplication.translate("MainWindow", u"webp", None))
+        self.saveFormatComboBox.setItemText(1, QCoreApplication.translate("MainWindow", u"jpeg", None))
+        self.saveFormatComboBox.setItemText(2, QCoreApplication.translate("MainWindow", u"png", None))
+
+        self.saveFormatLabel.setText(QCoreApplication.translate("MainWindow", u"Save Format", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.settings_tab), QCoreApplication.translate("MainWindow", u"Settings", None))
         self.usernameLabel.setText(QCoreApplication.translate("MainWindow", u"Username", None))
         self.idLabel.setText(QCoreApplication.translate("MainWindow", u"ID", None))

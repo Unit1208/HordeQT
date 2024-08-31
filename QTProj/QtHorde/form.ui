@@ -39,7 +39,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -733,7 +733,7 @@
           <x>0</x>
           <y>10</y>
           <width>971</width>
-          <height>169</height>
+          <height>201</height>
          </rect>
         </property>
         <layout class="QFormLayout" name="formLayout_3">
@@ -823,6 +823,23 @@
            </property>
           </widget>
          </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="shareImagesLabel">
+           <property name="text">
+            <string>Share Images</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="shareImagesCheckBox">
+           <property name="toolTip">
+            <string>Whether to share anonymized images with the horde to help it improve</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
          <item row="3" column="0">
           <widget class="QLabel" name="maxJobsLabel">
            <property name="text">
@@ -843,7 +860,7 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
+         <item row="5" column="1">
           <widget class="QPushButton" name="openSavedData">
            <property name="text">
             <string>Open Saved Data</string>
@@ -854,14 +871,14 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="0">
+         <item row="6" column="0">
           <widget class="QLabel" name="openSavedDataLabel">
            <property name="text">
             <string/>
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="6" column="1">
           <widget class="QPushButton" name="openSavedImages">
            <property name="text">
             <string>Open Saved Images</string>
@@ -872,20 +889,29 @@
            </property>
           </widget>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="shareImagesLabel">
-           <property name="text">
-            <string>Share Images</string>
-           </property>
+         <item row="4" column="1">
+          <widget class="QComboBox" name="saveFormatComboBox">
+           <item>
+            <property name="text">
+             <string>webp</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>jpeg</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>png</string>
+            </property>
+           </item>
           </widget>
          </item>
-         <item row="2" column="1">
-          <widget class="QCheckBox" name="shareImagesCheckBox">
-           <property name="toolTip">
-            <string>Whether to share anonymized images with the horde to help it improve</string>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
+         <item row="4" column="0">
+          <widget class="QLabel" name="saveFormatLabel">
+           <property name="text">
+            <string>Save Format</string>
            </property>
           </widget>
          </item>

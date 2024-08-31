@@ -257,7 +257,7 @@ class LocalJob:
     id: str
     path: Path
     original: Job
-    fileType: str
+    file_type: str
     downloadURL: str
     completed_at:float
     worker_id:str
@@ -271,17 +271,20 @@ class LocalJob:
             "worker":f"{self.worker_name} ({self.worker_id})"
         }
 
-    def __init__(self, job: Job) -> None:
+    def __init__(self, job: Job,file_type:str="webp") -> None:
         self.id = job.job_id
         self.original = job
-        self.fileType = "webp"
-        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix("."+self.fileType)
+        self.file_type = file_type
+        self.update_path()
+    def update_path(self):
+        
+        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix("."+self.file_type)
 
     def serialize(self) -> dict:
         return {
             "id": self.id,
             "original": self.original.serialize(),
-            "fileType": self.fileType,
+            "fileType": self.file_type,
             "path": str(self.path),
             "completed_at":self.completed_at,
             "worker_id":self.worker_id,
@@ -567,7 +570,7 @@ class APIManagerThread(QThread):
                 continue
 
             try:
-                # print("checking job "+job_id)
+                print("checking job "+job_id)
 
                 response = requests.get(BASE_URL + f"generate/check/{job.horde_job_id}")
                 response.raise_for_status()
@@ -758,6 +761,7 @@ class SavedData:
     max_jobs: int
     nsfw_allowed: bool
     share_images: bool
+    prefered_format:str
 
     def __init__(self) -> None:
 
@@ -772,6 +776,7 @@ class SavedData:
         job_config: dict,
         share_images: bool,
         current_open_tab: int,
+        prefered_format:str
     ):
         self.api_state = api.serialize()
         self.current_images = (dlv:=dlthread.serialize()).get(("completed_downloads"),[])
@@ -782,7 +787,7 @@ class SavedData:
         self.share_images = share_images
         self.job_config = job_config
         self.current_open_tab = current_open_tab
-
+        self.prefered_format=prefered_format
     def write(self):
         d = {
             "api_state": self.api_state,
@@ -793,6 +798,7 @@ class SavedData:
             "job_config": self.job_config,
             "share_images": self.share_images,
             "current_open_tab": self.current_open_tab,
+            "prefered_format":self.prefered_format
         }
         # cbor2.dump ?
         jsondata = json.dumps(d)
@@ -813,7 +819,7 @@ class SavedData:
         self.share_images = j.get("share_images", True)
         self.job_config = j.get("job_config", {})
         self.current_open_tab = j.get("current_open_tab", 0)
-
+        self.prefered_format=j.get("prefered_format","webp")
 
 class MainWindow(QMainWindow):
 
@@ -842,6 +848,7 @@ class MainWindow(QMainWindow):
         self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
         self.ui.shareImagesCheckBox.setChecked(self.savedData.share_images)
         self.ui.tabWidget.setCurrentIndex(self.savedData.current_open_tab)
+        self.ui.saveFormatComboBox.setCurrentText(self.savedData.prefered_format)
         self.ui.GenerateButton.setEnabled(False)
         self.ui.modelComboBox.setEnabled(False)
         self.api_thread = APIManagerThread.deserialize(
@@ -917,6 +924,7 @@ class MainWindow(QMainWindow):
             self.get_job_config(),
             self.ui.shareImagesCheckBox.isChecked(),
             self.ui.tabWidget.currentIndex(),
+            self.ui.saveFormatComboBox.currentText()
         )
         self.savedData.write()
         QMainWindow.closeEvent(self, event)
@@ -1040,6 +1048,8 @@ class MainWindow(QMainWindow):
 
     def on_job_completed(self, job: LocalJob):
         print(f"Job {job.id} completed.")
+        job.file_type=self.ui.saveFormatComboBox.currentText()
+        job.update_path()
         self.download_thread.add_dl(job)
 
     def update_progress(self, value):

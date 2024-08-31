@@ -14,7 +14,7 @@
 - [ ] Evict Jobs from status after some time
 - [x] Cache models, esp. from GH as it's larger and less likely to change
 - [-] [QPixmap doesn't support displaying WEBPs](https://doc.qt.io/qtforpython-6/PySide6/QtGui/QPixmap.html#reading-and-writing-image-files), need to convert them before displaying them.
-- [ ] Allow the user to control the saved format of images after conversion. (Horde always(?) uses WEBP)
+- [x] Allow the user to control the saved format of images after conversion. (Horde always(?) uses WEBP)
 - [x] Save generation info into metadata
 - [x] Save open tab on close
 - [x] Toast on image created
@@ -35,4 +35,5 @@
 - [ ] Toggle for done jobs
 - [ ] Why isn't the scrollbar working on the Masonry layout?
 - [ ] Actually decent logging - logging and coloredlogs. See verboselogs by the same author as coloredlogs
-- [ ] Errored/Censored job state + handling
+- [ ] Error handling
+  - [ ] Errored/Censored job state + handling
