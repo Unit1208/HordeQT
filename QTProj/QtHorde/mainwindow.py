@@ -385,14 +385,14 @@ class MasonryLayout(QLayout):
         return self.minimumSize()
 
     def itemAt(self, index)->QLayoutItem:
-        if ( 0 <= index < len(self.items)):
-            return self.items[index] 
-        raise IndexError(f"oob index {index}, size {len(self.items)}")
+        try:
+            return    self.items[index]
+        except:
+            return None # type: ignore 
+        
 
     def takeAt(self, index):
-        if 0 <= index < len(self.items):
-            return self.items.pop(index)
-        raise IndexError(f"oob index {index}, size {len(self.items)}")
+        return self.items.pop(index)
 
 
     def setGeometry(self, arg__1):
@@ -430,7 +430,7 @@ class MasonryLayout(QLayout):
             x = x_offsets[min_col]
             y = self.column_heights[min_col]
             widget.setGeometry(QRect(x, y, self.column_width, height))
-            self.column_heights[min_col] += height + self.spacing
+            self.column_heights[min_col] += height + self.m_spacing
 
     def addImage(self, path: os.PathLike,lj:LocalJob):
         image_widget = ImageWidget(lj)
@@ -781,7 +781,7 @@ class SavedData:
             j = dict()
         self.api_state = j.get("api_state", {})
         self.max_jobs = j.get("max_jobs", 5)
-        self.current_images = j.get("current_images", {})
+        self.current_images = j.get("current_images", [])
         self.queued_downloads=j.get("queued_downloads",[])
         self.nsfw_allowed = j.get("nsfw_allowed", False)
         self.share_images = j.get("share_images", True)
