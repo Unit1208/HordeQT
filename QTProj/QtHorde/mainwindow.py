@@ -1,7 +1,8 @@
 # This Python file uses the following encoding: utf-8
 from dataclasses import dataclass
 import datetime as dt
-import enum
+from PIL import Image, ExifTags
+import tempfile
 import re
 import uuid
 import human_readable as hr
@@ -252,7 +253,6 @@ class Job:
         self.wait_time = status_data.get("wait_time", 0)
         self.mod_time = time.time()
 
-
 class LocalJob:
     id: str
     path: Path
@@ -260,12 +260,22 @@ class LocalJob:
     fileType: str
     downloadURL: str
     completed_at:float
+    worker_id:str
+    worker_name:str
+    
+    def convert_to_metadata(self)->dict:
+        return {
+            "Application":"HordeQT",
+            "job":self.original.serialize(),
+            "id":self.id,
+            "worker":f"{self.worker_name} ({self.worker_id})"
+        }
 
     def __init__(self, job: Job) -> None:
         self.id = job.job_id
         self.original = job
         self.fileType = "webp"
-        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix(".webp")
+        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix("."+self.fileType)
 
     def serialize(self) -> dict:
         return {
@@ -273,7 +283,9 @@ class LocalJob:
             "original": self.original.serialize(),
             "fileType": self.fileType,
             "path": str(self.path),
-            "completed_at":self.completed_at
+            "completed_at":self.completed_at,
+            "worker_id":self.worker_id,
+            "worker_name":self.worker_name,
         }
 
     @classmethod
@@ -281,9 +293,18 @@ class LocalJob:
         job = value.get("original",{})
         lj= cls(Job.deserialize(job))
         lj.completed_at=value.get("completed_at",time.time())
+        lj.worker_name=value.get("worker_name","Unknown")
+        lj.worker_id=value.get("worker_id","00000000-0000-0000-0000-000000000000")
         return lj
 
+def apply_metadata_to_image(path:Path,lj:LocalJob)->Path:
+    im=Image.open(path)
 
+    exif=im.getexif()
+    exif[ExifTags.Base.Software]="QTHorde"
+    exif[ExifTags.Base.ImageDescription]=json.dumps(lj.convert_to_metadata())
+    im.save(lj.path,exif=exif)
+    return lj.path
 class ImageWidget(QLabel):
     imageClicked = Signal(QPixmap)
 
@@ -572,7 +593,10 @@ class APIManagerThread(QThread):
                 r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
                 r.raise_for_status()
                 rj = r.json()
-                lj.downloadURL = rj["generations"][0]["img"]
+                gen=rj["generations"][0]
+                lj.downloadURL = gen["img"]
+                lj.worker_id=gen["worker_id"]
+                lj.worker_name=gen["worker_name"]
                 lj.completed_at=time.time()
                 self.job_completed.emit(lj)
 
@@ -623,8 +647,10 @@ class DownloadThread(QThread):
             if len(self.queued_downloads) > 0:
                 lj = self.queued_downloads.pop()
                 print("downloading " + lj.id)
-                with open(lj.path, "wb") as f:
-                    f.write(requests.get(lj.downloadURL).content)
+                tf=tempfile.NamedTemporaryFile()
+                tf.write(requests.get(lj.downloadURL).content)
+                apply_metadata_to_image(Path(tf.name),lj)
+                tf.close()
                 self.completed.emit(lj)
                 self.completed_downloads.append(lj)
             time.sleep(1)
@@ -907,6 +933,7 @@ class MainWindow(QMainWindow):
             "clip_skip": self.ui.clipSkipSpinBox.value(),
             "steps": self.ui.stepsSpinBox.value(),
             "model": self.ui.modelComboBox.currentText(),
+            "images":self.ui.imagesSpinBox.value()
         }
 
     def on_width_change(self):
@@ -980,7 +1007,7 @@ class MainWindow(QMainWindow):
         self.ui.modelComboBox.setEnabled(True)
         # this doesn't feel right, for some reason.
         self.ui.maxJobsSpinBox.setMaximum(self.ui.maxConcurrencySpinBox.value())
-        QTimer.singleShot(150, lambda: self.ui.progressBar.hide())
+        QTimer.singleShot(250, lambda: self.ui.progressBar.hide())
 
     def restore_job_config(self, job_config: dict):
 
@@ -999,7 +1026,7 @@ class MainWindow(QMainWindow):
         self.ui.stepsSpinBox.setValue(job_config.get("steps", 20))
         self.ui.modelComboBox.setCurrentText(job_config.get("model", "default"))
         self.ui.NSFWCheckBox.setChecked(job_config.get("allow_nsfw", False))
-
+        self.ui.imagesSpinBox.setValue(job_config.get("images",1))
     def undo_reset_job_config(self):
         if self.last_job_config is not None:
             self.restore_job_config(self.last_job_config)
@@ -1326,7 +1353,7 @@ class MainWindow(QMainWindow):
                     # FIXME: This is hacky, I don't like it.
                     "Done"
                     if eta == -1
-                    else ("Unknown" if eta==-2 else hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta))+ " ago" if eta<0 else "")
+                    else ("Unknown" if eta==-2 else hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta))+ (" ago" if eta<0 else ""))
                 ),
             ]
         ):
@@ -1351,9 +1378,11 @@ class MainWindow(QMainWindow):
     def update_inprogess_table(self):
         table = self.ui.inProgressItemsTable
         table.setUpdatesEnabled(True)
+        #FIXME: this code could easily be cleaned up.
         for job in self.api_thread.job_queue.queue:
             job:Job=job
             r = table.findItems(job.job_id, Qt.MatchFlag.MatchFixedString)
+            
             if len(r) == 0:
                 if table.columnCount() == 0:
                     table.setColumnCount(5)  # Set the number of columns
