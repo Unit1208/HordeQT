@@ -43,3 +43,5 @@
 - [ ] Why isn't the gallery working on certain machines?
 - [ ] Delete button on images
 - [ ] When saving/Loading current state, trim off model worker count and match by that when loading.
+- [ ] LoRAs/TIs
+- [ ] Warning when trying to use a Pony model incorrectly.
