@@ -41,3 +41,5 @@
   - [ ] Errored/Censored job state + handling
 - [ ] Add a toggle for metadata?
 - [ ] Why isn't the gallery working on certain machines?
+- [ ] Delete button on images
+- [ ] When saving/Loading current state, trim off model worker count and match by that when loading.

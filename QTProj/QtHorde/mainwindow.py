@@ -302,7 +302,7 @@ class LocalJob:
         lj.completed_at = value.get("completed_at", time.time())
         lj.worker_name = value.get("worker_name", "Unknown")
         lj.worker_id = value.get("worker_id", "00000000-0000-0000-0000-000000000000")
-        lj.file_type=value.get("fileType","webp")
+        lj.file_type = value.get("fileType", "webp")
         lj.update_path()
         return lj
 
@@ -553,7 +553,7 @@ class APIManagerThread(QThread):
             and not self.job_queue.empty()
         ):
             current_time = time.time()
-            if current_time - self.last_async_time > 5 and self.async_requests < 10:
+            if current_time - self.last_async_time > 2 and self.async_requests < 10:
                 job = self.job_queue.get()
                 try:
                     d = json.dumps(job.to_json())
@@ -1502,7 +1502,9 @@ class MainWindow(QMainWindow):
                     float(job.wait_time) if status == "In Progress" else -2,
                 )
 
-        update_table_with_jobs({job.job_id: job for job in self.api_thread.job_queue.queue}, "Queued")
+        update_table_with_jobs(
+            {job.job_id: job for job in self.api_thread.job_queue.queue}, "Queued"
+        )
         update_table_with_jobs(self.api_thread.current_requests, "In Progress")
 
         for lj in self.download_thread.completed_downloads:
@@ -1511,11 +1513,10 @@ class MainWindow(QMainWindow):
                 row,
                 lj.id,
                 "Done",
-                lj.original.prompt[: min(len(lj.original.prompt), 50)],
+                lj.original.prompt,
                 lj.original.model,
                 lj.completed_at - time.time(),
             )
-
 
 
 if __name__ == "__main__":
