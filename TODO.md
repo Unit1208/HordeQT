@@ -34,6 +34,10 @@
 - [ ] Preview kudos cost
 - [ ] Toggle for done jobs
 - [ ] Why isn't the scrollbar working on the Masonry layout?
-- [ ] Actually decent logging - logging and coloredlogs. See verboselogs by the same author as coloredlogs
+- [ ] Handle resizing
+- [x] Actually decent logging - logging and coloredlogs. See verboselogs by the same author as coloredlogs
+- [ ] Rescan directory in order to load images that weren't properly saved
 - [ ] Error handling
   - [ ] Errored/Censored job state + handling
+- [ ] Add a toggle for metadata?
+- [ ] Why isn't the gallery working on certain machines?

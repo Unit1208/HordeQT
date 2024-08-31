@@ -302,6 +302,8 @@ class LocalJob:
         lj.completed_at = value.get("completed_at", time.time())
         lj.worker_name = value.get("worker_name", "Unknown")
         lj.worker_id = value.get("worker_id", "00000000-0000-0000-0000-000000000000")
+        lj.file_type=value.get("fileType","webp")
+        lj.update_path()
         return lj
 
 
@@ -961,6 +963,7 @@ class MainWindow(QMainWindow):
         self.ui.galleryView.addWidget(scroll_area)
 
         for lj in self.download_thread.completed_downloads:
+            lj.update_path()
             LOGGER.info(f"Image found, adding to gallery: {lj.id}")
             self.add_image_to_gallery(lj)
         LOGGER.debug("Setting up toasts")
@@ -1475,57 +1478,35 @@ class MainWindow(QMainWindow):
     def update_inprogess_table(self):
         table = self.ui.inProgressItemsTable
         table.setUpdatesEnabled(True)
-        # FIXME: this code could easily be cleaned up.
-        for job in self.api_thread.job_queue.queue:
-            job: Job = job
-            r = table.findItems(job.job_id, Qt.MatchFlag.MatchFixedString)
 
-            if len(r) == 0:
-                if table.columnCount() == 0:
-                    table.setColumnCount(5)  # Set the number of columns
-                row = table.rowCount()
-                table.insertRow(row)
-            else:
-                row = r[0].row()
-
-            self.update_row(
-                row,
-                job.job_id,
-                "Queued",
-                job.prompt[: min(len(job.prompt), 50)],
-                job.model,
-                -2,
-            )
-        current_jobs = self.api_thread.current_requests
-        for job_id in current_jobs.keys():
-            job = current_jobs[job_id]
+        def find_or_insert_row(job_id):
             r = table.findItems(job_id, Qt.MatchFlag.MatchFixedString)
-            if len(r) == 0:
+            if not r:
                 if table.columnCount() == 0:
-                    table.setColumnCount(5)  # Set the number of columns
+                    table.setColumnCount(5)
                 row = table.rowCount()
                 table.insertRow(row)
             else:
                 row = r[0].row()
+            return row
 
-            self.update_row(
-                row,
-                job_id,
-                "In Progress",
-                job.prompt[: min(len(job.prompt), 50)],
-                job.model,
-                float(job.wait_time),
-            )
+        def update_table_with_jobs(jobs, status):
+            for job_id, job in jobs.items():
+                row = find_or_insert_row(job_id)
+                self.update_row(
+                    row,
+                    job_id,
+                    status,
+                    job.prompt,
+                    job.model,
+                    float(job.wait_time) if status == "In Progress" else -2,
+                )
+
+        update_table_with_jobs({job.job_id: job for job in self.api_thread.job_queue.queue}, "Queued")
+        update_table_with_jobs(self.api_thread.current_requests, "In Progress")
+
         for lj in self.download_thread.completed_downloads:
-            r = table.findItems(lj.id, Qt.MatchFlag.MatchFixedString)
-            if len(r) == 0:
-                if table.columnCount() == 0:
-                    table.setColumnCount(5)  # Set the number of columns
-                row = table.rowCount()
-                table.insertRow(row)
-            else:
-                row = r[0].row()
-
+            row = find_or_insert_row(lj.id)
             self.update_row(
                 row,
                 lj.id,
@@ -1534,6 +1515,7 @@ class MainWindow(QMainWindow):
                 lj.original.model,
                 lj.completed_at - time.time(),
             )
+
 
 
 if __name__ == "__main__":
