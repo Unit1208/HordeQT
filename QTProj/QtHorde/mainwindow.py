@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QPushButton,
-    QLayoutItem
+    QLayoutItem,
 )
 from PySide6.QtCore import (
     QObject,
@@ -47,7 +47,6 @@ import logging
 import coloredlogs
 
 
-
 from ui_form import Ui_MainWindow
 from ui_modelinfo import Ui_Dialog
 
@@ -56,8 +55,10 @@ import requests
 
 ANON_API_KEY = "0000000000"
 BASE_URL = "https://aihorde.net/api/v2/"
-LOGGER=logging.getLogger("HordeQT")
-coloredlogs.install("DEBUG",milliseconds=True)
+LOGGER = logging.getLogger("HordeQT")
+coloredlogs.install("DEBUG", milliseconds=True)
+
+
 def create_uuid():
     return str(uuid.uuid4())
 
@@ -69,6 +70,7 @@ def get_headers(api_key: str):
         "accept": "application/json",
         "Content-Type": "application/json",
     }
+
 
 def prompt_matrix(prompt: str) -> List[str]:
     # fails with nested brackets, but that shouldn't be an issue?
@@ -100,6 +102,7 @@ def prompt_matrix(prompt: str) -> List[str]:
 
     # If no valid combinations were generated, return the original prompt
     return result_prompts if result_prompts else [prompt]
+
 
 class Model:
     performance: float
@@ -199,7 +202,7 @@ class Job:
 
     @classmethod
     def from_json(cls, data: Dict) -> Self:
-        prompt = data.get("prompt","")
+        prompt = data.get("prompt", "")
 
         params = data.get("params", {})
         return cls(
@@ -231,7 +234,7 @@ class Job:
         return b
 
     @classmethod
-    def deserialize(cls:type[Self], value: Dict) -> Self:
+    def deserialize(cls: type[Self], value: Dict) -> Self:
         v = cls.from_json(value)
         v.done = value.get("done", False)
         v.faulted = value.get("faulted", False)
@@ -252,32 +255,34 @@ class Job:
         self.wait_time = status_data.get("wait_time", 0)
         self.mod_time = time.time()
 
+
 class LocalJob:
     id: str
     path: Path
     original: Job
     file_type: str
     downloadURL: str
-    completed_at:float
-    worker_id:str
-    worker_name:str
-    
-    def convert_to_metadata(self)->dict:
+    completed_at: float
+    worker_id: str
+    worker_name: str
+
+    def convert_to_metadata(self) -> dict:
         return {
-            "Application":"HordeQT",
-            "job":self.original.serialize(),
-            "id":self.id,
-            "worker":f"{self.worker_name} ({self.worker_id})"
+            "Application": "HordeQT",
+            "job": self.original.serialize(),
+            "id": self.id,
+            "worker": f"{self.worker_name} ({self.worker_id})",
         }
 
-    def __init__(self, job: Job,file_type:str="webp") -> None:
+    def __init__(self, job: Job, file_type: str = "webp") -> None:
         self.id = job.job_id
         self.original = job
         self.file_type = file_type
         self.update_path()
+
     def update_path(self):
-        
-        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix("."+self.file_type)
+
+        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix("." + self.file_type)
 
     def serialize(self) -> dict:
         return {
@@ -285,34 +290,37 @@ class LocalJob:
             "original": self.original.serialize(),
             "fileType": self.file_type,
             "path": str(self.path),
-            "completed_at":self.completed_at,
-            "worker_id":self.worker_id,
-            "worker_name":self.worker_name,
+            "completed_at": self.completed_at,
+            "worker_id": self.worker_id,
+            "worker_name": self.worker_name,
         }
 
     @classmethod
     def deserialize(cls, value: dict) -> Self:
-        job = value.get("original",{})
-        lj= cls(Job.deserialize(job))
-        lj.completed_at=value.get("completed_at",time.time())
-        lj.worker_name=value.get("worker_name","Unknown")
-        lj.worker_id=value.get("worker_id","00000000-0000-0000-0000-000000000000")
+        job = value.get("original", {})
+        lj = cls(Job.deserialize(job))
+        lj.completed_at = value.get("completed_at", time.time())
+        lj.worker_name = value.get("worker_name", "Unknown")
+        lj.worker_id = value.get("worker_id", "00000000-0000-0000-0000-000000000000")
         return lj
 
-def apply_metadata_to_image(path:Path,lj:LocalJob)->Path:
-    im=Image.open(path)
 
-    exif=im.getexif()
-    exif[ExifTags.Base.Software]="HordeQT"
-    exif[ExifTags.Base.ImageDescription]=json.dumps(lj.convert_to_metadata())
-    im.save(lj.path,exif=exif)
+def apply_metadata_to_image(path: Path, lj: LocalJob) -> Path:
+    im = Image.open(path)
+
+    exif = im.getexif()
+    exif[ExifTags.Base.Software] = "HordeQT"
+    exif[ExifTags.Base.ImageDescription] = json.dumps(lj.convert_to_metadata())
+    im.save(lj.path, exif=exif)
     return lj.path
+
+
 class ImageWidget(QLabel):
     imageClicked = Signal(QPixmap)
 
-    def __init__(self, lj:LocalJob):
+    def __init__(self, lj: LocalJob):
         super().__init__()
-        self.lj=lj
+        self.lj = lj
         self.original_pixmap = QPixmap(lj.path)
         self.setPixmap(self.original_pixmap)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -325,7 +333,9 @@ class ImageWidget(QLabel):
     def update_pixmap(self):
         if self.original_pixmap:
             scaled_pixmap = self.original_pixmap.scaled(
-                self.size(), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+                self.size(),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
             )
             self.setPixmap(scaled_pixmap)
 
@@ -340,21 +350,25 @@ class ImagePopup(QDockWidget):
     def copy_prompt(self):
         LOGGER.debug(f"Copying prompt for {self.lj.id}")
         self._parent.clipboard.setText(self.lj.original.prompt)
-        
-    
+
     def copy_all(self):
         pass
+
     # TODO: Implement buttons - Signal for each.
-    def __init__(self, pixmap:QPixmap, lj:LocalJob, parent:"MainWindow"):
+    def __init__(self, pixmap: QPixmap, lj: LocalJob, parent: "MainWindow"):
         super().__init__("Image Viewer", parent)
-        self._parent=parent
-        self.setAllowedAreas(Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea)
-        self.lj=lj
+        self._parent = parent
+        self.setAllowedAreas(
+            Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        self.lj = lj
         # Create a label to display the image
         self.label = QLabel(self)
         self.label.setPixmap(pixmap)
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.label.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
 
         # Create buttons
         use_prompt = QPushButton("Use Prompt")
@@ -396,10 +410,10 @@ class MasonryLayout(QLayout):
         super(MasonryLayout, self).__init__(parent)
         self.margin = margin
         self.m_spacing = spacing
-        self.items:List[QLayoutItem] = []
+        self.items: List[QLayoutItem] = []
 
     def addItem(self, arg__1):
-        
+
         self.items.append(arg__1)
 
     def count(self):
@@ -408,16 +422,14 @@ class MasonryLayout(QLayout):
     def sizeHint(self):
         return self.minimumSize()
 
-    def itemAt(self, index)->QLayoutItem:
+    def itemAt(self, index) -> QLayoutItem:
         try:
-            return    self.items[index]
+            return self.items[index]
         except:
-            return None # type: ignore 
-        
+            return None  # type: ignore
 
     def takeAt(self, index):
         return self.items.pop(index)
-
 
     def setGeometry(self, arg__1):
         super(MasonryLayout, self).setGeometry(arg__1)
@@ -442,7 +454,7 @@ class MasonryLayout(QLayout):
             i * (self.column_width + self.m_spacing) for i in range(self.num_columns)
         ]
         for item in self.items:
-            widget:ImageWidget = item.widget() # type: ignore
+            widget: ImageWidget = item.widget()  # type: ignore
             pixmap = widget.pixmap()
             aspect_ratio = (
                 pixmap.width() / pixmap.height()
@@ -456,9 +468,10 @@ class MasonryLayout(QLayout):
             widget.setGeometry(QRect(x, y, self.column_width, height))
             self.column_heights[min_col] += height + self.m_spacing
 
-    def addImage(self, path: os.PathLike,lj:LocalJob):
+    def addImage(self, path: os.PathLike, lj: LocalJob):
         image_widget = ImageWidget(lj)
         self.addWidget(image_widget)
+
 
 class APIManagerThread(QThread):
     job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
@@ -484,7 +497,7 @@ class APIManagerThread(QThread):
     def run(self):
         LOGGER.debug("API thread started")
         while self.running:
-            
+
             self.handle_queue()
             self.updated.emit()
             time.sleep(1)  # Sleep for a short time to avoid high CPU usage
@@ -551,7 +564,9 @@ class APIManagerThread(QThread):
                     horde_job_id = response.json().get("id")
                     job.horde_job_id = horde_job_id
                     self.current_requests[job.job_id] = job
-                    LOGGER.info(f"Job {job.job_id} now has horde uuid: " + job.horde_job_id)
+                    LOGGER.info(
+                        f"Job {job.job_id} now has horde uuid: " + job.horde_job_id
+                    )
                     self.last_async_time = time.time()
                     self.async_requests += 1
                 except requests.RequestException as e:
@@ -559,7 +574,9 @@ class APIManagerThread(QThread):
                     self.errored_jobs.append(job)
                     # self.job_queue.put(job)
             else:
-                LOGGER.debug("Too many requests would be made, skipping a possible new job")
+                LOGGER.debug(
+                    "Too many requests would be made, skipping a possible new job"
+                )
             current_time = time.time()
             if current_time - self.async_reset_time > 60:
                 self.async_requests = 0
@@ -569,7 +586,9 @@ class APIManagerThread(QThread):
         to_remove = []
         for job_id, job in self.current_requests.items():
             if time.time() - job.creation_time > 600:
-                LOGGER.info(f'Job "{job_id}" was created more than 10 minutes ago, likely errored')
+                LOGGER.info(
+                    f'Job "{job_id}" was created more than 10 minutes ago, likely errored'
+                )
                 job.faulted = True
                 to_remove.append(job_id)
                 continue
@@ -601,11 +620,11 @@ class APIManagerThread(QThread):
                     r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
                     r.raise_for_status()
                     rj = r.json()
-                    gen=rj["generations"][0]
+                    gen = rj["generations"][0]
                     lj.downloadURL = gen["img"]
-                    lj.worker_id=gen["worker_id"]
-                    lj.worker_name=gen["worker_name"]
-                    lj.completed_at=time.time()
+                    lj.worker_id = gen["worker_id"]
+                    lj.worker_name = gen["worker_name"]
+                    lj.completed_at = time.time()
                     self.job_completed.emit(lj)
                 except requests.RequestException as e:
                     LOGGER.error(e)
@@ -631,6 +650,7 @@ class APIManagerThread(QThread):
         self.running = False
         self.wait()
         LOGGER.debug("API thread stopped.")
+
     def add_job(self, job: Job):
         self.job_queue.put(job)
         print("added job")
@@ -657,9 +677,9 @@ class DownloadThread(QThread):
             if len(self.queued_downloads) > 0:
                 lj = self.queued_downloads.pop()
                 LOGGER.info(f"Downloading {lj.id}")
-                tf=tempfile.NamedTemporaryFile()
+                tf = tempfile.NamedTemporaryFile()
                 tf.write(requests.get(lj.downloadURL).content)
-                apply_metadata_to_image(Path(tf.name),lj)
+                apply_metadata_to_image(Path(tf.name), lj)
                 tf.close()
                 LOGGER.debug(f"{lj.id} downloaded")
                 self.completed.emit(lj)
@@ -698,13 +718,15 @@ class ModelPopup(QDialog):
 
         self.ui: Ui_Dialog = Ui_Dialog()
         self.ui.setupUi(self)
-        self.ui.baselineLineEdit.setText(data.get("baseline","stable_diffusion_xl"))
-        self.ui.nameLineEdit.setText(data.get("name","AlbedoBase XL (SDXL)"))
-        self.ui.inpaintingCheckBox.setChecked(data.get("inpainting",False))
-        self.ui.descriptionBox.setText(data.get("description","SDXL Model that doesn't require a refiner"))
-        self.ui.versionLineEdit.setText(data.get("version","2.1"))
-        self.ui.styleLineEdit.setText(data.get("style","generalist"))
-        self.ui.nsfwCheckBox.setChecked(data.get("nsfw",False))
+        self.ui.baselineLineEdit.setText(data.get("baseline", "stable_diffusion_xl"))
+        self.ui.nameLineEdit.setText(data.get("name", "AlbedoBase XL (SDXL)"))
+        self.ui.inpaintingCheckBox.setChecked(data.get("inpainting", False))
+        self.ui.descriptionBox.setText(
+            data.get("description", "SDXL Model that doesn't require a refiner")
+        )
+        self.ui.versionLineEdit.setText(data.get("version", "2.1"))
+        self.ui.styleLineEdit.setText(data.get("style", "generalist"))
+        self.ui.nsfwCheckBox.setChecked(data.get("nsfw", False))
         self.ui.unsupportedFeaturesLineEdit.setText(
             ", ".join(data.get("features_not_supported", []))
         )
@@ -721,13 +743,15 @@ class LoadThread(QThread):
     def __init__(self, api_key: str, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self.api_key = api_key
-    def reload_user_info(self,api_key):
-        self.api_key=api_key
+
+    def reload_user_info(self, api_key):
+        self.api_key = api_key
         LOGGER.debug("Reloading user info")
         self.user_info.emit(
             requests.get(BASE_URL + "find_user", headers=get_headers(api_key))
         )
         LOGGER.debug("User info reloaded")
+
     def run(self):
         LOGGER.debug("Loading user info")
         self.user_info.emit(
@@ -742,7 +766,7 @@ class LoadThread(QThread):
         )
         # os.makedirs(p,exist_ok=True)
         model_cache_path = p / "model_ref.json"
-        
+
         # print(QStandardPaths.locate(QStandardPaths.StandardLocation.CacheLocation,"model_ref.json"))
 
         if (
@@ -776,7 +800,7 @@ class SavedData:
     max_jobs: int
     nsfw_allowed: bool
     share_images: bool
-    prefered_format:str
+    prefered_format: str
 
     def __init__(self) -> None:
 
@@ -791,29 +815,32 @@ class SavedData:
         job_config: dict,
         share_images: bool,
         current_open_tab: int,
-        prefered_format:str
+        prefered_format: str,
     ):
         self.api_state = api.serialize()
-        self.current_images = (dlv:=dlthread.serialize()).get(("completed_downloads"),[])
-        self.queued_downloads = dlv.get(("queued_downloads"),[])
-        
+        self.current_images = (dlv := dlthread.serialize()).get(
+            ("completed_downloads"), []
+        )
+        self.queued_downloads = dlv.get(("queued_downloads"), [])
+
         self.max_jobs = max_jobs
         self.nsfw_allowed = nsfw
         self.share_images = share_images
         self.job_config = job_config
         self.current_open_tab = current_open_tab
-        self.prefered_format=prefered_format
+        self.prefered_format = prefered_format
+
     def write(self):
         d = {
             "api_state": self.api_state,
             "max_jobs": self.max_jobs,
             "nsfw_allowed": self.nsfw_allowed,
             "current_images": self.current_images,
-            "queued_downloads":self.queued_downloads,
+            "queued_downloads": self.queued_downloads,
             "job_config": self.job_config,
             "share_images": self.share_images,
             "current_open_tab": self.current_open_tab,
-            "prefered_format":self.prefered_format
+            "prefered_format": self.prefered_format,
         }
         # cbor2.dump ?
         jsondata = json.dumps(d)
@@ -829,12 +856,13 @@ class SavedData:
         self.api_state = j.get("api_state", {})
         self.max_jobs = j.get("max_jobs", 5)
         self.current_images = j.get("current_images", [])
-        self.queued_downloads=j.get("queued_downloads",[])
+        self.queued_downloads = j.get("queued_downloads", [])
         self.nsfw_allowed = j.get("nsfw_allowed", False)
         self.share_images = j.get("share_images", True)
         self.job_config = j.get("job_config", {})
         self.current_open_tab = j.get("current_open_tab", 0)
-        self.prefered_format=j.get("prefered_format","webp")
+        self.prefered_format = j.get("prefered_format", "webp")
+
 
 class MainWindow(QMainWindow):
 
@@ -856,7 +884,10 @@ class MainWindow(QMainWindow):
             LOGGER.debug("API key loaded from keyring")
         else:
             self.api_key = ANON_API_KEY
-            self.show_warn_toast("Anonymous API key","Warning: No API key set. Large generations may fail, and images will take a long time to generate")
+            self.show_warn_toast(
+                "Anonymous API key",
+                "Warning: No API key set. Large generations may fail, and images will take a long time to generate",
+            )
             LOGGER.debug("API key not loaded, using anon key")
         self.loading_thread = LoadThread(self.api_key)
         self.hide_api_key()
@@ -879,8 +910,10 @@ class MainWindow(QMainWindow):
         self.ui.modelComboBox.setEnabled(False)
 
         self.download_thread: DownloadThread = DownloadThread.deserialize(
-            
-            {"completed_downloads":self.savedData.current_images,"queued_downloads":self.savedData.queued_downloads}
+            {
+                "completed_downloads": self.savedData.current_images,
+                "queued_downloads": self.savedData.queued_downloads,
+            }
         )
         LOGGER.debug("Connecting DL signals")
         self.download_thread.completed.connect(self.on_image_fully_downloaded)
@@ -943,7 +976,7 @@ class MainWindow(QMainWindow):
         LOGGER.debug("Close clicked.")
 
         self.api_thread.stop()
-        
+
         LOGGER.debug("Stopping DL thread")
         self.download_thread.stop()
         LOGGER.debug("DL thread stopped")
@@ -956,7 +989,7 @@ class MainWindow(QMainWindow):
             self.get_job_config(),
             self.ui.shareImagesCheckBox.isChecked(),
             self.ui.tabWidget.currentIndex(),
-            self.ui.saveFormatComboBox.currentText()
+            self.ui.saveFormatComboBox.currentText(),
         )
         LOGGER.debug("Writing saved data")
         self.savedData.write()
@@ -974,7 +1007,7 @@ class MainWindow(QMainWindow):
             "clip_skip": self.ui.clipSkipSpinBox.value(),
             "steps": self.ui.stepsSpinBox.value(),
             "model": self.ui.modelComboBox.currentText(),
-            "images":self.ui.imagesSpinBox.value()
+            "images": self.ui.imagesSpinBox.value(),
         }
 
     def on_width_change(self):
@@ -1033,13 +1066,13 @@ class MainWindow(QMainWindow):
     def on_image_fully_downloaded(self, lj: LocalJob):
         self.add_image_to_gallery(lj)
 
-    def add_image_to_gallery(self, lj:LocalJob):
+    def add_image_to_gallery(self, lj: LocalJob):
         image_widget = ImageWidget(lj)
-        image_widget.imageClicked.connect(lambda v:self.show_image_popup(v,lj))
+        image_widget.imageClicked.connect(lambda v: self.show_image_popup(v, lj))
         self.gallery_layout.addWidget(image_widget)
 
     def show_image_popup(self, pixmap, lj):
-        popup = ImagePopup(pixmap, lj,self)
+        popup = ImagePopup(pixmap, lj, self)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, popup)
         popup.show()
 
@@ -1069,7 +1102,8 @@ class MainWindow(QMainWindow):
         self.ui.stepsSpinBox.setValue(job_config.get("steps", 20))
         self.ui.modelComboBox.setCurrentText(job_config.get("model", "default"))
         self.ui.NSFWCheckBox.setChecked(job_config.get("allow_nsfw", False))
-        self.ui.imagesSpinBox.setValue(job_config.get("images",1))
+        self.ui.imagesSpinBox.setValue(job_config.get("images", 1))
+
     def undo_reset_job_config(self):
         if self.last_job_config is not None:
             self.restore_job_config(self.last_job_config)
@@ -1083,7 +1117,7 @@ class MainWindow(QMainWindow):
 
     def on_job_completed(self, job: LocalJob):
         LOGGER.info(f"Job {job.id} completed.")
-        job.file_type=self.ui.saveFormatComboBox.currentText()
+        job.file_type = self.ui.saveFormatComboBox.currentText()
         job.update_path()
         self.download_thread.add_dl(job)
 
@@ -1194,7 +1228,9 @@ class MainWindow(QMainWindow):
             "requirements", None
         )
         if reqs is not None:
-            LOGGER.warn("Model has requirements. This is a WIP feature, and may have issues.")
+            LOGGER.warn(
+                "Model has requirements. This is a WIP feature, and may have issues."
+            )
             # Pony is the largest family of models to have this issue, but dreamshaperXL also has a specific configuration.
             if reqs.get("clip_skip", None) == 2:
                 if clip_skip == 1:
@@ -1204,7 +1240,7 @@ class MainWindow(QMainWindow):
                     self.ui.clipSkipSpinBox.setValue(2)
                     return
             if (mins := reqs.get("min_steps", 0)) != 0:
-                if steps <int(mins):
+                if steps < int(mins):
                     self.show_warn_toast(
                         "Min Steps",
                         f"This model requires at least {mins} steps, currently {steps}",
@@ -1212,7 +1248,7 @@ class MainWindow(QMainWindow):
                     self.ui.stepsSpinBox.setValue(int(mins))
                     return
 
-            if (maxs := reqs.get("max_steps", 150 )) !=150:
+            if (maxs := reqs.get("max_steps", 150)) != 150:
                 if steps > int(maxs):
                     self.show_warn_toast(
                         "Max Steps",
@@ -1228,11 +1264,11 @@ class MainWindow(QMainWindow):
                     )
                     self.ui.guidenceDoubleSpinBox.setValue(float(cfgreq))
                     return
-            if (rsamplers := reqs.get("samplers", [])) !=[]: # type: ignore
-                if type(rsamplers)==type(str):
-                    rsamplers=[rsamplers]
-                if type(rsamplers)!=type(int):
-                    rsamplers:list[str]=rsamplers
+            if (rsamplers := reqs.get("samplers", [])) != []:  # type: ignore
+                if type(rsamplers) == type(str):
+                    rsamplers = [rsamplers]
+                if type(rsamplers) != type(int):
+                    rsamplers: list[str] = rsamplers
                     if sampler_name not in rsamplers:
                         samplertext = ""
                         for n in rsamplers:
@@ -1244,7 +1280,7 @@ class MainWindow(QMainWindow):
                             + samplertext
                             + " samplers",
                         )
-                        self.ui.samplerComboBox.setCurrentText( rsamplers[0])
+                        self.ui.samplerComboBox.setCurrentText(rsamplers[0])
                         return
         karras = True
         hires_fix = True
@@ -1254,12 +1290,12 @@ class MainWindow(QMainWindow):
         prompts *= self.ui.imagesSpinBox.value()
         jobs = []
         for nprompt in prompts:
-            #if the user hasn't provided a seed, pick one. It must be under 2**31 so that we can display it on a spinbox eventually.
-            #something something C++.
+            # if the user hasn't provided a seed, pick one. It must be under 2**31 so that we can display it on a spinbox eventually.
+            # something something C++.
             if seed == 0:
                 sj_seed = random.randint(0, 2**31 - 1)
             else:
-                sj_seed=seed
+                sj_seed = seed
             job = Job(
                 prompt=nprompt,
                 sampler_name=sampler_name,
@@ -1318,7 +1354,9 @@ class MainWindow(QMainWindow):
     def on_model_open_click(self):
         curr_model = self.model_dict[self.ui.modelComboBox.currentText()]
         # print(json.dumps(curr_model.details))
-        self.show_warn_toast("Model info not yet implemented","Model details is curently not working")
+        self.show_warn_toast(
+            "Model info not yet implemented", "Model details is curently not working"
+        )
         ModelPopup(curr_model.details)
 
     def on_generate_click(self):
@@ -1333,7 +1371,7 @@ class MainWindow(QMainWindow):
         self.hide_api_key()
         self.api_key = self.ui.apiKeyEntry.text()
         keyring.set_password("HordeQT", "HordeQTUser", self.api_key)
-        self.show_success_toast("Saved","API Key saved sucessfully.")
+        self.show_success_toast("Saved", "API Key saved sucessfully.")
         self.loading_thread.reload_user_info(self.api_key)
 
     def copy_api_key(self):
@@ -1388,7 +1426,9 @@ class MainWindow(QMainWindow):
         )
         warn_toast.show()
 
-    def update_row(self, row, id: str, status: str, prompt: str, model: str, eta: float):
+    def update_row(
+        self, row, id: str, status: str, prompt: str, model: str, eta: float
+    ):
         # ID, STATUS, PROMPT, MODEL, ETA
         table = self.ui.inProgressItemsTable
         table.setSortingEnabled(False)
@@ -1403,7 +1443,14 @@ class MainWindow(QMainWindow):
                     # FIXME: This is hacky, I don't like it.
                     "Done"
                     if eta == -1
-                    else ("Unknown" if eta==-2 else hr.time_delta(dt.datetime.now() + dt.timedelta(seconds=eta))+ (" ago" if eta<0 else ""))
+                    else (
+                        "Unknown"
+                        if eta == -2
+                        else hr.time_delta(
+                            dt.datetime.now() + dt.timedelta(seconds=eta)
+                        )
+                        + (" ago" if eta < 0 else "")
+                    )
                 ),
             ]
         ):
@@ -1428,11 +1475,11 @@ class MainWindow(QMainWindow):
     def update_inprogess_table(self):
         table = self.ui.inProgressItemsTable
         table.setUpdatesEnabled(True)
-        #FIXME: this code could easily be cleaned up.
+        # FIXME: this code could easily be cleaned up.
         for job in self.api_thread.job_queue.queue:
-            job:Job=job
+            job: Job = job
             r = table.findItems(job.job_id, Qt.MatchFlag.MatchFixedString)
-            
+
             if len(r) == 0:
                 if table.columnCount() == 0:
                     table.setColumnCount(5)  # Set the number of columns
@@ -1485,7 +1532,7 @@ class MainWindow(QMainWindow):
                 "Done",
                 lj.original.prompt[: min(len(lj.original.prompt), 50)],
                 lj.original.model,
-                lj.completed_at-time.time(),
+                lj.completed_at - time.time(),
             )
 
 
@@ -1502,7 +1549,7 @@ if __name__ == "__main__":
     LOGGER.debug(f"Saved data path: {SAVED_DATA_PATH}")
     LOGGER.debug(f"Saved data dir: {SAVED_DATA_DIR_PATH}")
     LOGGER.debug(f"Saved images dir: {SAVED_IMAGE_DIR_PATH}")
-    
+
     os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
     os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
 
