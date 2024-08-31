@@ -7,3 +7,5 @@ zstandard
 human-readable
 pyqt-toast-notification
 pillow
+coloredlogs
+colorama

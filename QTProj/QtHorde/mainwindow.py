@@ -1,5 +1,4 @@
 # This Python file uses the following encoding: utf-8
-from dataclasses import dataclass
 import datetime as dt
 from PIL import Image, ExifTags
 import tempfile
@@ -44,9 +43,9 @@ from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtGui import QPixmap, QDesktopServices, QFont, QClipboard
 
 from queue import Queue
+import logging
+import coloredlogs
 
-
-# import cbor2
 
 
 from ui_form import Ui_MainWindow
@@ -57,8 +56,8 @@ import requests
 
 ANON_API_KEY = "0000000000"
 BASE_URL = "https://aihorde.net/api/v2/"
-
-
+LOGGER=logging.getLogger("HordeQT")
+coloredlogs.install("DEBUG",milliseconds=True)
 def create_uuid():
     return str(uuid.uuid4())
 
@@ -304,7 +303,7 @@ def apply_metadata_to_image(path:Path,lj:LocalJob)->Path:
     im=Image.open(path)
 
     exif=im.getexif()
-    exif[ExifTags.Base.Software]="QTHorde"
+    exif[ExifTags.Base.Software]="HordeQT"
     exif[ExifTags.Base.ImageDescription]=json.dumps(lj.convert_to_metadata())
     im.save(lj.path,exif=exif)
     return lj.path
@@ -332,13 +331,14 @@ class ImageWidget(QLabel):
 
     def mouseReleaseEvent(self, ev):
         if ev.button() == Qt.MouseButton.LeftButton:
+            LOGGER.debug(f"Gallery view item for {self.lj.id} was clicked")
             self.imageClicked.emit(self.original_pixmap)
         super().mouseReleaseEvent(ev)
 
 
 class ImagePopup(QDockWidget):
     def copy_prompt(self):
-        print("Copying")
+        LOGGER.debug(f"Copying prompt for {self.lj.id}")
         self._parent.clipboard.setText(self.lj.original.prompt)
         
     
@@ -482,7 +482,9 @@ class APIManagerThread(QThread):
         self.errored_jobs: List[Job] = []
 
     def run(self):
+        LOGGER.debug("API thread started")
         while self.running:
+            
             self.handle_queue()
             self.updated.emit()
             time.sleep(1)  # Sleep for a short time to avoid high CPU usage
@@ -549,13 +551,15 @@ class APIManagerThread(QThread):
                     horde_job_id = response.json().get("id")
                     job.horde_job_id = horde_job_id
                     self.current_requests[job.job_id] = job
-                    print(f"Job {job.job_id} now has horde uuid: " + job.horde_job_id)
+                    LOGGER.info(f"Job {job.job_id} now has horde uuid: " + job.horde_job_id)
                     self.last_async_time = time.time()
                     self.async_requests += 1
                 except requests.RequestException as e:
-                    print(f"Error sending job: {e}")
+                    LOGGER.error(e)
                     self.errored_jobs.append(job)
                     # self.job_queue.put(job)
+            else:
+                LOGGER.debug("Too many requests would be made, skipping a possible new job")
             current_time = time.time()
             if current_time - self.async_reset_time > 60:
                 self.async_requests = 0
@@ -565,23 +569,24 @@ class APIManagerThread(QThread):
         to_remove = []
         for job_id, job in self.current_requests.items():
             if time.time() - job.creation_time > 600:
+                LOGGER.info(f'Job "{job_id}" was created more than 10 minutes ago, likely errored')
                 job.faulted = True
                 to_remove.append(job_id)
                 continue
 
             try:
-                print("checking job "+job_id)
-
+                LOGGER.debug(f"Checking job {job_id} - ({job.horde_job_id})")
                 response = requests.get(BASE_URL + f"generate/check/{job.horde_job_id}")
                 response.raise_for_status()
                 job.update_status(response.json())
                 if job.done:
+                    LOGGER.info(f"Job {job_id} done")
                     self.completed_jobs.append(job)
                     to_remove.append(job_id)
 
                     # Emit the signal for the completed job
             except requests.RequestException as e:
-                print(f"Error updating job status: {e}")
+                LOGGER.error(e)
 
         for job_id in to_remove:
             del self.current_requests[job_id]
@@ -592,17 +597,18 @@ class APIManagerThread(QThread):
             if time.time() - self.last_status_time > 5 and self.status_requests < 10:
 
                 lj = LocalJob(job)
-
-                r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
-                r.raise_for_status()
-                rj = r.json()
-                gen=rj["generations"][0]
-                lj.downloadURL = gen["img"]
-                lj.worker_id=gen["worker_id"]
-                lj.worker_name=gen["worker_name"]
-                lj.completed_at=time.time()
-                self.job_completed.emit(lj)
-
+                try:
+                    r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
+                    r.raise_for_status()
+                    rj = r.json()
+                    gen=rj["generations"][0]
+                    lj.downloadURL = gen["img"]
+                    lj.worker_id=gen["worker_id"]
+                    lj.worker_name=gen["worker_name"]
+                    lj.completed_at=time.time()
+                    self.job_completed.emit(lj)
+                except requests.RequestException as e:
+                    LOGGER.error(e)
                 self.last_status_time = time.time()
                 if time.time() - self.status_reset_time > 60:
                     self.status_requests = 0
@@ -621,9 +627,10 @@ class APIManagerThread(QThread):
         return self.completed_jobs
 
     def stop(self):
+        LOGGER.debug("Stopping API thread")
         self.running = False
         self.wait()
-
+        LOGGER.debug("API thread stopped.")
     def add_job(self, job: Job):
         self.job_queue.put(job)
         print("added job")
@@ -649,11 +656,12 @@ class DownloadThread(QThread):
         while self.running:
             if len(self.queued_downloads) > 0:
                 lj = self.queued_downloads.pop()
-                print("downloading " + lj.id)
+                LOGGER.info(f"Downloading {lj.id}")
                 tf=tempfile.NamedTemporaryFile()
                 tf.write(requests.get(lj.downloadURL).content)
                 apply_metadata_to_image(Path(tf.name),lj)
                 tf.close()
+                LOGGER.debug(f"{lj.id} downloaded")
                 self.completed.emit(lj)
                 self.completed_downloads.append(lj)
             time.sleep(1)
@@ -715,13 +723,17 @@ class LoadThread(QThread):
         self.api_key = api_key
     def reload_user_info(self,api_key):
         self.api_key=api_key
+        LOGGER.debug("Reloading user info")
         self.user_info.emit(
             requests.get(BASE_URL + "find_user", headers=get_headers(api_key))
         )
+        LOGGER.debug("User info reloaded")
     def run(self):
+        LOGGER.debug("Loading user info")
         self.user_info.emit(
             requests.get(BASE_URL + "find_user", headers=get_headers(self.api_key))
         )
+        LOGGER.debug("User info loaded")
         self.progress.emit(50)
         p = Path(
             QStandardPaths.writableLocation(
@@ -730,12 +742,14 @@ class LoadThread(QThread):
         )
         # os.makedirs(p,exist_ok=True)
         model_cache_path = p / "model_ref.json"
+        
         # print(QStandardPaths.locate(QStandardPaths.StandardLocation.CacheLocation,"model_ref.json"))
 
         if (
             not model_cache_path.exists()
             or time.time() - model_cache_path.stat().st_mtime > 60 * 60 * 24
         ):
+            LOGGER.debug(f"Refreshing model cache at {model_cache_path}")
             os.makedirs(p, exist_ok=True)
             r = requests.get(
                 "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/main/stable_diffusion.json"
@@ -744,6 +758,7 @@ class LoadThread(QThread):
             with open(model_cache_path, "wt") as f:
                 json.dump(j, f)
         else:
+            LOGGER.debug(f"Model cache at {model_cache_path} is fresh, not reloading")
 
             with open(model_cache_path, "rt") as f:
                 j = json.load(f)
@@ -825,49 +840,58 @@ class MainWindow(QMainWindow):
 
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
+        LOGGER.debug("Main Window init start")
         self.savedData = SavedData()
         self.savedData.read()
-
+        LOGGER.debug("Saved data loaded")
         self.clipboard = app.clipboard()
         self.model_dict: Dict[str, Model] = {}
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
-
+        LOGGER.debug("UI setup")
         self.restore_job_config(self.savedData.job_config)
         if (k := keyring.get_password("HordeQT", "HordeQTUser")) is not None:
             self.ui.apiKeyEntry.setText(k)
             self.api_key = k
+            LOGGER.debug("API key loaded from keyring")
         else:
             self.api_key = ANON_API_KEY
             self.show_warn_toast("Anonymous API key","Warning: No API key set. Large generations may fail, and images will take a long time to generate")
-        
+            LOGGER.debug("API key not loaded, using anon key")
         self.loading_thread = LoadThread(self.api_key)
         self.hide_api_key()
+        LOGGER.debug("Showing main window")
         self.show()
+        LOGGER.debug("Setting saved values on UI")
         self.ui.maxJobsSpinBox.setValue(self.savedData.max_jobs)
         self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
         self.ui.shareImagesCheckBox.setChecked(self.savedData.share_images)
         self.ui.tabWidget.setCurrentIndex(self.savedData.current_open_tab)
         self.ui.saveFormatComboBox.setCurrentText(self.savedData.prefered_format)
-        self.ui.GenerateButton.setEnabled(False)
-        self.ui.modelComboBox.setEnabled(False)
+        LOGGER.debug("Initializing API thread")
         self.api_thread = APIManagerThread.deserialize(
             self.savedData.api_state,
             api_key=self.api_key,
             max_requests=self.savedData.max_jobs,
         )
+        LOGGER.debug("Disabling Generate button until models are loaded")
+        self.ui.GenerateButton.setEnabled(False)
+        self.ui.modelComboBox.setEnabled(False)
+
         self.download_thread: DownloadThread = DownloadThread.deserialize(
             
             {"completed_downloads":self.savedData.current_images,"queued_downloads":self.savedData.queued_downloads}
         )
+        LOGGER.debug("Connecting DL signals")
         self.download_thread.completed.connect(self.on_image_fully_downloaded)
+        LOGGER.debug("Connecting API signals")
         self.api_thread.job_completed.connect(self.on_job_completed)
         self.api_thread.updated.connect(self.update_inprogess_table)
-        # Connect signals
+        LOGGER.debug("Connecting Loading signals")
         self.loading_thread.progress.connect(self.update_progress)
         self.loading_thread.model_info.connect(self.construct_model_dict)
         self.loading_thread.user_info.connect(self.update_user_info)
-
+        LOGGER.debug("Connecting UI signals")
         self.ui.GenerateButton.clicked.connect(self.on_generate_click)
         self.ui.modelDetailsButton.clicked.connect(self.on_model_open_click)
 
@@ -881,15 +905,17 @@ class MainWindow(QMainWindow):
         self.ui.openSavedImages.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
         )
-        self.ui.progressBar.setValue(0)
         self.ui.presetComboBox.currentTextChanged.connect(self.on_preset_change)
         self.ui.widthSpinBox.valueChanged.connect(self.on_width_change)
         self.ui.heightSpinBox.valueChanged.connect(self.on_height_change)
         self.ui.resetSettingsButton.clicked.connect(self.reset_job_config)
         self.ui.undoResetButton.clicked.connect(self.undo_reset_job_config)
         self.ui.undoResetButton.setEnabled(False)
+        self.ui.progressBar.setValue(0)
+
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None
+        LOGGER.debug("Initializing Masonry/Gallery layout")
         self.gallery_layout = MasonryLayout()
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
@@ -902,20 +928,26 @@ class MainWindow(QMainWindow):
         self.ui.galleryView.addWidget(scroll_area)
 
         for lj in self.download_thread.completed_downloads:
-            print(lj.path)
+            LOGGER.info(f"Image found, adding to gallery: {lj.id}")
             self.add_image_to_gallery(lj)
+        LOGGER.debug("Setting up toasts")
         Toast.setAlwaysOnMainScreen(True)
         Toast.setPosition(toast_enums.ToastPosition.TOP_RIGHT)
         Toast.setPositionRelativeToWidget(self)
-        # =MasonryGallery()
+        LOGGER.debug("Starting threads")
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
 
     def closeEvent(self, event):
+        LOGGER.debug("Close clicked.")
 
         self.api_thread.stop()
+        
+        LOGGER.debug("Stopping DL thread")
         self.download_thread.stop()
+        LOGGER.debug("DL thread stopped")
+        LOGGER.debug("Updating saved data")
         self.savedData.update(
             self.api_thread,
             self.ui.NSFWCheckBox.isChecked(),
@@ -926,6 +958,7 @@ class MainWindow(QMainWindow):
             self.ui.tabWidget.currentIndex(),
             self.ui.saveFormatComboBox.currentText()
         )
+        LOGGER.debug("Writing saved data")
         self.savedData.write()
         QMainWindow.closeEvent(self, event)
 
@@ -1011,10 +1044,12 @@ class MainWindow(QMainWindow):
         popup.show()
 
     def on_fully_loaded(self):
+        LOGGER.info("Fully loaded")
         self.ui.GenerateButton.setEnabled(True)
         self.ui.modelComboBox.setEnabled(True)
         # this doesn't feel right, for some reason.
         self.ui.maxJobsSpinBox.setMaximum(self.ui.maxConcurrencySpinBox.value())
+        LOGGER.debug("Hiding progress bar after 250 ms")
         QTimer.singleShot(250, lambda: self.ui.progressBar.hide())
 
     def restore_job_config(self, job_config: dict):
@@ -1047,7 +1082,7 @@ class MainWindow(QMainWindow):
         self.ui.modelComboBox.setCurrentIndex(0)
 
     def on_job_completed(self, job: LocalJob):
-        print(f"Job {job.id} completed.")
+        LOGGER.info(f"Job {job.id} completed.")
         job.file_type=self.ui.saveFormatComboBox.currentText()
         job.update_path()
         self.download_thread.add_dl(job)
@@ -1061,6 +1096,7 @@ class MainWindow(QMainWindow):
     def update_user_info(self, r: requests.Response):
         if r.status_code == 404:
             self.show_error_toast("Invalid API key", "User could not be found.")
+            LOGGER.warn("User not found, API key is invalid.")
             return
         j = r.json()
         self.user_info = j
@@ -1126,6 +1162,7 @@ class MainWindow(QMainWindow):
         prompt = self.ui.PromptBox.toPlainText()
         if prompt.strip() == "":
             self.show_error_toast("Prompt error", "Prompt cannot be empty")
+            LOGGER.error("Empty prompt")
             return None
         np = self.ui.NegativePromptBox.toPlainText()
         if np.strip() != "":
@@ -1157,6 +1194,7 @@ class MainWindow(QMainWindow):
             "requirements", None
         )
         if reqs is not None:
+            LOGGER.warn("Model has requirements. This is a WIP feature, and may have issues.")
             # Pony is the largest family of models to have this issue, but dreamshaperXL also has a specific configuration.
             if reqs.get("clip_skip", None) == 2:
                 if clip_skip == 1:
@@ -1238,6 +1276,7 @@ class MainWindow(QMainWindow):
                 share_image=share_image,
             )
             jobs.append(job)
+        LOGGER.info(f"Created {len(jobs)} jobs")
         return jobs
 
     def construct_model_dict(self, mod):
@@ -1278,7 +1317,8 @@ class MainWindow(QMainWindow):
 
     def on_model_open_click(self):
         curr_model = self.model_dict[self.ui.modelComboBox.currentText()]
-        print(json.dumps(curr_model.details))
+        # print(json.dumps(curr_model.details))
+        self.show_warn_toast("Model info not yet implemented","Model details is curently not working")
         ModelPopup(curr_model.details)
 
     def on_generate_click(self):
@@ -1286,7 +1326,7 @@ class MainWindow(QMainWindow):
         if jobs is not None:
             for n in range(len(jobs)):
                 self.api_thread.add_job(jobs[n])
-                # print(jobs[n])
+                LOGGER.debug(f"Added job {jobs[n].job_id}")
             self.show_success_toast("Created!", "Jobs were created and put into queue")
 
     def save_api_key(self):
@@ -1459,7 +1499,10 @@ if __name__ == "__main__":
     SAVED_IMAGE_DIR_PATH = SAVED_DATA_DIR_PATH / "images"
 
     SAVED_DATA_PATH = SAVED_DATA_DIR_PATH / "saved_data.json"
-    print(SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH)
+    LOGGER.debug(f"Saved data path: {SAVED_DATA_PATH}")
+    LOGGER.debug(f"Saved data dir: {SAVED_DATA_DIR_PATH}")
+    LOGGER.debug(f"Saved images dir: {SAVED_IMAGE_DIR_PATH}")
+    
     os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
     os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
 
