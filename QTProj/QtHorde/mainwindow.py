@@ -1,9 +1,6 @@
 # This Python file uses the following encoding: utf-8
 import datetime as dt
-from PIL import Image, ExifTags
 import tempfile
-import re
-import uuid
 import human_readable as hr
 from pathlib import Path
 import json
@@ -53,269 +50,16 @@ from ui_modelinfo import Ui_Dialog
 
 import keyring
 import requests
-
+from util import create_uuid,get_headers,prompt_matrix
+from classes import Job,LocalJob,Model, apply_metadata_to_image
 ANON_API_KEY = "0000000000"
 BASE_URL = "https://aihorde.net/api/v2/"
 LOGGER = logging.getLogger("HordeQT")
 coloredlogs.install("DEBUG", milliseconds=True)
 
 
-def create_uuid():
-    return str(uuid.uuid4())
 
 
-def get_headers(api_key: str):
-    return {
-        "apikey": api_key,
-        "Client-Agent": "HordeQt:0.0.1:Unit1208",
-        "accept": "application/json",
-        "Content-Type": "application/json",
-    }
-
-
-def prompt_matrix(prompt: str) -> List[str]:
-    # fails with nested brackets, but that shouldn't be an issue?
-    # Writing this out, {{1|2}|{3|4}} would evalutate to e.g [1,2,3,4], and I doubt that anyone would the former. If they do, I'll fix it. Maybe.
-    # {{1|2|3|4}} should evalutate to [1,2,3,4] as well.
-    matched_matrix = re.finditer(r"\{.+?\}", prompt, re.M)
-
-    def generate_prompts(current_prompt: str, matches: List[str]) -> List[str]:
-        if not matches:
-            return [current_prompt]
-
-        matched = matches[0]
-        remaining_matches = matches[1:]
-
-        # Strip brackets and split by '|'
-        options = matched[1:-1].split("|")
-
-        # Recursively generate all combinations.
-        # If you hit the stack limit, that's on you, it shouldn't happen.
-        generated_prompts = []
-        for option in options:
-            new_prompt = current_prompt.replace(matched, option, 1)
-            generated_prompts.extend(generate_prompts(new_prompt, remaining_matches))
-
-        return generated_prompts
-
-    matches = [match.group() for match in matched_matrix]
-    result_prompts = generate_prompts(prompt, matches)
-
-    # If no valid combinations were generated, return the original prompt
-    return result_prompts if result_prompts else [prompt]
-
-
-class Model:
-    performance: float
-    queued: int
-    jobs: int
-    eta: float
-    type: str
-    name: str
-    count: int
-    details: dict
-
-    def get(self, name, default=None):
-        if hasattr(self, name):
-            return self.__getattribute__(name)
-        elif default != None:
-            return default
-        raise KeyError(self, name)
-
-
-class Job:
-    def __init__(
-        self,
-        prompt: str,
-        sampler_name: str,
-        cfg_scale: float,
-        seed: str,
-        width: int,
-        height: int,
-        clip_skip: int,
-        steps: int,
-        model: str,
-        karras: bool = True,
-        hires_fix: bool = True,
-        allow_nsfw: bool = False,
-        horde_job_id: Optional[str] = None,
-        wait_time: float = 0,
-        queue_position: float = 0,
-        done: bool = False,
-        faulted: bool = False,
-        kudos: float = 0,
-        share_image: bool = True,
-    ):
-        self.prompt = prompt
-        self.sampler_name = sampler_name
-        self.cfg_scale = cfg_scale
-        self.seed = seed
-        self.width = width
-        self.height = height
-        self.karras = karras
-        self.hires_fix = hires_fix
-        self.clip_skip = clip_skip
-        self.steps = steps
-        self.model = model
-        self.allow_nsfw = allow_nsfw
-        self.share_image = share_image
-
-        # Status-related attributes
-        self.job_id = create_uuid()
-        self.horde_job_id = horde_job_id
-        self.wait_time = wait_time
-        self.queue_position = queue_position
-        self.done = done
-        self.faulted = faulted
-        self.kudos = kudos
-        self.creation_time = time.time()
-        self.mod_time = time.time()
-
-    def to_json(self) -> Dict:
-        return {
-            "prompt": self.prompt,
-            "params": {
-                "sampler_name": self.sampler_name,
-                "cfg_scale": self.cfg_scale,
-                "seed": str(self.seed),
-                "height": self.height,
-                "width": self.width,
-                "post_processing": [],
-                "karras": self.karras,
-                "hires_fix": self.hires_fix,
-                "clip_skip": self.clip_skip,
-                "steps": self.steps,
-                "n": 1,
-            },
-            "nsfw": self.allow_nsfw,
-            "trusted_workers": False,
-            "slow_workers": True,
-            "censor_nsfw": not self.allow_nsfw,
-            "models": [self.model],
-            "r2": True,
-            "shared": self.share_image,
-            # This should never need to be turned off.
-            "replacement_filter": True,
-        }
-
-    def __str__(self) -> str:
-        return json.dumps({"ser": self.serialize(), "tj": self.to_json()})
-
-    @classmethod
-    def from_json(cls, data: Dict) -> Self:
-        prompt = data.get("prompt", "")
-
-        params = data.get("params", {})
-        return cls(
-            prompt=prompt,
-            sampler_name=params.get("sampler_name"),
-            cfg_scale=params.get("cfg_scale"),
-            seed=params.get("seed"),
-            width=params.get("width"),
-            height=params.get("height"),
-            karras=params.get("karras", True),
-            hires_fix=params.get("hires_fix", True),
-            clip_skip=params.get("clip_skip"),
-            steps=params.get("steps"),
-            model=data.get("models", ["INVALID_MODEL_NAME_HERE"])[0],
-            allow_nsfw=data.get("nsfw", False),
-        )
-
-    def serialize(self):
-        b = self.to_json()
-        b["done"] = self.done
-        b["faulted"] = self.faulted
-        b["kudos"] = self.kudos
-        b["id"] = self.job_id
-        b["horde_job_id"] = self.horde_job_id
-        b["queue_position"] = self.queue_position
-        b["wait_time"] = self.wait_time
-        b["mod_time"] = self.mod_time
-        b["creation_time"] = self.creation_time
-        return b
-
-    @classmethod
-    def deserialize(cls: type[Self], value: Dict) -> Self:
-        v = cls.from_json(value)
-        v.done = value.get("done", False)
-        v.faulted = value.get("faulted", False)
-        v.kudos = value.get("kudos", 0)
-        v.job_id = value.get("id", create_uuid())
-        v.horde_job_id = value.get("horde_job_id")
-        v.queue_position = value.get("queue_position", 0)
-        v.wait_time = value.get("wait_time", 0)
-        v.mod_time = time.time()
-        v.creation_time = value.get("creation_time", time.time())
-        return v
-
-    def update_status(self, status_data: Dict):
-        self.done = status_data.get("done", False)
-        self.faulted = status_data.get("faulted", False)
-        self.kudos = status_data.get("kudos", 0)
-        self.queue_position = status_data.get("queue_position", 0)
-        self.wait_time = status_data.get("wait_time", 0)
-        self.mod_time = time.time()
-
-
-class LocalJob:
-    id: str
-    path: Path
-    original: Job
-    file_type: str
-    downloadURL: str
-    completed_at: float
-    worker_id: str
-    worker_name: str
-
-    def convert_to_metadata(self) -> dict:
-        return {
-            "Application": "HordeQT",
-            "job": self.original.serialize(),
-            "id": self.id,
-            "worker": f"{self.worker_name} ({self.worker_id})",
-        }
-
-    def __init__(self, job: Job, file_type: str = "webp") -> None:
-        self.id = job.job_id
-        self.original = job
-        self.file_type = file_type
-        self.update_path()
-
-    def update_path(self):
-
-        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix("." + self.file_type)
-
-    def serialize(self) -> dict:
-        return {
-            "id": self.id,
-            "original": self.original.serialize(),
-            "fileType": self.file_type,
-            "path": str(self.path),
-            "completed_at": self.completed_at,
-            "worker_id": self.worker_id,
-            "worker_name": self.worker_name,
-        }
-
-    @classmethod
-    def deserialize(cls, value: dict) -> Self:
-        job = value.get("original", {})
-        lj = cls(Job.deserialize(job))
-        lj.completed_at = value.get("completed_at", time.time())
-        lj.worker_name = value.get("worker_name", "Unknown")
-        lj.worker_id = value.get("worker_id", "00000000-0000-0000-0000-000000000000")
-        lj.file_type = value.get("fileType", "webp")
-        lj.update_path()
-        return lj
-
-
-def apply_metadata_to_image(path: Path, lj: LocalJob) -> Path:
-    im = Image.open(path)
-
-    exif = im.getexif()
-    exif[ExifTags.Base.Software] = "HordeQT"
-    exif[ExifTags.Base.ImageDescription] = json.dumps(lj.convert_to_metadata())
-    im.save(lj.path, exif=exif)
-    return lj.path
 
 
 class ImageWidget(QLabel):
@@ -637,7 +381,7 @@ class APIManagerThread(QThread):
                 time.time() - self.status_rl_reset
             ) > 0 and self.status_rl_remaining > 0:
 
-                lj = LocalJob(job)
+                lj = LocalJob(job,SAVED_IMAGE_DIR_PATH)
                 try:
                     r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
                     if r.status_code == 429:
@@ -730,12 +474,12 @@ class DownloadThread(QThread):
             ncd = []
         else:
             cd: List[dict] = cd
-            ncd = [LocalJob.deserialize(x) for x in cd]
+            ncd = [LocalJob.deserialize(x,SAVED_IMAGE_DIR_PATH) for x in cd]
         if (qd := value.get("queued_downloads", None)) is None:
             nqd = []
         else:
             qd: List[dict] = qd
-            nqd = [LocalJob.deserialize(x) for x in qd]
+            nqd = [LocalJob.deserialize(x,SAVED_IMAGE_DIR_PATH) for x in qd]
         return cls(completed_downloads=ncd, queued_downloads=nqd)
 
     def stop(self):
@@ -743,28 +487,6 @@ class DownloadThread(QThread):
         self.wait()
 
 
-class ModelPopup(QDialog):
-
-    def __init__(self, data: dict, parent=None):
-        super().__init__(parent)
-
-        self.ui: Ui_Dialog = Ui_Dialog()
-        self.ui.setupUi(self)
-        self.ui.baselineLineEdit.setText(data.get("baseline", "stable_diffusion_xl"))
-        self.ui.nameLineEdit.setText(data.get("name", "AlbedoBase XL (SDXL)"))
-        self.ui.inpaintingCheckBox.setChecked(data.get("inpainting", False))
-        self.ui.descriptionBox.setText(
-            data.get("description", "SDXL Model that doesn't require a refiner")
-        )
-        self.ui.versionLineEdit.setText(data.get("version", "2.1"))
-        self.ui.styleLineEdit.setText(data.get("style", "generalist"))
-        self.ui.nsfwCheckBox.setChecked(data.get("nsfw", False))
-        self.ui.unsupportedFeaturesLineEdit.setText(
-            ", ".join(data.get("features_not_supported", []))
-        )
-        req: dict = data.get("requirements", {})
-        req_str = ", ".join(" = ".join([str(y) for y in x]) for x in list(req.items()))
-        self.ui.requirementsLineEdit.setText(req_str)
 
 
 class LoadThread(QThread):
@@ -821,6 +543,28 @@ class LoadThread(QThread):
 
         self.model_info.emit(j)
         self.progress.emit(100)
+class ModelPopup(QDialog):
+
+    def __init__(self, data: dict, parent=None):
+        super().__init__(parent)
+
+        self.ui: Ui_Dialog = Ui_Dialog()
+        self.ui.setupUi(self)
+        self.ui.baselineLineEdit.setText(data.get("baseline", "stable_diffusion_xl"))
+        self.ui.nameLineEdit.setText(data.get("name", "AlbedoBase XL (SDXL)"))
+        self.ui.inpaintingCheckBox.setChecked(data.get("inpainting", False))
+        self.ui.descriptionBox.setText(
+            data.get("description", "SDXL Model that doesn't require a refiner")
+        )
+        self.ui.versionLineEdit.setText(data.get("version", "2.1"))
+        self.ui.styleLineEdit.setText(data.get("style", "generalist"))
+        self.ui.nsfwCheckBox.setChecked(data.get("nsfw", False))
+        self.ui.unsupportedFeaturesLineEdit.setText(
+            ", ".join(data.get("features_not_supported", []))
+        )
+        req: dict = data.get("requirements", {})
+        req_str = ", ".join(" = ".join([str(y) for y in x]) for x in list(req.items()))
+        self.ui.requirementsLineEdit.setText(req_str)
 
 
 class SavedData:
@@ -981,6 +725,7 @@ class MainWindow(QMainWindow):
 
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None
+        self.job_history:List[Dict]=[]
         LOGGER.debug("Initializing Masonry/Gallery layout")
         sizePolicy = QSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
@@ -1400,6 +1145,7 @@ class MainWindow(QMainWindow):
         ModelPopup(curr_model.details)
 
     def on_generate_click(self):
+        self.job_history.append(self.get_job_config())
         jobs = self.create_jobs()
         if jobs is not None:
             for n in range(len(jobs)):
