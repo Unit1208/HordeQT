@@ -2,6 +2,7 @@
     "files": [
         "mainwindow.py",
         "form.ui",
-        "modelinfo.ui"
+        "modelinfo.ui",
+        "prompt_library.ui"
     ]
 }
