@@ -998,9 +998,7 @@ class MainWindow(QMainWindow):
             # May need to update scroll_area when jobs are added?
         scroll_area.setWidget(self.gallery_container)
         container_layout.addWidget(scroll_area)
-        container_layout.addWidget(self.gallery_container)
         self.ui.galleryViewFrame.setLayout(container_layout)
-
         #
 
         LOGGER.debug("Setting up toasts")
