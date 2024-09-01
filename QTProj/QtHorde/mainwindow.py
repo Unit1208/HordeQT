@@ -1,5 +1,6 @@
 # This Python file uses the following encoding: utf-8
 import datetime as dt
+import math
 from PIL import Image, ExifTags
 import tempfile
 import re
@@ -94,7 +95,8 @@ def prompt_matrix(prompt: str) -> List[str]:
         generated_prompts = []
         for option in options:
             new_prompt = current_prompt.replace(matched, option, 1)
-            generated_prompts.extend(generate_prompts(new_prompt, remaining_matches))
+            generated_prompts.extend(
+                generate_prompts(new_prompt, remaining_matches))
 
         return generated_prompts
 
@@ -283,7 +285,8 @@ class LocalJob:
 
     def update_path(self):
 
-        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix("." + self.file_type)
+        self.path = (SAVED_IMAGE_DIR_PATH /
+                     self.id).with_suffix("." + self.file_type)
 
     def serialize(self) -> dict:
         return {
@@ -302,7 +305,8 @@ class LocalJob:
         lj = cls(Job.deserialize(job))
         lj.completed_at = value.get("completed_at", time.time())
         lj.worker_name = value.get("worker_name", "Unknown")
-        lj.worker_id = value.get("worker_id", "00000000-0000-0000-0000-000000000000")
+        lj.worker_id = value.get(
+            "worker_id", "00000000-0000-0000-0000-000000000000")
         lj.file_type = value.get("fileType", "webp")
         lj.update_path()
         return lj
@@ -326,7 +330,8 @@ class ImageWidget(QLabel):
         self.lj = lj
         self.original_pixmap = QPixmap(lj.path)
         self.setPixmap(self.original_pixmap)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding,
+                           QSizePolicy.Policy.Expanding)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def resizeEvent(self, event):
@@ -582,10 +587,12 @@ class APIManagerThread(QThread):
                     job.horde_job_id = horde_job_id
                     self.current_requests[job.job_id] = job
                     LOGGER.info(
-                        f"Job {job.job_id} now has horde uuid: " + job.horde_job_id
+                        f"Job {job.job_id} now has horde uuid: " +
+                        job.horde_job_id
                     )
                     self.generate_rl_reset = float(
-                        response.headers.get("x-ratelimit-reset") or time.time() + 2
+                        response.headers.get(
+                            "x-ratelimit-reset") or time.time() + 2
                     )
                     self.generate_rl_remaining = int(
                         response.headers.get("x-ratelimit-remaining") or 1
@@ -615,7 +622,8 @@ class APIManagerThread(QThread):
 
             try:
                 LOGGER.debug(f"Checking job {job_id} - ({job.horde_job_id})")
-                response = requests.get(BASE_URL + f"generate/check/{job.horde_job_id}")
+                response = requests.get(
+                    BASE_URL + f"generate/check/{job.horde_job_id}")
                 response.raise_for_status()
                 job.update_status(response.json())
                 if job.done:
@@ -639,7 +647,8 @@ class APIManagerThread(QThread):
 
                 lj = LocalJob(job)
                 try:
-                    r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
+                    r = requests.get(
+                        BASE_URL + f"generate/status/{job.horde_job_id}")
                     if r.status_code == 429:
                         njobs.append(job)
                         self.status_rl_reset = time.time() + 10
@@ -750,7 +759,8 @@ class ModelPopup(QDialog):
 
         self.ui: Ui_Dialog = Ui_Dialog()
         self.ui.setupUi(self)
-        self.ui.baselineLineEdit.setText(data.get("baseline", "stable_diffusion_xl"))
+        self.ui.baselineLineEdit.setText(
+            data.get("baseline", "stable_diffusion_xl"))
         self.ui.nameLineEdit.setText(data.get("name", "AlbedoBase XL (SDXL)"))
         self.ui.inpaintingCheckBox.setChecked(data.get("inpainting", False))
         self.ui.descriptionBox.setText(
@@ -763,7 +773,8 @@ class ModelPopup(QDialog):
             ", ".join(data.get("features_not_supported", []))
         )
         req: dict = data.get("requirements", {})
-        req_str = ", ".join(" = ".join([str(y) for y in x]) for x in list(req.items()))
+        req_str = ", ".join(" = ".join([str(y) for y in x])
+                            for x in list(req.items()))
         self.ui.requirementsLineEdit.setText(req_str)
 
 
@@ -787,7 +798,8 @@ class LoadThread(QThread):
     def run(self):
         LOGGER.debug("Loading user info")
         self.user_info.emit(
-            requests.get(BASE_URL + "find_user", headers=get_headers(self.api_key))
+            requests.get(BASE_URL + "find_user",
+                         headers=get_headers(self.api_key))
         )
         LOGGER.debug("User info loaded")
         self.progress.emit(50)
@@ -814,13 +826,30 @@ class LoadThread(QThread):
             with open(model_cache_path, "wt") as f:
                 json.dump(j, f)
         else:
-            LOGGER.debug(f"Model cache at {model_cache_path} is fresh, not reloading")
+            LOGGER.debug(
+                f"Model cache at {model_cache_path} is fresh, not reloading")
 
             with open(model_cache_path, "rt") as f:
                 j = json.load(f)
 
         self.model_info.emit(j)
         self.progress.emit(100)
+
+
+class ImageLoadingThread(QThread):
+    progress = Signal(int)
+    image_loaded = Signal(tuple[ImageWidget, LocalJob])
+
+    def __init__(self, images_to_load: List[LocalJob]):
+        super().__init__()
+        self.images_to_load = images_to_load
+
+    def run(self):
+        for i, lj in enumerate(self.images_to_load):
+            LOGGER.info(f"Image found, adding to gallery: {lj.id}")
+            wg = ImageWidget(lj)
+            self.image_loaded.emit((wg, lj))
+            self.progress.emit(int((i + 1) / len(self.images_to_load) * 100))
 
 
 class SavedData:
@@ -897,6 +926,9 @@ class SavedData:
 
 
 class MainWindow(QMainWindow):
+    api_load_progress = 0
+    image_load_progress = 0
+    model_dict: Dict[str, Model] = {}
 
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
@@ -905,8 +937,6 @@ class MainWindow(QMainWindow):
         self.savedData.read()
         LOGGER.debug("Saved data loaded")
         self.clipboard = app.clipboard()
-        self.model_dict: Dict[str, Model] = {}
-        self.setGeometry(100, 100, 1200, 1200)
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
         LOGGER.debug("UI setup")
@@ -922,7 +952,8 @@ class MainWindow(QMainWindow):
                 "Warning: No API key set. Large generations may fail, and images will take a long time to generate",
             )
             LOGGER.debug("API key not loaded, using anon key")
-        self.loading_thread = LoadThread(self.api_key)
+        self.api_loading_thread = LoadThread(self.api_key)
+
         self.hide_api_key()
         LOGGER.debug("Showing main window")
         self.show()
@@ -931,14 +962,15 @@ class MainWindow(QMainWindow):
         self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
         self.ui.shareImagesCheckBox.setChecked(self.savedData.share_images)
         self.ui.tabWidget.setCurrentIndex(self.savedData.current_open_tab)
-        self.ui.saveFormatComboBox.setCurrentText(self.savedData.prefered_format)
+        self.ui.saveFormatComboBox.setCurrentText(
+            self.savedData.prefered_format)
         LOGGER.debug("Initializing API thread")
         self.api_thread = APIManagerThread.deserialize(
             self.savedData.api_state,
             api_key=self.api_key,
             max_requests=self.savedData.max_jobs,
         )
-        LOGGER.debug("Disabling Generate button until models are loaded")
+        LOGGER.debug("Disabling Generate button until UI is loaded")
         self.ui.GenerateButton.setEnabled(False)
         self.ui.modelComboBox.setEnabled(False)
 
@@ -948,15 +980,21 @@ class MainWindow(QMainWindow):
                 "queued_downloads": self.savedData.queued_downloads,
             }
         )
+
+        [x.update_path() for x in self.download_thread.completed_downloads]
+        self.image_loading_thread = ImageLoadingThread(
+            self.download_thread.completed_downloads)
         LOGGER.debug("Connecting DL signals")
         self.download_thread.completed.connect(self.on_image_fully_downloaded)
         LOGGER.debug("Connecting API signals")
         self.api_thread.job_completed.connect(self.on_job_completed)
         self.api_thread.updated.connect(self.update_inprogess_table)
-        LOGGER.debug("Connecting Loading signals")
-        self.loading_thread.progress.connect(self.update_progress)
-        self.loading_thread.model_info.connect(self.construct_model_dict)
-        self.loading_thread.user_info.connect(self.update_user_info)
+        LOGGER.debug("Connecting loading signals")
+        self.api_loading_thread.progress.connect(self.api_load_update)
+        self.api_loading_thread.model_info.connect(self.construct_model_dict)
+        self.api_loading_thread.user_info.connect(self.update_user_info)
+        self.image_loading_thread.image_loaded.connect(self.add_image)
+        self.image_loading_thread.progress.connect(self.image_load_update)
         LOGGER.debug("Connecting UI signals")
         self.ui.GenerateButton.clicked.connect(self.on_generate_click)
         self.ui.modelDetailsButton.clicked.connect(self.on_model_open_click)
@@ -966,12 +1004,15 @@ class MainWindow(QMainWindow):
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
         self.ui.openSavedData.clicked.connect(
-            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_DATA_DIR_PATH))
+            lambda: QDesktopServices.openUrl(
+                QUrl.fromLocalFile(SAVED_DATA_DIR_PATH))
         )
         self.ui.openSavedImages.clicked.connect(
-            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
+            lambda: QDesktopServices.openUrl(
+                QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
         )
-        self.ui.presetComboBox.currentTextChanged.connect(self.on_preset_change)
+        self.ui.presetComboBox.currentTextChanged.connect(
+            self.on_preset_change)
         self.ui.widthSpinBox.valueChanged.connect(self.on_width_change)
         self.ui.heightSpinBox.valueChanged.connect(self.on_height_change)
         self.ui.resetSettingsButton.clicked.connect(self.reset_job_config)
@@ -1007,7 +1048,8 @@ class MainWindow(QMainWindow):
         Toast.setPosition(toast_enums.ToastPosition.TOP_RIGHT)
         Toast.setPositionRelativeToWidget(self)
         LOGGER.debug("Starting threads")
-        QTimer.singleShot(0, self.loading_thread.start)
+        QTimer.singleShot(0, self.image_loading_thread.start)
+        QTimer.singleShot(0, self.api_loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
 
@@ -1107,8 +1149,15 @@ class MainWindow(QMainWindow):
 
     def add_image_to_gallery(self, lj: LocalJob):
         image_widget = ImageWidget(lj)
-        image_widget.imageClicked.connect(lambda v: self.show_image_popup(v, lj))
+        image_widget.imageClicked.connect(
+            lambda v: self.show_image_popup(v, lj))
         self.gallery_container.m_layout.addWidget(image_widget)
+
+    def add_image(self, v: tuple[ImageWidget, LocalJob]):
+        widg, lj = v
+        widg.imageClicked.connect(
+            lambda val: self.show_image_popup(val, lj))
+        self.gallery_container.m_layout.addWidget(widg)
 
     def show_image_popup(self, pixmap, lj):
         popup = ImagePopup(pixmap, lj, self)
@@ -1120,7 +1169,8 @@ class MainWindow(QMainWindow):
         self.ui.GenerateButton.setEnabled(True)
         self.ui.modelComboBox.setEnabled(True)
         # this doesn't feel right, for some reason.
-        self.ui.maxJobsSpinBox.setMaximum(self.ui.maxConcurrencySpinBox.value())
+        self.ui.maxJobsSpinBox.setMaximum(
+            self.ui.maxConcurrencySpinBox.value())
         LOGGER.debug("Hiding progress bar after 250 ms")
         QTimer.singleShot(250, lambda: self.ui.progressBar.hide())
 
@@ -1129,17 +1179,20 @@ class MainWindow(QMainWindow):
         # Restore job configuration
 
         self.ui.PromptBox.setPlainText(job_config.get("prompt", ""))
-        self.ui.NegativePromptBox.setPlainText(job_config.get("negative_prompt", ""))
+        self.ui.NegativePromptBox.setPlainText(
+            job_config.get("negative_prompt", ""))
         self.ui.samplerComboBox.setCurrentText(
             job_config.get("sampler_name", "k_euler")
         )
-        self.ui.guidenceDoubleSpinBox.setValue(job_config.get("cfg_scale", 5.0))
+        self.ui.guidenceDoubleSpinBox.setValue(
+            job_config.get("cfg_scale", 5.0))
         self.ui.seedSpinBox.setValue(job_config.get("seed", 0))
         self.ui.widthSpinBox.setValue(job_config.get("width", 512))
         self.ui.heightSpinBox.setValue(job_config.get("height", 512))
         self.ui.clipSkipSpinBox.setValue(job_config.get("clip_skip", 1))
         self.ui.stepsSpinBox.setValue(job_config.get("steps", 20))
-        self.ui.modelComboBox.setCurrentText(job_config.get("model", "default"))
+        self.ui.modelComboBox.setCurrentText(
+            job_config.get("model", "default"))
         self.ui.NSFWCheckBox.setChecked(job_config.get("allow_nsfw", False))
         self.ui.imagesSpinBox.setValue(job_config.get("images", 1))
 
@@ -1160,15 +1213,23 @@ class MainWindow(QMainWindow):
         job.update_path()
         self.download_thread.add_dl(job)
 
-    def update_progress(self, value):
-        self.ui.progressBar.setValue(value)
-        if value == 100:
-            self.loading_thread.quit()
+    def api_load_update(self, value: float):
+        self.api_load_progress = value
+
+    def image_load_update(self, value: float):
+        self.image_load_progress = value
+
+    def update_progress(self):
+        val = (self.api_load_progress+self.image_load_progress)/2
+        self.ui.progressBar.setValue(round(val))
+        if math.isclose(val, 100):
+            self.api_loading_thread.quit()
             self.on_fully_loaded()
 
     def update_user_info(self, r: requests.Response):
         if r.status_code == 404:
-            self.show_error_toast("Invalid API key", "User could not be found.")
+            self.show_error_toast(
+                "Invalid API key", "User could not be found.")
             LOGGER.warn("User not found, API key is invalid.")
             return
         j = r.json()
@@ -1199,22 +1260,26 @@ class MainWindow(QMainWindow):
         fulfill = records["fulfillment"]
         self.ui.textGeneratedSpinBox.setValue(fulfill["text"])
         self.ui.imageGeneratedSpinBox.setValue(fulfill["image"])
-        self.ui.interrogationGeneratedSpinBox.setValue(fulfill["interrogation"])
+        self.ui.interrogationGeneratedSpinBox.setValue(
+            fulfill["interrogation"])
 
         request = records["request"]
 
         self.ui.textRequestedSpinBox.setValue(request["text"])
         self.ui.imagesRequestedSpinBox.setValue(request["image"])
-        self.ui.interrogationRequestedSpinBox.setValue(request["interrogation"])
+        self.ui.interrogationRequestedSpinBox.setValue(
+            request["interrogation"])
 
         usage = records["usage"]
         self.ui.tokensRequestedSpinBox.setValue(usage["tokens"])
-        self.ui.megapixelstepsRequestedDoubleSpinBox.setValue(usage["megapixelsteps"])
+        self.ui.megapixelstepsRequestedDoubleSpinBox.setValue(
+            usage["megapixelsteps"])
 
         contrib = records["contribution"]
 
         self.ui.tokensGeneratedSpinBox.setValue(contrib["tokens"])
-        self.ui.megapixelstepsGeneratedDoubleSpinBox.setValue(contrib["megapixelsteps"])
+        self.ui.megapixelstepsGeneratedDoubleSpinBox.setValue(
+            contrib["megapixelsteps"])
 
     def toggle_api_key_visibility(self):
         visible = self.ui.apiKeyEntry.echoMode() == QLineEdit.EchoMode.Normal
@@ -1405,14 +1470,15 @@ class MainWindow(QMainWindow):
             for n in range(len(jobs)):
                 self.api_thread.add_job(jobs[n])
                 LOGGER.debug(f"Added job {jobs[n].job_id}")
-            self.show_success_toast("Created!", "Jobs were created and put into queue")
+            self.show_success_toast(
+                "Created!", "Jobs were created and put into queue")
 
     def save_api_key(self):
         self.hide_api_key()
         self.api_key = self.ui.apiKeyEntry.text()
         keyring.set_password("HordeQT", "HordeQTUser", self.api_key)
         self.show_success_toast("Saved", "API Key saved sucessfully.")
-        self.loading_thread.reload_user_info(self.api_key)
+        self.api_loading_thread.reload_user_info(self.api_key)
 
     def copy_api_key(self):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
@@ -1561,7 +1627,8 @@ if __name__ == "__main__":
     app.setApplicationName("Horde QT")
     app.setOrganizationName("Unit1208")
     SAVED_DATA_DIR_PATH = Path(
-        QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
+        QStandardPaths.writableLocation(
+            QStandardPaths.StandardLocation.AppDataLocation)
     )
     SAVED_IMAGE_DIR_PATH = SAVED_DATA_DIR_PATH / "images"
 
