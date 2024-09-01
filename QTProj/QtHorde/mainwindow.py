@@ -418,6 +418,7 @@ class MasonryLayout(QLayout):
         self.margin = margin
         self.m_spacing = spacing
         self.items: List[QLayoutItem] = []
+        self.column_heights = []
 
     def addItem(self, arg__1):
         self.items.append(arg__1)
@@ -426,24 +427,22 @@ class MasonryLayout(QLayout):
         return len(self.items)
 
     def sizeHint(self):
-        # Calculate the total height based on the column heights
-        try:
-            total_height = max(self.column_heights, default=0)
-        except:
-            total_height = 1150
+        if not self.column_heights:
+            self.updateGeometry()
+        total_height = max(self.column_heights, default=0) + self.m_spacing
         return QSize(self.geometry().width(), total_height)
 
     def itemAt(self, index) -> QLayoutItem:
         try:
             return self.items[index]
-        except:
+        except IndexError:
             return None  # type: ignore
 
     def takeAt(self, index):
         return self.items.pop(index)
 
-    def setGeometry(self, arg__1):
-        super(MasonryLayout, self).setGeometry(arg__1)
+    def setGeometry(self, rect):  # type: ignore
+        super(MasonryLayout, self).setGeometry(rect)
         self.updateGeometry()
 
     def updateGeometry(self):
@@ -455,29 +454,33 @@ class MasonryLayout(QLayout):
 
     def calculateColumnLayout(self, width):
         self.num_columns = max(1, width // (200 + self.m_spacing))
-        self.column_width = (
-            width - (self.num_columns - 1) * self.m_spacing
-        ) // self.num_columns
+        self.column_width = (width - (self.num_columns - 1)
+                             * self.m_spacing) // self.num_columns
         self.column_heights = [0] * self.num_columns
 
     def arrangeItems(self):
-        x_offsets = [
-            i * (self.column_width + self.m_spacing) for i in range(self.num_columns)
-        ]
+        x_offsets = [i * (self.column_width + self.m_spacing)
+                     for i in range(self.num_columns)]
         for item in self.items:
             widget: ImageWidget = item.widget()  # type: ignore
             pixmap = widget.pixmap()
-            aspect_ratio = (
-                pixmap.width() / pixmap.height()
-                if pixmap
-                else widget.sizeHint().width() / widget.sizeHint().height()
-            )
+            aspect_ratio = (pixmap.width() / pixmap.height() if pixmap
+                            else widget.sizeHint().width() / widget.sizeHint().height())
             height = self.column_width / aspect_ratio
             min_col = self.column_heights.index(min(self.column_heights))
             x = x_offsets[min_col]
             y = self.column_heights[min_col]
             widget.setGeometry(QRect(x, y, self.column_width, height))
             self.column_heights[min_col] += height + self.m_spacing
+
+        # Ensure the container widget height is adjusted based on the tallest column
+        self.parentWidget().setMinimumHeight(max(self.column_heights) + self.m_spacing)
+        
+class ImageGalleryWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.m_layout = MasonryLayout(self)
+        self.setLayout(self.m_layout)
 
 
 class APIManagerThread(QThread):
@@ -980,22 +983,18 @@ class MainWindow(QMainWindow):
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None
         LOGGER.debug("Initializing Masonry/Gallery layout")
-        scroll_area = QScrollArea(self)
+        container_layout=QVBoxLayout()
+        scroll_area = QScrollArea(self.ui.galleryViewFrame)
         scroll_area.setWidgetResizable(True)
-        scroll_area.setMinimumWidth(self.width()-20)
-        container_widget = QWidget()
-
-        self.gallery_layout = MasonryLayout(container_widget)
+        self.gallery_container = ImageGalleryWidget()
+        scroll_area.setWidget(self.gallery_container)
+        container_layout.addWidget(scroll_area)
+        self.ui.gallery_tab.setLayout(container_layout)
+        container_layout.addWidget(self.gallery_container)
         for lj in self.download_thread.completed_downloads:
             lj.update_path()
             LOGGER.info(f"Image found, adding to gallery: {lj.id}")
             self.add_image_to_gallery(lj)
-        self.gallery_layout.updateGeometry()
-        container_widget.setLayout(self.gallery_layout)
-        container_widget.setMinimumSize(self.gallery_layout.sizeHint())
-        container_widget.resize(self.gallery_layout.sizeHint())
-        scroll_area.setWidget(container_widget)
-        self.ui.galleryView.addChildWidget(scroll_area)
         #
 
         LOGGER.debug("Setting up toasts")
@@ -1105,7 +1104,7 @@ class MainWindow(QMainWindow):
         image_widget = ImageWidget(lj)
         image_widget.imageClicked.connect(
             lambda v: self.show_image_popup(v, lj))
-        self.gallery_layout.addWidget(image_widget)
+        self.gallery_container.m_layout.addWidget(image_widget)
 
     def show_image_popup(self, pixmap, lj):
         popup = ImagePopup(pixmap, lj, self)

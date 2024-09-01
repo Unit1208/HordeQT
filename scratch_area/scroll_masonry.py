@@ -218,7 +218,7 @@ class MainWindow(QMainWindow):
             image_widget = ImageWidget(Path("/home/erospo/.local/share/Unit1208/Horde QT/images/")/p)
             self.container_widget.m_layout.addWidget(image_widget)
             
-        self.resize(800,800)
+        # self.resize(800,800)
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
