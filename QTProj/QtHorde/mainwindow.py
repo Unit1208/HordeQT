@@ -38,6 +38,7 @@ from PySide6.QtCore import (
     QRect,
     Qt,
     QUrl,
+    QSize
 )
 from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtGui import QPixmap, QDesktopServices, QFont, QClipboard
@@ -419,14 +420,18 @@ class MasonryLayout(QLayout):
         self.items: List[QLayoutItem] = []
 
     def addItem(self, arg__1):
-
         self.items.append(arg__1)
 
     def count(self):
         return len(self.items)
 
     def sizeHint(self):
-        return self.minimumSize()
+        # Calculate the total height based on the column heights
+        try:
+            total_height = max(self.column_heights, default=0)
+        except:
+            total_height = 1150
+        return QSize(self.geometry().width(), total_height)
 
     def itemAt(self, index) -> QLayoutItem:
         try:
@@ -473,10 +478,6 @@ class MasonryLayout(QLayout):
             y = self.column_heights[min_col]
             widget.setGeometry(QRect(x, y, self.column_width, height))
             self.column_heights[min_col] += height + self.m_spacing
-
-    def addImage(self, path: os.PathLike, lj: LocalJob):
-        image_widget = ImageWidget(lj)
-        self.addWidget(image_widget)
 
 
 class APIManagerThread(QThread):
@@ -899,6 +900,7 @@ class MainWindow(QMainWindow):
         LOGGER.debug("Saved data loaded")
         self.clipboard = app.clipboard()
         self.model_dict: Dict[str, Model] = {}
+        self.setGeometry(100, 100, 1200, 1200)
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
         LOGGER.debug("UI setup")
@@ -978,21 +980,24 @@ class MainWindow(QMainWindow):
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None
         LOGGER.debug("Initializing Masonry/Gallery layout")
-        self.gallery_layout = MasonryLayout()
         scroll_area = QScrollArea(self)
         scroll_area.setWidgetResizable(True)
+        scroll_area.setMinimumWidth(self.width()-20)
+        container_widget = QWidget()
 
-        content_widget = QWidget()
-        content_widget.setLayout(self.gallery_layout)
-
-        scroll_area.setWidget(content_widget)
-
-        self.ui.galleryView.addWidget(scroll_area)
-
+        self.gallery_layout = MasonryLayout(container_widget)
         for lj in self.download_thread.completed_downloads:
             lj.update_path()
             LOGGER.info(f"Image found, adding to gallery: {lj.id}")
             self.add_image_to_gallery(lj)
+        self.gallery_layout.updateGeometry()
+        container_widget.setLayout(self.gallery_layout)
+        container_widget.setMinimumSize(self.gallery_layout.sizeHint())
+        container_widget.resize(self.gallery_layout.sizeHint())
+        scroll_area.setWidget(container_widget)
+        self.ui.galleryView.addChildWidget(scroll_area)
+        #
+
         LOGGER.debug("Setting up toasts")
         Toast.setAlwaysOnMainScreen(True)
         Toast.setPosition(toast_enums.ToastPosition.TOP_RIGHT)

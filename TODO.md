@@ -47,3 +47,6 @@
 - [ ] Use retry-after header
 - [ ] Disable table editing
 - [ ] Double click table entry to jump to location in gallery and open popup
+- [ ] Sort options on gallery.
+- [ ] Move loading images to load_thread
+- [ ] Resize images to fit screen on popup
