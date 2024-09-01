@@ -33,7 +33,7 @@
 - [ ] Reload button for user details
 - [ ] Preview kudos cost
 - [ ] Toggle for done jobs
-- [ ] Why isn't the scrollbar working on the Masonry layout?
+- [x] Why isn't the scrollbar working on the Masonry layout?
 - [ ] Handle resizing
 - [x] Actually decent logging - logging and coloredlogs. See verboselogs by the same author as coloredlogs
 - [ ] Rescan directory in order to load images that weren't properly saved
@@ -52,3 +52,4 @@
 - [ ] Resize images to fit screen on popup
 - [ ] LoRAs/TIs
 - [ ] Warning when trying to use a Pony model incorrectly.
+- [ ] Paginate images (25-50-100)?
