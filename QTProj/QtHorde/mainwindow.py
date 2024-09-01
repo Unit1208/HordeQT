@@ -93,7 +93,8 @@ def prompt_matrix(prompt: str) -> List[str]:
         generated_prompts = []
         for option in options:
             new_prompt = current_prompt.replace(matched, option, 1)
-            generated_prompts.extend(generate_prompts(new_prompt, remaining_matches))
+            generated_prompts.extend(
+                generate_prompts(new_prompt, remaining_matches))
 
         return generated_prompts
 
@@ -282,7 +283,8 @@ class LocalJob:
 
     def update_path(self):
 
-        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix("." + self.file_type)
+        self.path = (SAVED_IMAGE_DIR_PATH /
+                     self.id).with_suffix("." + self.file_type)
 
     def serialize(self) -> dict:
         return {
@@ -301,7 +303,8 @@ class LocalJob:
         lj = cls(Job.deserialize(job))
         lj.completed_at = value.get("completed_at", time.time())
         lj.worker_name = value.get("worker_name", "Unknown")
-        lj.worker_id = value.get("worker_id", "00000000-0000-0000-0000-000000000000")
+        lj.worker_id = value.get(
+            "worker_id", "00000000-0000-0000-0000-000000000000")
         lj.file_type = value.get("fileType", "webp")
         lj.update_path()
         return lj
@@ -325,7 +328,8 @@ class ImageWidget(QLabel):
         self.lj = lj
         self.original_pixmap = QPixmap(lj.path)
         self.setPixmap(self.original_pixmap)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding,
+                           QSizePolicy.Policy.Expanding)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def resizeEvent(self, event):
@@ -485,13 +489,13 @@ class APIManagerThread(QThread):
         self.max_requests = max_requests
         self.current_requests: Dict[str, Job] = {}
         self.job_queue: Queue[Job] = Queue()
-        self.last_status_time = time.time()
-        self.last_async_time = time.time()
+        self.status_rl_reset = time.time()
+        self.generate_rl_reset = time.time()
         self.completed_jobs: List[Job] = []
         self.running = True  # To control the thread's loop
-        self.async_requests = 0
+        self.generate_rl_remaining = 1
         self.async_reset_time = time.time()
-        self.status_requests = 0
+        self.status_rl_remaining = 1
         self.status_reset_time = time.time()
 
         self.errored_jobs: List[Job] = []
@@ -552,8 +556,7 @@ class APIManagerThread(QThread):
             len(self.current_requests) < self.max_requests
             and not self.job_queue.empty()
         ):
-            current_time = time.time()
-            if current_time - self.last_async_time > 2 and self.async_requests < 10:
+            if (time.time() - self.generate_rl_reset) > 0 and self.generate_rl_remaining > 0:
                 job = self.job_queue.get()
                 try:
                     d = json.dumps(job.to_json())
@@ -562,15 +565,22 @@ class APIManagerThread(QThread):
                         data=d,
                         headers=get_headers(self.api_key),
                     )
+                    if response.status_code == 429:
+                        self.job_queue.put(job)
+                        self.generate_rl_reset = time.time()+5
+                        return
                     response.raise_for_status()
                     horde_job_id = response.json().get("id")
                     job.horde_job_id = horde_job_id
                     self.current_requests[job.job_id] = job
                     LOGGER.info(
-                        f"Job {job.job_id} now has horde uuid: " + job.horde_job_id
+                        f"Job {job.job_id} now has horde uuid: " +
+                        job.horde_job_id
                     )
-                    self.last_async_time = time.time()
-                    self.async_requests += 1
+                    self.generate_rl_reset = float(response.headers.get(
+                        "x-ratelimit-reset") or time.time()+2)
+                    self.generate_rl_remaining = int(
+                        response.headers.get("x-ratelimit-remaining") or 1)
                 except requests.RequestException as e:
                     LOGGER.error(e)
                     self.errored_jobs.append(job)
@@ -580,9 +590,8 @@ class APIManagerThread(QThread):
                     "Too many requests would be made, skipping a possible new job"
                 )
             current_time = time.time()
-            if current_time - self.async_reset_time > 60:
-                self.async_requests = 0
-                self.async_reset_time = current_time
+            if current_time - self.generate_rl_reset > 0:
+                self.generate_rl_remaining = 2
 
     def _update_current_jobs(self):
         to_remove = []
@@ -597,7 +606,8 @@ class APIManagerThread(QThread):
 
             try:
                 LOGGER.debug(f"Checking job {job_id} - ({job.horde_job_id})")
-                response = requests.get(BASE_URL + f"generate/check/{job.horde_job_id}")
+                response = requests.get(
+                    BASE_URL + f"generate/check/{job.horde_job_id}")
                 response.raise_for_status()
                 job.update_status(response.json())
                 if job.done:
@@ -615,11 +625,16 @@ class APIManagerThread(QThread):
     def _get_download_paths(self):
         njobs = []
         for job in self.completed_jobs:
-            if time.time() - self.last_status_time > 5 and self.status_requests < 10:
+            if (time.time() - self.status_rl_reset) > 0 and self.status_rl_remaining > 0:
 
                 lj = LocalJob(job)
                 try:
-                    r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
+                    r = requests.get(
+                        BASE_URL + f"generate/status/{job.horde_job_id}")
+                    if r.status_code == 429:
+                        njobs.append(job)
+                        self.status_rl_reset = time.time()+10
+                        continue
                     r.raise_for_status()
                     rj = r.json()
                     gen = rj["generations"][0]
@@ -627,12 +642,16 @@ class APIManagerThread(QThread):
                     lj.worker_id = gen["worker_id"]
                     lj.worker_name = gen["worker_name"]
                     lj.completed_at = time.time()
+                    self.status_reset_time = float(r.headers.get(
+                        "x-ratelimit-reset") or time.time()+60)
+                    self.status_rl_remaining = int(
+                        r.headers.get("x-ratelimit-remaining") or 1)
                     self.job_completed.emit(lj)
                 except requests.RequestException as e:
                     LOGGER.error(e)
-                self.last_status_time = time.time()
-                if time.time() - self.status_reset_time > 60:
-                    self.status_requests = 0
+                self.status_rl_reset = time.time()
+                if time.time() - self.status_reset_time > 0:
+                    self.status_rl_remaining = 1
                     self.status_reset_time = time.time()
             else:
                 njobs.append(job)
@@ -720,7 +739,8 @@ class ModelPopup(QDialog):
 
         self.ui: Ui_Dialog = Ui_Dialog()
         self.ui.setupUi(self)
-        self.ui.baselineLineEdit.setText(data.get("baseline", "stable_diffusion_xl"))
+        self.ui.baselineLineEdit.setText(
+            data.get("baseline", "stable_diffusion_xl"))
         self.ui.nameLineEdit.setText(data.get("name", "AlbedoBase XL (SDXL)"))
         self.ui.inpaintingCheckBox.setChecked(data.get("inpainting", False))
         self.ui.descriptionBox.setText(
@@ -733,7 +753,8 @@ class ModelPopup(QDialog):
             ", ".join(data.get("features_not_supported", []))
         )
         req: dict = data.get("requirements", {})
-        req_str = ", ".join(" = ".join([str(y) for y in x]) for x in list(req.items()))
+        req_str = ", ".join(" = ".join([str(y) for y in x])
+                            for x in list(req.items()))
         self.ui.requirementsLineEdit.setText(req_str)
 
 
@@ -757,7 +778,8 @@ class LoadThread(QThread):
     def run(self):
         LOGGER.debug("Loading user info")
         self.user_info.emit(
-            requests.get(BASE_URL + "find_user", headers=get_headers(self.api_key))
+            requests.get(BASE_URL + "find_user",
+                         headers=get_headers(self.api_key))
         )
         LOGGER.debug("User info loaded")
         self.progress.emit(50)
@@ -784,7 +806,8 @@ class LoadThread(QThread):
             with open(model_cache_path, "wt") as f:
                 json.dump(j, f)
         else:
-            LOGGER.debug(f"Model cache at {model_cache_path} is fresh, not reloading")
+            LOGGER.debug(
+                f"Model cache at {model_cache_path} is fresh, not reloading")
 
             with open(model_cache_path, "rt") as f:
                 j = json.load(f)
@@ -900,7 +923,8 @@ class MainWindow(QMainWindow):
         self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
         self.ui.shareImagesCheckBox.setChecked(self.savedData.share_images)
         self.ui.tabWidget.setCurrentIndex(self.savedData.current_open_tab)
-        self.ui.saveFormatComboBox.setCurrentText(self.savedData.prefered_format)
+        self.ui.saveFormatComboBox.setCurrentText(
+            self.savedData.prefered_format)
         LOGGER.debug("Initializing API thread")
         self.api_thread = APIManagerThread.deserialize(
             self.savedData.api_state,
@@ -935,12 +959,15 @@ class MainWindow(QMainWindow):
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
         self.ui.openSavedData.clicked.connect(
-            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_DATA_DIR_PATH))
+            lambda: QDesktopServices.openUrl(
+                QUrl.fromLocalFile(SAVED_DATA_DIR_PATH))
         )
         self.ui.openSavedImages.clicked.connect(
-            lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
+            lambda: QDesktopServices.openUrl(
+                QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
         )
-        self.ui.presetComboBox.currentTextChanged.connect(self.on_preset_change)
+        self.ui.presetComboBox.currentTextChanged.connect(
+            self.on_preset_change)
         self.ui.widthSpinBox.valueChanged.connect(self.on_width_change)
         self.ui.heightSpinBox.valueChanged.connect(self.on_height_change)
         self.ui.resetSettingsButton.clicked.connect(self.reset_job_config)
@@ -1071,7 +1098,8 @@ class MainWindow(QMainWindow):
 
     def add_image_to_gallery(self, lj: LocalJob):
         image_widget = ImageWidget(lj)
-        image_widget.imageClicked.connect(lambda v: self.show_image_popup(v, lj))
+        image_widget.imageClicked.connect(
+            lambda v: self.show_image_popup(v, lj))
         self.gallery_layout.addWidget(image_widget)
 
     def show_image_popup(self, pixmap, lj):
@@ -1084,7 +1112,8 @@ class MainWindow(QMainWindow):
         self.ui.GenerateButton.setEnabled(True)
         self.ui.modelComboBox.setEnabled(True)
         # this doesn't feel right, for some reason.
-        self.ui.maxJobsSpinBox.setMaximum(self.ui.maxConcurrencySpinBox.value())
+        self.ui.maxJobsSpinBox.setMaximum(
+            self.ui.maxConcurrencySpinBox.value())
         LOGGER.debug("Hiding progress bar after 250 ms")
         QTimer.singleShot(250, lambda: self.ui.progressBar.hide())
 
@@ -1093,17 +1122,20 @@ class MainWindow(QMainWindow):
         # Restore job configuration
 
         self.ui.PromptBox.setPlainText(job_config.get("prompt", ""))
-        self.ui.NegativePromptBox.setPlainText(job_config.get("negative_prompt", ""))
+        self.ui.NegativePromptBox.setPlainText(
+            job_config.get("negative_prompt", ""))
         self.ui.samplerComboBox.setCurrentText(
             job_config.get("sampler_name", "k_euler")
         )
-        self.ui.guidenceDoubleSpinBox.setValue(job_config.get("cfg_scale", 5.0))
+        self.ui.guidenceDoubleSpinBox.setValue(
+            job_config.get("cfg_scale", 5.0))
         self.ui.seedSpinBox.setValue(job_config.get("seed", 0))
         self.ui.widthSpinBox.setValue(job_config.get("width", 512))
         self.ui.heightSpinBox.setValue(job_config.get("height", 512))
         self.ui.clipSkipSpinBox.setValue(job_config.get("clip_skip", 1))
         self.ui.stepsSpinBox.setValue(job_config.get("steps", 20))
-        self.ui.modelComboBox.setCurrentText(job_config.get("model", "default"))
+        self.ui.modelComboBox.setCurrentText(
+            job_config.get("model", "default"))
         self.ui.NSFWCheckBox.setChecked(job_config.get("allow_nsfw", False))
         self.ui.imagesSpinBox.setValue(job_config.get("images", 1))
 
@@ -1132,7 +1164,8 @@ class MainWindow(QMainWindow):
 
     def update_user_info(self, r: requests.Response):
         if r.status_code == 404:
-            self.show_error_toast("Invalid API key", "User could not be found.")
+            self.show_error_toast(
+                "Invalid API key", "User could not be found.")
             LOGGER.warn("User not found, API key is invalid.")
             return
         j = r.json()
@@ -1163,22 +1196,26 @@ class MainWindow(QMainWindow):
         fulfill = records["fulfillment"]
         self.ui.textGeneratedSpinBox.setValue(fulfill["text"])
         self.ui.imageGeneratedSpinBox.setValue(fulfill["image"])
-        self.ui.interrogationGeneratedSpinBox.setValue(fulfill["interrogation"])
+        self.ui.interrogationGeneratedSpinBox.setValue(
+            fulfill["interrogation"])
 
         request = records["request"]
 
         self.ui.textRequestedSpinBox.setValue(request["text"])
         self.ui.imagesRequestedSpinBox.setValue(request["image"])
-        self.ui.interrogationRequestedSpinBox.setValue(request["interrogation"])
+        self.ui.interrogationRequestedSpinBox.setValue(
+            request["interrogation"])
 
         usage = records["usage"]
         self.ui.tokensRequestedSpinBox.setValue(usage["tokens"])
-        self.ui.megapixelstepsRequestedDoubleSpinBox.setValue(usage["megapixelsteps"])
+        self.ui.megapixelstepsRequestedDoubleSpinBox.setValue(
+            usage["megapixelsteps"])
 
         contrib = records["contribution"]
 
         self.ui.tokensGeneratedSpinBox.setValue(contrib["tokens"])
-        self.ui.megapixelstepsGeneratedDoubleSpinBox.setValue(contrib["megapixelsteps"])
+        self.ui.megapixelstepsGeneratedDoubleSpinBox.setValue(
+            contrib["megapixelsteps"])
 
     def toggle_api_key_visibility(self):
         visible = self.ui.apiKeyEntry.echoMode() == QLineEdit.EchoMode.Normal
@@ -1241,7 +1278,7 @@ class MainWindow(QMainWindow):
                         "CLIP Skip Requirement", "This model requires CLIP Skip = 2"
                     )
                     self.ui.clipSkipSpinBox.setValue(2)
-                    return
+                    return None
             if (mins := reqs.get("min_steps", 0)) != 0:
                 if steps < int(mins):
                     self.show_warn_toast(
@@ -1249,7 +1286,7 @@ class MainWindow(QMainWindow):
                         f"This model requires at least {mins} steps, currently {steps}",
                     )
                     self.ui.stepsSpinBox.setValue(int(mins))
-                    return
+                    return None
 
             if (maxs := reqs.get("max_steps", 150)) != 150:
                 if steps > int(maxs):
@@ -1258,7 +1295,7 @@ class MainWindow(QMainWindow):
                         f"This model requires at most {maxs} steps, currently {steps}",
                     )
                     self.ui.stepsSpinBox.setValue(int(maxs))
-                    return
+                    return None
             if (cfgreq := reqs.get("cfg_scale", None)) is not None:
                 if cfg_scale != cfgreq:
                     self.show_warn_toast(
@@ -1266,7 +1303,8 @@ class MainWindow(QMainWindow):
                         f"This model requires a CFG value of {cfgreq}, currently {cfg_scale}",
                     )
                     self.ui.guidenceDoubleSpinBox.setValue(float(cfgreq))
-                    return
+                    return None
+
             if (rsamplers := reqs.get("samplers", [])) != []:  # type: ignore
                 if type(rsamplers) == type(str):
                     rsamplers = [rsamplers]
@@ -1284,7 +1322,7 @@ class MainWindow(QMainWindow):
                             + " samplers",
                         )
                         self.ui.samplerComboBox.setCurrentText(rsamplers[0])
-                        return
+                        return None
         karras = True
         hires_fix = True
         allow_nsfw = self.ui.NSFWCheckBox.isChecked()
@@ -1368,7 +1406,8 @@ class MainWindow(QMainWindow):
             for n in range(len(jobs)):
                 self.api_thread.add_job(jobs[n])
                 LOGGER.debug(f"Added job {jobs[n].job_id}")
-            self.show_success_toast("Created!", "Jobs were created and put into queue")
+            self.show_success_toast(
+                "Created!", "Jobs were created and put into queue")
 
     def save_api_key(self):
         self.hide_api_key()
@@ -1524,7 +1563,8 @@ if __name__ == "__main__":
     app.setApplicationName("Horde QT")
     app.setOrganizationName("Unit1208")
     SAVED_DATA_DIR_PATH = Path(
-        QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
+        QStandardPaths.writableLocation(
+            QStandardPaths.StandardLocation.AppDataLocation)
     )
     SAVED_IMAGE_DIR_PATH = SAVED_DATA_DIR_PATH / "images"
 

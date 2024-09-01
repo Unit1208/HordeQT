@@ -43,3 +43,7 @@
 - [ ] Why isn't the gallery working on certain machines?
 - [ ] Delete button on images
 - [ ] When saving/Loading current state, trim off model worker count and match by that when loading.
+- [x] Use actual rate limit values returned by API calls instead of tracking it manually
+- [ ] Use retry-after header
+- [ ] Disable table editing
+- [ ] Double click table entry to jump to location in gallery and open popup
