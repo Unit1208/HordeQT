@@ -983,18 +983,24 @@ class MainWindow(QMainWindow):
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None
         LOGGER.debug("Initializing Masonry/Gallery layout")
-        container_layout=QVBoxLayout()
-        scroll_area = QScrollArea(self.ui.galleryViewFrame)
+        sizePolicy = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.ui.galleryViewFrame.setSizePolicy(sizePolicy)
+        container_layout=QVBoxLayout(self.ui.galleryViewFrame)
+        scroll_area = QScrollArea()
+        
+        scroll_area.setSizePolicy(sizePolicy)
         scroll_area.setWidgetResizable(True)
         self.gallery_container = ImageGalleryWidget()
-        scroll_area.setWidget(self.gallery_container)
-        container_layout.addWidget(scroll_area)
-        self.ui.gallery_tab.setLayout(container_layout)
-        container_layout.addWidget(self.gallery_container)
         for lj in self.download_thread.completed_downloads:
             lj.update_path()
             LOGGER.info(f"Image found, adding to gallery: {lj.id}")
             self.add_image_to_gallery(lj)
+            # May need to update scroll_area when jobs are added?
+        scroll_area.setWidget(self.gallery_container)
+        container_layout.addWidget(scroll_area)
+        container_layout.addWidget(self.gallery_container)
+        self.ui.galleryViewFrame.setLayout(container_layout)
+
         #
 
         LOGGER.debug("Setting up toasts")
