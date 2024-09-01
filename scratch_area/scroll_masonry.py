@@ -134,6 +134,7 @@ class MasonryLayout(QLayout):
         self.margin = margin
         self.m_spacing = spacing
         self.items: List[QLayoutItem] = []
+        self.column_heights = []
 
     def addItem(self, arg__1):
         self.items.append(arg__1)
@@ -142,24 +143,22 @@ class MasonryLayout(QLayout):
         return len(self.items)
 
     def sizeHint(self):
-        self.updateGeometry()  # Ensure geometry is updated
-        if hasattr(self, 'column_heights') and self.column_heights:
-            total_height = max(self.column_heights, default=0)
-        else:
-            # Provide a default size hint if column_heights is not available
-            total_height =200  # or any reasonable default height
+        if not self.column_heights:
+            self.updateGeometry()
+        total_height = max(self.column_heights, default=0) + self.m_spacing
         return QSize(self.geometry().width(), total_height)
+
     def itemAt(self, index) -> QLayoutItem:
         try:
             return self.items[index]
-        except:
-            return None  # type: ignore
+        except IndexError:
+            return None # type: ignore
 
     def takeAt(self, index):
         return self.items.pop(index)
 
-    def setGeometry(self, arg__1):
-        super(MasonryLayout, self).setGeometry(arg__1)
+    def setGeometry(self, rect): # type: ignore
+        super(MasonryLayout, self).setGeometry(rect)
         self.updateGeometry()
 
     def updateGeometry(self):
@@ -171,29 +170,25 @@ class MasonryLayout(QLayout):
 
     def calculateColumnLayout(self, width):
         self.num_columns = max(1, width // (200 + self.m_spacing))
-        self.column_width = (
-            width - (self.num_columns - 1) * self.m_spacing
-        ) // self.num_columns
+        self.column_width = (width - (self.num_columns - 1) * self.m_spacing) // self.num_columns
         self.column_heights = [0] * self.num_columns
 
     def arrangeItems(self):
-        x_offsets = [
-            i * (self.column_width + self.m_spacing) for i in range(self.num_columns)
-        ]
+        x_offsets = [i * (self.column_width + self.m_spacing) for i in range(self.num_columns)]
         for item in self.items:
-            widget:ImageWidget = item.widget()  # type: ignore
+            widget: ImageWidget = item.widget() # type: ignore
             pixmap = widget.pixmap()
-            aspect_ratio = (
-                pixmap.width() / pixmap.height()
-                if pixmap
-                else widget.sizeHint().width() / widget.sizeHint().height()
-            )
+            aspect_ratio = (pixmap.width() / pixmap.height() if pixmap
+                            else widget.sizeHint().width() / widget.sizeHint().height())
             height = self.column_width / aspect_ratio
             min_col = self.column_heights.index(min(self.column_heights))
             x = x_offsets[min_col]
             y = self.column_heights[min_col]
             widget.setGeometry(QRect(x, y, self.column_width, height))
             self.column_heights[min_col] += height + self.m_spacing
+
+        # Ensure the container widget height is adjusted based on the tallest column
+        self.parentWidget().setMinimumHeight(max(self.column_heights) + self.m_spacing)
 
 class ImageGalleryWidget(QWidget):
     def __init__(self):
@@ -222,7 +217,8 @@ class MainWindow(QMainWindow):
         for p in os.listdir("/home/erospo/.local/share/Unit1208/Horde QT/images/"):
             image_widget = ImageWidget(Path("/home/erospo/.local/share/Unit1208/Horde QT/images/")/p)
             self.container_widget.m_layout.addWidget(image_widget)
-
+            
+        self.resize(800,800)
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
