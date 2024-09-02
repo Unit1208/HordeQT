@@ -12,13 +12,13 @@ def convert_uic_files(current_dir):
         new_py_fpath = file.with_name("ui_" + file.name).with_suffix(".py").resolve()
         cmd = [str(uic.resolve()), str(file.resolve()), f"-o={str(new_py_fpath)}"]
         subprocess.run(cmd, check=True)
-
+        print(f"Converted {str(file)} to {str(new_py_fpath)}")
 
 def main():
     current_dir = Path(__file__).parent
+    convert_uic_files(current_dir)
 
     entry_script = current_dir / "mainwindow.py"
-    convert_uic_files(current_dir)
     iconpath = current_dir / "QTHordeAssets" / "IconSmall.png"
     command = [
         sys.executable,
