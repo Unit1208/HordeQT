@@ -180,4 +180,3 @@ def get_prompt(img: Image.Image):
             return _artbot(img)
         case ImageType.NAI_PNG:
             return _nai_png(img)
-

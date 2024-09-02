@@ -35,3 +35,9 @@ standalone = true
 onefile = true
 remove-output = true
 output-dir = "dist"
+
+[tool.black]
+extend-exclude='''
+(
+^/hordeqt_py/ui_[_a-zA-Z]+\.py
+)'''
