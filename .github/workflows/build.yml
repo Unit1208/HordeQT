@@ -95,12 +95,12 @@ jobs:
       - name: Install dependencies
         run: |
           $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
-          poetry install
+          C:\Users\runneradmin\.local\bin\poetry install
 
       - name: Build application
         run: |
           $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
-          poetry run build
+          C:\Users\runneradmin\.local\bin\poetry run build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
