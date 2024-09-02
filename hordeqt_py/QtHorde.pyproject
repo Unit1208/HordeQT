@@ -1,9 +1,0 @@
-{
-    "files": [
-        "mainwindow.py",
-        "form.ui",
-        "modelinfo.ui",
-        "prompt_library.ui",
-        "prompt_item.ui"
-    ]
-}
