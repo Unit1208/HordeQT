@@ -94,12 +94,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          $env:PATH =C:\Users\runneradmin\.local\bin;$env:PATH
+          $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
           poetry install
 
       - name: Build application
         run: |
-          $env:PATH =C:\Users\runneradmin\.local\bin;$env:PATH
+          $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
           poetry run build
 
       - name: Upload artifact
