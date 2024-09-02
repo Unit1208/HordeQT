@@ -3,7 +3,6 @@ from PySide6.QtCore import Qt
 from ui_prompt_library import Ui_Dialog as PromptLibraryWidget
 from ui_prompt_item import Ui_Form as PromptItemWidget
 
-# from PySide6.QtGui import
 from PySide6.QtWidgets import QDialog, QWidget
 
 

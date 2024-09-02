@@ -3,7 +3,7 @@
  <class>MainWindow</class>
  <widget class="QMainWindow" name="MainWindow">
   <property name="windowModality">
-   <enum>Qt::NonModal</enum>
+   <enum>Qt::WindowModality::NonModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -39,7 +39,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>0</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -61,8 +61,7 @@
         </sizepolicy>
        </property>
        <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::ListAdd">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="QIcon::ThemeIcon::ListAdd"/>
        </attribute>
        <attribute name="title">
         <string>Create</string>
@@ -82,23 +81,23 @@
              <x>10</x>
              <y>10</y>
              <width>941</width>
-             <height>931</height>
+             <height>891</height>
             </rect>
            </property>
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
            <property name="frameShadow">
-            <enum>QFrame::Sunken</enum>
+            <enum>QFrame::Shadow::Sunken</enum>
            </property>
            <property name="verticalScrollBarPolicy">
-            <enum>Qt::ScrollBarAlwaysOn</enum>
+            <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOn</enum>
            </property>
            <property name="sizeAdjustPolicy">
-            <enum>QAbstractScrollArea::AdjustIgnored</enum>
+            <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
            </property>
            <property name="widgetResizable">
             <bool>true</bool>
@@ -109,7 +108,7 @@
               <x>0</x>
               <y>0</y>
               <width>925</width>
-              <height>929</height>
+              <height>889</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -120,8 +119,21 @@
             </property>
             <layout class="QFormLayout" name="formLayout">
              <property name="sizeConstraint">
-              <enum>QLayout::SetMinimumSize</enum>
+              <enum>QLayout::SizeConstraint::SetMinimumSize</enum>
              </property>
+             <item row="0" column="1">
+              <widget class="QProgressBar" name="progressBar">
+               <property name="value">
+                <number>0</number>
+               </property>
+               <property name="textVisible">
+                <bool>true</bool>
+               </property>
+               <property name="invertedAppearance">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
              <item row="3" column="0">
               <widget class="QLabel" name="label_3">
                <property name="text">
@@ -145,14 +157,14 @@
                </property>
               </widget>
              </item>
-             <item row="7" column="0">
+             <item row="6" column="0">
               <widget class="QLabel" name="label_5">
                <property name="text">
                 <string>Negative Prompt</string>
                </property>
               </widget>
              </item>
-             <item row="7" column="1">
+             <item row="6" column="1">
               <widget class="QPlainTextEdit" name="NegativePromptBox">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
@@ -168,7 +180,7 @@
                </property>
               </widget>
              </item>
-             <item row="8" column="1">
+             <item row="7" column="1">
               <widget class="QPushButton" name="GenerateButton">
                <property name="toolTip">
                 <string>Shortcut Ctrl + Enter</string>
@@ -177,22 +189,21 @@
                 <string>Generate</string>
                </property>
                <property name="icon">
-                <iconset theme="QIcon::ThemeIcon::InsertImage">
-                 <normaloff>.</normaloff>.</iconset>
+                <iconset theme="QIcon::ThemeIcon::InsertImage"/>
                </property>
                <property name="shortcut">
                 <string>Ctrl+Return</string>
                </property>
               </widget>
              </item>
-             <item row="10" column="0">
+             <item row="9" column="0">
               <widget class="QLabel" name="imagesLabel">
                <property name="text">
                 <string>Images</string>
                </property>
               </widget>
              </item>
-             <item row="10" column="1">
+             <item row="9" column="1">
               <widget class="QSpinBox" name="imagesSpinBox">
                <property name="minimum">
                 <number>1</number>
@@ -202,14 +213,14 @@
                </property>
               </widget>
              </item>
-             <item row="12" column="0">
+             <item row="11" column="0">
               <widget class="QLabel" name="stepsLabel">
                <property name="text">
                 <string>Steps</string>
                </property>
               </widget>
              </item>
-             <item row="12" column="1">
+             <item row="11" column="1">
               <widget class="QSpinBox" name="stepsSpinBox">
                <property name="minimum">
                 <number>1</number>
@@ -222,14 +233,14 @@
                </property>
               </widget>
              </item>
-             <item row="13" column="0">
+             <item row="12" column="0">
               <widget class="QLabel" name="modelLabel">
                <property name="text">
                 <string>Model</string>
                </property>
               </widget>
              </item>
-             <item row="13" column="1">
+             <item row="12" column="1">
               <layout class="QHBoxLayout" name="horizontalLayout_6">
                <item>
                 <widget class="QComboBox" name="modelComboBox">
@@ -270,8 +281,7 @@
                   <string>Model Details </string>
                  </property>
                  <property name="icon">
-                  <iconset theme="QIcon::ThemeIcon::SystemSearch">
-                   <normaloff>.</normaloff>.</iconset>
+                  <iconset theme="QIcon::ThemeIcon::SystemSearch"/>
                  </property>
                  <property name="flat">
                   <bool>false</bool>
@@ -280,14 +290,14 @@
                </item>
               </layout>
              </item>
-             <item row="16" column="0">
+             <item row="15" column="0">
               <widget class="QLabel" name="presetLabel">
                <property name="text">
                 <string>Preset</string>
                </property>
               </widget>
              </item>
-             <item row="16" column="1">
+             <item row="15" column="1">
               <widget class="QComboBox" name="presetComboBox">
                <property name="editable">
                 <bool>false</bool>
@@ -329,14 +339,14 @@
                </item>
               </widget>
              </item>
-             <item row="18" column="0">
+             <item row="17" column="0">
               <widget class="QLabel" name="widthLabel">
                <property name="text">
                 <string>Width</string>
                </property>
               </widget>
              </item>
-             <item row="18" column="1">
+             <item row="17" column="1">
               <widget class="QSpinBox" name="widthSpinBox">
                <property name="minimum">
                 <number>64</number>
@@ -352,14 +362,14 @@
                </property>
               </widget>
              </item>
-             <item row="20" column="0">
+             <item row="19" column="0">
               <widget class="QLabel" name="heightLabel">
                <property name="text">
                 <string>Height</string>
                </property>
               </widget>
              </item>
-             <item row="20" column="1">
+             <item row="19" column="1">
               <widget class="QSpinBox" name="heightSpinBox">
                <property name="minimum">
                 <number>64</number>
@@ -375,14 +385,14 @@
                </property>
               </widget>
              </item>
-             <item row="22" column="0">
+             <item row="21" column="0">
               <widget class="QLabel" name="samplerLabel">
                <property name="text">
                 <string>Sampler</string>
                </property>
               </widget>
              </item>
-             <item row="22" column="1">
+             <item row="21" column="1">
               <widget class="QComboBox" name="samplerComboBox">
                <item>
                 <property name="text">
@@ -456,14 +466,14 @@
                </item>
               </widget>
              </item>
-             <item row="24" column="0">
+             <item row="23" column="0">
               <widget class="QLabel" name="seedLabel">
                <property name="text">
                 <string>Seed</string>
                </property>
               </widget>
              </item>
-             <item row="24" column="1">
+             <item row="23" column="1">
               <widget class="QSpinBox" name="seedSpinBox">
                <property name="toolTip">
                 <string>0 for unseeded generations</string>
@@ -479,14 +489,14 @@
                </property>
               </widget>
              </item>
-             <item row="26" column="0">
+             <item row="25" column="0">
               <widget class="QLabel" name="guidenceLabel">
                <property name="text">
                 <string>Guidence</string>
                </property>
               </widget>
              </item>
-             <item row="26" column="1">
+             <item row="25" column="1">
               <widget class="QDoubleSpinBox" name="guidenceDoubleSpinBox">
                <property name="decimals">
                 <number>1</number>
@@ -505,14 +515,14 @@
                </property>
               </widget>
              </item>
-             <item row="28" column="0">
+             <item row="27" column="0">
               <widget class="QLabel" name="clipSkipLabel">
                <property name="text">
                 <string>Clip Skip</string>
                </property>
               </widget>
              </item>
-             <item row="28" column="1">
+             <item row="27" column="1">
               <widget class="QSpinBox" name="clipSkipSpinBox">
                <property name="minimum">
                 <number>1</number>
@@ -522,7 +532,7 @@
                </property>
               </widget>
              </item>
-             <item row="29" column="1">
+             <item row="28" column="1">
               <layout class="QHBoxLayout" name="horizontalLayout_7">
                <item>
                 <widget class="QPushButton" name="resetSettingsButton">
@@ -536,8 +546,7 @@
                   <string>Reset Settings</string>
                  </property>
                  <property name="icon">
-                  <iconset theme="QIcon::ThemeIcon::EditClear">
-                   <normaloff>.</normaloff>.</iconset>
+                  <iconset theme="QIcon::ThemeIcon::EditClear"/>
                  </property>
                 </widget>
                </item>
@@ -556,8 +565,7 @@
                   <string>Undo Reset</string>
                  </property>
                  <property name="icon">
-                  <iconset theme="QIcon::ThemeIcon::EditUndo">
-                   <normaloff>.</normaloff>.</iconset>
+                  <iconset theme="QIcon::ThemeIcon::EditUndo"/>
                  </property>
                  <property name="checkable">
                   <bool>false</bool>
@@ -565,22 +573,6 @@
                 </widget>
                </item>
               </layout>
-             </item>
-             <item row="5" column="1">
-              <layout class="QHBoxLayout" name="horizontalLayout_4"/>
-             </item>
-             <item row="0" column="1">
-              <widget class="QProgressBar" name="progressBar">
-               <property name="value">
-                <number>0</number>
-               </property>
-               <property name="textVisible">
-                <bool>true</bool>
-               </property>
-               <property name="invertedAppearance">
-                <bool>false</bool>
-               </property>
-              </widget>
              </item>
             </layout>
            </widget>
@@ -597,8 +589,7 @@
         </sizepolicy>
        </property>
        <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::DocumentProperties">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="QIcon::ThemeIcon::DocumentProperties"/>
        </attribute>
        <attribute name="title">
         <string>Current Items</string>
@@ -685,8 +676,7 @@
         </sizepolicy>
        </property>
        <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::DocumentPrintPreview">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="QIcon::ThemeIcon::DocumentPrintPreview"/>
        </attribute>
        <attribute name="title">
         <string>Gallery</string>
@@ -721,8 +711,7 @@
         </sizepolicy>
        </property>
        <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::DocumentProperties">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="QIcon::ThemeIcon::DocumentProperties"/>
        </attribute>
        <attribute name="title">
         <string>Settings</string>
@@ -755,7 +744,7 @@
            <item>
             <widget class="QLineEdit" name="apiKeyEntry">
              <property name="echoMode">
-              <enum>QLineEdit::Normal</enum>
+              <enum>QLineEdit::EchoMode::Normal</enum>
              </property>
              <property name="placeholderText">
               <string>API Key</string>
@@ -771,8 +760,7 @@
               <string>Show API Key</string>
              </property>
              <property name="icon">
-              <iconset theme="QIcon::ThemeIcon::EditFind">
-               <normaloff>.</normaloff>.</iconset>
+              <iconset theme="QIcon::ThemeIcon::EditFind"/>
              </property>
             </widget>
            </item>
@@ -782,8 +770,7 @@
               <string>Save API Key</string>
              </property>
              <property name="icon">
-              <iconset theme="QIcon::ThemeIcon::DocumentSave">
-               <normaloff>.</normaloff>.</iconset>
+              <iconset theme="QIcon::ThemeIcon::DocumentSave"/>
              </property>
             </widget>
            </item>
@@ -793,8 +780,7 @@
               <string>Copy API Key</string>
              </property>
              <property name="icon">
-              <iconset theme="QIcon::ThemeIcon::EditCopy">
-               <normaloff>.</normaloff>.</iconset>
+              <iconset theme="QIcon::ThemeIcon::EditCopy"/>
              </property>
              <property name="flat">
               <bool>false</bool>
@@ -866,8 +852,7 @@
             <string>Open Saved Data</string>
            </property>
            <property name="icon">
-            <iconset theme="QIcon::ThemeIcon::DocumentOpen">
-             <normaloff>.</normaloff>.</iconset>
+            <iconset theme="QIcon::ThemeIcon::DocumentOpen"/>
            </property>
           </widget>
          </item>
@@ -884,8 +869,7 @@
             <string>Open Saved Images</string>
            </property>
            <property name="icon">
-            <iconset theme="QIcon::ThemeIcon::InsertImage">
-             <normaloff>.</normaloff>.</iconset>
+            <iconset theme="QIcon::ThemeIcon::InsertImage"/>
            </property>
           </widget>
          </item>
@@ -926,8 +910,7 @@
         </sizepolicy>
        </property>
        <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::UserOffline">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="QIcon::ThemeIcon::UserOffline"/>
        </attribute>
        <attribute name="title">
         <string>User Info</string>
@@ -992,7 +975,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="maximum">
             <number>2147483647</number>
@@ -1012,7 +995,7 @@
             <bool>false</bool>
            </property>
            <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
+            <enum>Qt::FocusPolicy::NoFocus</enum>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -1035,7 +1018,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="maximum">
             <number>2147483647</number>
@@ -1055,7 +1038,7 @@
             <bool>false</bool>
            </property>
            <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
+            <enum>Qt::FocusPolicy::NoFocus</enum>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -1078,7 +1061,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="maximum">
             <number>2147483647</number>
@@ -1088,7 +1071,7 @@
          <item row="7" column="0">
           <widget class="Line" name="line_4">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Orientation::Vertical</enum>
            </property>
           </widget>
          </item>
@@ -1105,7 +1088,7 @@
             <bool>false</bool>
            </property>
            <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
+            <enum>Qt::FocusPolicy::NoFocus</enum>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -1128,7 +1111,7 @@
             <bool>false</bool>
            </property>
            <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
+            <enum>Qt::FocusPolicy::NoFocus</enum>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -1151,7 +1134,7 @@
             <bool>false</bool>
            </property>
            <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
+            <enum>Qt::FocusPolicy::NoFocus</enum>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -1174,7 +1157,7 @@
             <bool>false</bool>
            </property>
            <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
+            <enum>Qt::FocusPolicy::NoFocus</enum>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -1197,7 +1180,7 @@
             <bool>false</bool>
            </property>
            <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
+            <enum>Qt::FocusPolicy::NoFocus</enum>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -1220,7 +1203,7 @@
             <bool>false</bool>
            </property>
            <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
+            <enum>Qt::FocusPolicy::NoFocus</enum>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -1243,7 +1226,7 @@
             <bool>false</bool>
            </property>
            <property name="focusPolicy">
-            <enum>Qt::NoFocus</enum>
+            <enum>Qt::FocusPolicy::NoFocus</enum>
            </property>
            <property name="checkable">
             <bool>true</bool>
@@ -1256,7 +1239,7 @@
          <item row="15" column="0">
           <widget class="Line" name="line_3">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Orientation::Vertical</enum>
            </property>
           </widget>
          </item>
@@ -1297,7 +1280,7 @@
          <item row="18" column="0">
           <widget class="Line" name="line_2">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Orientation::Vertical</enum>
            </property>
           </widget>
          </item>
@@ -1317,7 +1300,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="suffix">
             <string> message(s)</string>
@@ -1343,7 +1326,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="suffix">
             <string> image(s)</string>
@@ -1369,7 +1352,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="suffix">
             <string> interrogation(s)</string>
@@ -1382,7 +1365,7 @@
          <item row="22" column="0">
           <widget class="Line" name="line">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Orientation::Vertical</enum>
            </property>
           </widget>
          </item>
@@ -1402,7 +1385,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="suffix">
             <string> message(s)</string>
@@ -1428,7 +1411,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="suffix">
             <string> image(s)</string>
@@ -1454,7 +1437,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="suffix">
             <string> interrogation(s)</string>
@@ -1480,7 +1463,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="suffix">
             <string> token(s)</string>
@@ -1506,7 +1489,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="prefix">
             <string/>
@@ -1521,7 +1504,7 @@
             <double>0.000000000000000</double>
            </property>
            <property name="stepType">
-            <enum>QAbstractSpinBox::DefaultStepType</enum>
+            <enum>QAbstractSpinBox::StepType::DefaultStepType</enum>
            </property>
           </widget>
          </item>
@@ -1541,7 +1524,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="suffix">
             <string> token(s)</string>
@@ -1567,7 +1550,7 @@
             <bool>true</bool>
            </property>
            <property name="buttonSymbols">
-            <enum>QAbstractSpinBox::UpDownArrows</enum>
+            <enum>QAbstractSpinBox::ButtonSymbols::UpDownArrows</enum>
            </property>
            <property name="prefix">
             <string/>
@@ -1582,21 +1565,21 @@
             <double>0.000000000000000</double>
            </property>
            <property name="stepType">
-            <enum>QAbstractSpinBox::DefaultStepType</enum>
+            <enum>QAbstractSpinBox::StepType::DefaultStepType</enum>
            </property>
           </widget>
          </item>
          <item row="29" column="0">
           <widget class="Line" name="line_5">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Orientation::Vertical</enum>
            </property>
           </widget>
          </item>
          <item row="26" column="0">
           <widget class="Line" name="line_6">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Orientation::Vertical</enum>
            </property>
           </widget>
          </item>
@@ -1611,8 +1594,7 @@
         </sizepolicy>
        </property>
        <attribute name="icon">
-        <iconset theme="QIcon::ThemeIcon::HelpAbout">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="QIcon::ThemeIcon::HelpAbout"/>
        </attribute>
        <attribute name="title">
         <string>Stats</string>
@@ -1664,7 +1646,7 @@
      <x>0</x>
      <y>0</y>
      <width>1000</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

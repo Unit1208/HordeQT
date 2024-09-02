@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import List
 
 
-def convert_uic_files(current_dir):
+def convert_uic_files(current_dir:Path|None=None):
+    current_dir = current_dir or Path(__file__).parent
     ui_fns = ["form.ui", "modelinfo.ui", "prompt_item.ui", "prompt_library.ui"]
     ui_files: List[Path] = [current_dir / Path(x) for x in ui_fns]
     uic = Path(sys.exec_prefix) / "bin" / "pyside6-uic"
@@ -13,11 +14,10 @@ def convert_uic_files(current_dir):
         cmd = [str(uic.resolve()), str(file.resolve()), f"-o={str(new_py_fpath)}"]
         subprocess.run(cmd, check=True)
         print(f"Converted {str(file)} to {str(new_py_fpath)}")
-
 def main():
     current_dir = Path(__file__).parent
     convert_uic_files(current_dir)
-
+    
     entry_script = current_dir / "mainwindow.py"
     iconpath = current_dir / "QTHordeAssets" / "IconSmall.png"
     command = [

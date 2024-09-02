@@ -24,7 +24,7 @@ colorama = "^0.4.6"
 [tool.poetry.scripts]
 
 build = "hordeqt_py.build:main"
-main = "hordeqt_py.mainwindow:run_main_window"
+regen = "hordeqt_py.build:convert_uic_files"
 
 [build-system]
 requires = ["poetry-core"]

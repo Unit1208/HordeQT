@@ -1,44 +1,20 @@
 from classes import LocalJob
-
-# This Python file uses the following encoding: utf-8
-import datetime as dt
-import tempfile
-import human_readable as hr
-from pathlib import Path
-import json
-import os
-import random
-import sys
-import time
-from typing import List, Dict, Optional, Self, Type
+from typing import List
 from PySide6.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QLineEdit,
     QWidget,
     QSizePolicy,
     QLabel,
-    QScrollArea,
     QLayout,
     QLayoutItem,
-    QTableWidgetItem,
     QVBoxLayout,
 )
 from PySide6.QtCore import (
-    QObject,
-    QThread,
     Signal,
-    QTimer,
-    QStandardPaths,
     Qt,
-    QUrl,
     QSize,
     QRect,
 )
-from pyqttoast import Toast, ToastPreset, toast_enums
-from PySide6.QtGui import QPixmap, QDesktopServices, QFont, QClipboard
-
-from queue import Queue
+from PySide6.QtGui import QPixmap
 import logging
 import coloredlogs
 

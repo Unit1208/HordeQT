@@ -52,8 +52,6 @@ LOGGER = logging.getLogger("HordeQT")
 coloredlogs.install("DEBUG", milliseconds=True)
 
 
-
-
 class APIManagerThread(QThread):
     job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
     updated = Signal()
@@ -462,14 +460,24 @@ class MainWindow(QMainWindow):
             LOGGER.debug("API key loaded from keyring")
         else:
             self.api_key = ANON_API_KEY
+            LOGGER.debug("API key not loaded, using anon key")
+        if self.api_key == ANON_API_KEY:
             self.show_warn_toast(
                 "Anonymous API key",
                 "Warning: No API key set. Large generations may fail, and images will take a long time to generate",
             )
-            LOGGER.debug("API key not loaded, using anon key")
         self.loading_thread = LoadThread(self.api_key)
         self.hide_api_key()
+        LOGGER.debug("Updating generate frame")
+        sizePolicy = QSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+        self.ui.frame.setSizePolicy(sizePolicy)
+        self.ui.scrollArea.setSizePolicy(sizePolicy)
+        self.ui.scrollArea.setWidgetResizable(True)
+
         LOGGER.debug("Showing main window")
+
         self.show()
         LOGGER.debug("Setting saved values on UI")
         self.ui.maxJobsSpinBox.setValue(self.savedData.max_jobs)
@@ -528,9 +536,6 @@ class MainWindow(QMainWindow):
         self.last_job_config: Optional[Dict] = None
         self.job_history: List[Dict] = []
         LOGGER.debug("Initializing Masonry/Gallery layout")
-        sizePolicy = QSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
-        )
         self.ui.galleryViewFrame.setSizePolicy(sizePolicy)
         container_layout = QVBoxLayout(self.ui.galleryViewFrame)
         scroll_area = QScrollArea()
@@ -546,7 +551,6 @@ class MainWindow(QMainWindow):
         scroll_area.setWidget(self.gallery_container)
         container_layout.addWidget(scroll_area)
         self.ui.galleryViewFrame.setLayout(container_layout)
-        #
 
         LOGGER.debug("Setting up toasts")
         Toast.setAlwaysOnMainScreen(True)
