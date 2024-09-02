@@ -1,4 +1,4 @@
-name: Build Application
+name: Build Application (Windows)
 
 on:
   push:
@@ -8,11 +8,10 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.11,3.12]
+        python-version: [3.11]
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -24,18 +23,12 @@ jobs:
 
       - name: Install Poetry
         run: |
-          if [ "${{ runner.os }}" == "Windows" ]; then
-            curl -sSL https://install.python-poetry.org | python -
-          else
             curl -sSL https://install.python-poetry.org | python3 -
-          fi
 
       - name: Cache Poetry dependencies
         uses: actions/cache@v3
         with:
           path: |
-            ~/.cache/pypoetry
-            ~/.virtualenvs
             C:\Users\runneradmin\AppData\Local\pypoetry\Cache
             C:\Users\runneradmin\AppData\Local\pypoetry\Virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
@@ -44,29 +37,21 @@ jobs:
 
       - name: Install dependencies
         run: |
-          if [ "${{ runner.os }}" == "Windows" ]; then
-            set PATH=C:\Users\runneradmin\.local\bin;%PATH%
-            poetry install
-          else
-            export PATH="$HOME/.local/bin:$PATH"
-            poetry install
-          fi
+          set PATH=C:\Users\runneradmin\.local\bin;%PATH%
+          poetry install
+
 
       - name: Build application
         run: |
-          if [ "${{ runner.os }}" == "Windows" ]; then
-            set PATH=C:\Users\runneradmin\.local\bin;%PATH%
-            poetry run build
-          else
-            export PATH="$HOME/.local/bin:$PATH"
-            poetry run build
-          fi
+
+          set PATH=C:\Users\runneradmin\.local\bin;%PATH%
+          poetry run build
+
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: mainwindow-${{ matrix.os }}
+          name: HordeQT.exe
           path: |
             hordeqt_py/dist/mainwindow.exe
-            hordeqt_py/dist/mainwindow.bin
           if-no-files-found: ignore
