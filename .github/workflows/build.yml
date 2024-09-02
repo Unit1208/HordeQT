@@ -1,0 +1,171 @@
+name: Build all versions
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+
+      - name: Install dependencies
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry install
+          sudo apt-get update && sudo apt-get install -y ccache libpython3-dev
+
+      - name: Build application
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: HordeQt-Linux
+          path: |
+            hordeqt_py/dist/mainwindow.bin
+          if-no-files-found: ignore
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+
+      - name: Install dependencies
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry install
+
+      - name: Build application
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: HordeQt-macos
+          path: |
+            hordeqt_py/dist/mainwindow.bin
+          if-no-files-found: ignore
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+
+      - name: Install dependencies
+        run: |
+          $env:PATH =C:\Users\runneradmin\.local\bin;$env:PATH
+          poetry install
+
+      - name: Build application
+        run: |
+          $env:PATH =C:\Users\runneradmin\.local\bin;$env:PATH
+          poetry run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: HordeQt.exe
+          path: |
+            hordeqt_py/dist/mainwindow.exe
+          if-no-files-found: ignore
+
+  bump_version:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Bump version and push tag
+        id: bump_version
+        uses: einaregilsson/semver-tag-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create_release:
+    needs: bump_version
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get version
+        id: get_version
+        run: echo "VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux Artifact to Release
+        uses: actions/upload-release-asset@v3
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: HordeQt-Linux
+          asset_name: HordeQt-Linux
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS Artifact to Release
+        uses: actions/upload-release-asset@v3
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: HordeQt-macos
+          asset_name: HordeQt-macos
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows Artifact to Release
+        uses: actions/upload-release-asset@v3
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: HordeQt.exe
+          asset_name: HordeQt.exe
+          asset_content_type: application/octet-stream
