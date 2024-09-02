@@ -9,49 +9,35 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        python-version: [3.11]
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.11
 
       - name: Install Poetry
         run: |
             curl -sSL https://install.python-poetry.org | python3 -
 
-      - name: Cache Poetry dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            C:\Users\runneradmin\AppData\Local\pypoetry\Cache
-            C:\Users\runneradmin\AppData\Local\pypoetry\Virtualenvs
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-
       - name: Install dependencies
         run: |
-          set PATH=C:\Users\runneradmin\.local\bin;%PATH%
+          $env:PATH =C:\Users\runneradmin\.local\bin;$env:PATH
           poetry install
 
 
       - name: Build application
         run: |
-
-          set PATH=C:\Users\runneradmin\.local\bin;%PATH%
+          $env:PATH =C:\Users\runneradmin\.local\bin;$env:PATH
           poetry run build
 
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: HordeQT.exe
+          name: HordeQt.exe
           path: |
             hordeqt_py/dist/mainwindow.exe
           if-no-files-found: ignore

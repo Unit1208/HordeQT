@@ -1,4 +1,4 @@
-name: Build Application (Linux)
+name: Build Application (Macos)
 
 on:
   push:
@@ -8,8 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-
+    runs-on: macos-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v3
@@ -23,11 +22,14 @@ jobs:
         run: |
           curl -sSL https://install.python-poetry.org | python -
 
+
+      - name: Cache Poetry dependencies
+
       - name: Install dependencies
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           poetry install
-          sudo apt-get update && sudo apt-get install -y ccache libpython3-dev
+
       - name: Build application
         run: |
           export PATH="$HOME/.local/bin:$PATH"
@@ -36,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: HordeQt-Linux
+          name: HordeQt-macos
           path: |
             hordeqt_py/dist/mainwindow.bin
           if-no-files-found: ignore

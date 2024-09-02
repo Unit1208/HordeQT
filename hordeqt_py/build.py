@@ -31,7 +31,10 @@ def main():
         "--noinclude-qt-translations",
         "--remove-output",
         "--enable-plugin=pyside6",
+        "--macos-create-app-bundle",
         f"--linux-icon={iconpath}",
+        f"--macos-app-icon={iconpath}"
+        f"--windows-icon-from-ico={iconpath}",
         f"--output-dir={current_dir / 'dist'}",
         str(entry_script),
     ]
