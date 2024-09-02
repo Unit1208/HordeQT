@@ -1,4 +1,0 @@
-mypy
-types-requests
-black
-autopep8

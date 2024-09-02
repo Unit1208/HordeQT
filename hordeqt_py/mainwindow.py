@@ -49,16 +49,13 @@ from ui_form import Ui_MainWindow
 
 import keyring
 import requests
-from util import create_uuid,get_headers,prompt_matrix
-from classes import Job,LocalJob,Model, apply_metadata_to_image
+from util import create_uuid, get_headers, prompt_matrix
+from classes import Job, LocalJob, Model, apply_metadata_to_image
+
 ANON_API_KEY = "0000000000"
 BASE_URL = "https://aihorde.net/api/v2/"
 LOGGER = logging.getLogger("HordeQT")
 coloredlogs.install("DEBUG", milliseconds=True)
-
-
-
-
 
 
 class ImageWidget(QLabel):
@@ -380,7 +377,7 @@ class APIManagerThread(QThread):
                 time.time() - self.status_rl_reset
             ) > 0 and self.status_rl_remaining > 0:
 
-                lj = LocalJob(job,SAVED_IMAGE_DIR_PATH)
+                lj = LocalJob(job, SAVED_IMAGE_DIR_PATH)
                 try:
                     r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
                     if r.status_code == 429:
@@ -473,19 +470,17 @@ class DownloadThread(QThread):
             ncd = []
         else:
             cd: List[dict] = cd
-            ncd = [LocalJob.deserialize(x,SAVED_IMAGE_DIR_PATH) for x in cd]
+            ncd = [LocalJob.deserialize(x, SAVED_IMAGE_DIR_PATH) for x in cd]
         if (qd := value.get("queued_downloads", None)) is None:
             nqd = []
         else:
             qd: List[dict] = qd
-            nqd = [LocalJob.deserialize(x,SAVED_IMAGE_DIR_PATH) for x in qd]
+            nqd = [LocalJob.deserialize(x, SAVED_IMAGE_DIR_PATH) for x in qd]
         return cls(completed_downloads=ncd, queued_downloads=nqd)
 
     def stop(self):
         self.running = False
         self.wait()
-
-
 
 
 class LoadThread(QThread):
@@ -702,7 +697,7 @@ class MainWindow(QMainWindow):
 
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None
-        self.job_history:List[Dict]=[]
+        self.job_history: List[Dict] = []
         LOGGER.debug("Initializing Masonry/Gallery layout")
         sizePolicy = QSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
@@ -1279,7 +1274,9 @@ class MainWindow(QMainWindow):
             )
 
 
-if __name__ == "__main__":
+def run_main_window():
+    #I don't care.
+    global app,SAVED_DATA_DIR_PATH,SAVED_DATA_PATH,SAVED_IMAGE_DIR_PATH
     app = QApplication(sys.argv)
     app.setApplicationName("Horde QT")
     app.setOrganizationName("Unit1208")
