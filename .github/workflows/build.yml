@@ -33,13 +33,12 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           poetry run build
-          ls ./hordeqt_py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: HordeQt-Linux
-          path: ./hordeqt_py/__main__.bin
+          path: ./hordeqt_py/HordeQT.bin
 
   build-macos:
     runs-on: macos-latest
@@ -65,13 +64,12 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           poetry run build
-          ls ./hordeqt_py
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: HordeQt-macos
-          path: hordeqt_py/__main__.app
+          path: hordeqt_py/HordeQT.app
 
   build-windows:
     runs-on: windows-latest
@@ -99,12 +97,11 @@ jobs:
         run: |
           $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
           & "$env:APPDATA\Python\Scripts\poetry" run build
-          dir hordeqt_py
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: HordeQt.exe
-          path: hordeqt_py/__main__.exe
+          path: hordeqt_py/HordeQT.exe
 
 
   create_release:
