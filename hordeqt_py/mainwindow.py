@@ -1275,8 +1275,8 @@ class MainWindow(QMainWindow):
 
 
 def run_main_window():
-    #I don't care.
-    global app,SAVED_DATA_DIR_PATH,SAVED_DATA_PATH,SAVED_IMAGE_DIR_PATH
+    # I don't care.
+    global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH
     app = QApplication(sys.argv)
     app.setApplicationName("Horde QT")
     app.setOrganizationName("Unit1208")

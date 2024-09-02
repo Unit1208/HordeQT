@@ -8,13 +8,13 @@ from PySide6.QtWidgets import QDialog, QWidget
 
 
 class PromptItem(QWidget):
-    def __init__(self, parent: Optional[QWidget],name:str,value:str) -> None:
+    def __init__(self, parent: Optional[QWidget], name: str, value: str) -> None:
         super().__init__(parent)
         self.ui: PromptItemWidget = PromptItemWidget()
         self.ui.setupUi(self)
         self.ui.fieldLineEdit.setText(name)
         self.ui.plainTextEdit.setPlainText(value)
-        
+
 
 class PromptLibrary(QDialog):
     def __init__(self, parent: Optional[QWidget], f: Qt.WindowType) -> None:
@@ -23,4 +23,4 @@ class PromptLibrary(QDialog):
         self.ui.setupUi(self)
 
     def add_item(self, ui_type: str, ui_value: str):
-        self.ui.verticalLayout.addWidget(PromptItem(None,ui_type,ui_value))        
+        self.ui.verticalLayout.addWidget(PromptItem(None, ui_type, ui_value))

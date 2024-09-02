@@ -1,4 +1,3 @@
-
 import json
 from pathlib import Path
 import time
@@ -207,11 +206,12 @@ class LocalJob:
         lj = cls(Job.deserialize(job), base)
         lj.completed_at = value.get("completed_at", time.time())
         lj.worker_name = value.get("worker_name", "Unknown")
-        lj.worker_id = value.get(
-            "worker_id", "00000000-0000-0000-0000-000000000000")
+        lj.worker_id = value.get("worker_id", "00000000-0000-0000-0000-000000000000")
         lj.file_type = value.get("fileType", "webp")
         lj.update_path()
         return lj
+
+
 def apply_metadata_to_image(path: Path, lj: LocalJob) -> Path:
     im = Image.open(path)
 

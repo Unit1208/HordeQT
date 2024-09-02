@@ -1,10 +1,8 @@
-
 import json
 import re
 from typing import List
 import uuid
 from pathlib import Path
-
 
 
 def create_uuid():

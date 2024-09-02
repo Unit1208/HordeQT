@@ -1,7 +1,8 @@
 from ui_modelinfo import Ui_Dialog
 from PySide6.QtWidgets import QDialog
+
+
 class ModelPopup(QDialog):
-    
 
     def __init__(self, data: dict, parent=None):
         super().__init__(parent)

@@ -7,8 +7,6 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
-mypy = "^1.11.2"
-types-requests = "^2.32.0.20240712"
 black = "^24.8.0"
 autopep8 = "^2.3.1"
 pyside6 = "^6.7.2"
@@ -23,6 +21,10 @@ pillow = "^10.4.0"
 coloredlogs = "^15.0.1"
 colorama = "^0.4.6"
 
+[tool.poetry.scripts]
+
+build = "hordeqt_py.build:main"
+main = "hordeqt_py.mainwindow:run_main_window"
 
 [build-system]
 requires = ["poetry-core"]
