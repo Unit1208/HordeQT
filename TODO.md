@@ -30,6 +30,7 @@
 - [x] Undo reset button
 - [ ] Prompt/Config History
 - [ ] Figure out why closing takes so long
+- [ ] Figure out why opening takes so long
 - [ ] Reload button for user details
 - [ ] Preview kudos cost
 - [ ] Toggle for done jobs
@@ -47,6 +48,8 @@
 - [ ] Use retry-after header
 - [ ] Disable table editing
 - [ ] Double click table entry to jump to location in gallery and open popup
+- [ ] Allow sorting queued table by creation time or filter by a certain metric
+  - [See pythonguis.com](https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/)
 - [ ] Sort options on gallery.
 - [ ] Move loading images to load_thread
 - [ ] Resize images to fit screen on popup

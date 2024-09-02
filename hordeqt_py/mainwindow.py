@@ -258,14 +258,20 @@ class APIManagerThread(QThread):
 class DownloadThread(QThread):
     completed_downloads: List[LocalJob]
     queued_downloads: List[LocalJob]
+    queued_deletes: List[LocalJob]
     completed = Signal(LocalJob)
 
     def __init__(
-        self, queued_downloads=[], completed_downloads=[], parent=None
+        self,
+        queued_downloads=[],
+        completed_downloads=[],
+        queued_deletes=[],
+        parent=None,
     ) -> None:
         super().__init__(parent)
         self.queued_downloads = queued_downloads
         self.completed_downloads = completed_downloads
+        self.queued_deletes = queued_deletes
         self.running = True
 
     def add_dl(self, local_job: LocalJob):
@@ -283,12 +289,27 @@ class DownloadThread(QThread):
                 LOGGER.debug(f"{lj.id} downloaded")
                 self.completed.emit(lj)
                 self.completed_downloads.append(lj)
-            time.sleep(1)
+            if len(self.queued_deletes) > 0:
+                lj = self.queued_deletes.pop()
+                LOGGER.info(f"Deleting {lj.id}")
+                try:
+                    self.completed_downloads.remove(lj)
+                except ValueError as e:
+                    LOGGER.warn(f"Failed to delete {lj.id}")
+                if os.path.exists(lj.path):
+                    if lj.path.is_file():
+                        lj.path.unlink()
+                    else:
+                        LOGGER.warn(
+                            f'Path referred to by {lj.id} ("{lj.path}") is a directory'
+                        )
+            time.sleep(0.1)
 
     def serialize(self):
         return {
             "completed_downloads": [x.serialize() for x in self.completed_downloads],
             "queued_downloads": [x.serialize() for x in self.queued_downloads],
+            "queued_deletes": [x.serialize() for x in self.queued_deletes],
         }
 
     @classmethod
@@ -298,16 +319,24 @@ class DownloadThread(QThread):
         else:
             cd: List[dict] = cd
             ncd = [LocalJob.deserialize(x, SAVED_IMAGE_DIR_PATH) for x in cd]
-        if (qd := value.get("queued_downloads", None)) is None:
+        if (qdl := value.get("queued_downloads", None)) is None:
+            nqdl = []
+        else:
+            qdl: List[dict] = qdl
+            nqdl = [LocalJob.deserialize(x, SAVED_IMAGE_DIR_PATH) for x in qdl]
+        if (qd := value.get("queued_deletes", None)) is None:
             nqd = []
         else:
             qd: List[dict] = qd
             nqd = [LocalJob.deserialize(x, SAVED_IMAGE_DIR_PATH) for x in qd]
-        return cls(completed_downloads=ncd, queued_downloads=nqd)
+        return cls(completed_downloads=ncd, queued_downloads=nqdl, queued_deletes=nqd)
 
     def stop(self):
         self.running = False
         self.wait()
+
+    def delete_image(self, image: LocalJob):
+        self.queued_deletes.append(image)
 
 
 class LoadThread(QThread):
@@ -454,9 +483,11 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
         LOGGER.debug("UI setup")
         self.restore_job_config(self.savedData.job_config)
-        if (k := keyring.get_password("HordeQT", "HordeQTUser")) is not None:
-            self.ui.apiKeyEntry.setText(k)
-            self.api_key = k
+        if (
+            k := keyring.get_password("HordeQT", "HordeQTUser")
+        ) is not None and k.strip() != "":
+            self.ui.apiKeyEntry.setText(k.strip())
+            self.api_key = k.strip()
             LOGGER.debug("API key loaded from keyring")
         else:
             self.api_key = ANON_API_KEY
@@ -665,6 +696,16 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, popup)
         popup.show()
 
+    def delete_image(self, lj: LocalJob):
+        lj.update_path()
+        if not lj.path.exists():
+            self.show_warn_toast(
+                "Deleting image failed",
+                "Image path couldn't be found, can't delete image.",
+            )
+        self.gallery_container.m_layout.delete_image(lj.id)
+        self.gallery_container.m_layout.updateGeometry()
+        self.download_thread.delete_image(lj)
     def on_fully_loaded(self):
         LOGGER.info("Fully loaded")
         self.ui.GenerateButton.setEnabled(True)
@@ -956,7 +997,12 @@ class MainWindow(QMainWindow):
             for n in range(len(jobs)):
                 self.api_thread.add_job(jobs[n])
                 LOGGER.debug(f"Added job {jobs[n].job_id}")
-            self.show_success_toast("Created!", "Jobs were created and put into queue")
+            self.show_success_toast(
+                "Created!",
+                str(len(jobs))
+                + (" Job was" if len(jobs) == 1 else " Jobs were")
+                + " created and put into queue",
+            )
 
     def save_api_key(self):
         self.hide_api_key()

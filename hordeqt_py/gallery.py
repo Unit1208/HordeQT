@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QVBoxLayout,
     QWidget,
+    QPlainTextEdit,
 )
 
 LOGGER = logging.getLogger("HordeQT")
@@ -65,15 +66,52 @@ class ImageWidget(QLabel):
         super().mouseReleaseEvent(ev)
 
 
+class ImageDetailsPopup(QDockWidget):
+    def __init__(self, lj: LocalJob, parent):
+        super().__init__(f"Image details for {lj.id}", parent)
+        self._parent = parent
+        self.setAllowedAreas(
+            Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        self.lj = lj
+        self.info_widget = QPlainTextEdit(self)
+        self.info_widget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
+        self.info_widget.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextBrowserInteraction
+        )
+        self.info_widget.setPlainText(self.lj.pretty_format())
+        layout = QVBoxLayout()
+        layout.addWidget(self.info_widget)
+        widget = QWidget()
+        widget.setLayout(layout)
+        self.setWidget(widget)
+        self.setFloating(True)
+
+
 class ImagePopup(QDockWidget):
     def copy_prompt(self):
         LOGGER.debug(f"Copying prompt for {self.lj.id}")
         self._parent.clipboard.setText(self.lj.original.prompt)
 
-    def copy_all(self):
-        pass
+    def delete_image(self):
+        LOGGER.debug(f"Deleting image {self.lj.id}")
+        self._parent.delete_image(self.lj)
+        self.close()
 
-    # TODO: Implement buttons - Signal for each.
+    def copy_all(self):
+        LOGGER.debug(f"Copying all details for {self.lj.id}")
+
+        self._parent.clipboard.setText(self.lj.pretty_format())
+
+    def open_details(self):
+        LOGGER.debug(f"Opening details for {self.lj.id}")
+        popup = ImageDetailsPopup(self.lj, self._parent)
+        self._parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, popup)
+        popup.show()
+
+    # TODO: Implement buttons for use_*.  Signal for each.
     def __init__(self, pixmap: QPixmap, lj: LocalJob, parent):
         super().__init__("Image Viewer", parent)
         self._parent = parent
@@ -95,7 +133,11 @@ class ImagePopup(QDockWidget):
         copy_prompt = QPushButton("Copy Prompt")
         copy_prompt.clicked.connect(self.copy_prompt)
         copy_all = QPushButton("Copy All")
+        copy_all.clicked.connect(self.copy_all)
         show_details = QPushButton("Show Details")
+        show_details.clicked.connect(self.open_details)
+        delete_image = QPushButton("Delete Image")
+        delete_image.clicked.connect(self.delete_image)
 
         # Create horizontal layouts for button pairs
         copy_layout = QHBoxLayout()
@@ -112,6 +154,7 @@ class ImagePopup(QDockWidget):
         layout.addLayout(copy_layout)
         layout.addLayout(use_layout)
         layout.addWidget(show_details)
+        layout.addWidget(delete_image)
 
         # Create a central widget to set the layout
         widget = QWidget()
@@ -170,6 +213,19 @@ class MasonryLayout(QLayout):
             width - (self.num_columns - 1) * self.m_spacing
         ) // self.num_columns
         self.column_heights = [0] * self.num_columns
+
+    def delete_image(self, id: str):
+        index = -1
+        for i in range(len(self.items)):
+
+            widget: ImageWidget = self.items[i].widget()  # type: ignore
+            if id == widget.lj.id:
+                index = i
+                break
+        if index == -1:
+            LOGGER.warn(f"Image couldn't be found in gallery.")
+            return
+        del self.items[index]
 
     def arrangeItems(self):
         x_offsets = [

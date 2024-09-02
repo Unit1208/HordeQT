@@ -185,6 +185,32 @@ class LocalJob:
         self.base = base
         self.update_path()
 
+    def pretty_format(self) -> str:
+        _prompt = self.original.prompt
+        k = _prompt.split("###")
+        prompt = "Error while formatting prompt"
+        neg_prompt = "No negative prompt"
+        if len(k) == 2:
+            prompt = k[0]
+            neg_prompt = k[1]
+        else:
+            prompt = k[0]
+            neg_prompt = False
+        b = [
+            f"Prompt: {prompt}",
+            (
+                f"Negative Prompt: {neg_prompt}"
+                if neg_prompt
+                else "" f"Model: {self.original.model}"
+            ),
+            f"Steps: {self.original.steps}",
+            f"Sampler: {self.original.sampler_name}",
+            f"Guidence: {self.original.cfg_scale}",
+            f"CLIP Skip: {self.original.clip_skip}",
+            f"Size: {self.original.width} x {self.original.height} (WxH)",
+        ]
+        return "\n".join(b)
+
     def update_path(self):
 
         self.path = (self.base / self.id).with_suffix("." + self.file_type)
