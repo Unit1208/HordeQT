@@ -706,6 +706,7 @@ class MainWindow(QMainWindow):
         self.gallery_container.m_layout.delete_image(lj.id)
         self.gallery_container.m_layout.updateGeometry()
         self.download_thread.delete_image(lj)
+
     def on_fully_loaded(self):
         LOGGER.info("Fully loaded")
         self.ui.GenerateButton.setEnabled(True)
@@ -971,6 +972,7 @@ class MainWindow(QMainWindow):
         self.model_dict = model_dict
 
     def get_available_models(self) -> List[Model]:
+        # TODO: move to separate thread
         r = requests.get(
             BASE_URL + "status/models",
             params={"type": "image", "min_count": 1, "model_state": "all"},
@@ -1105,6 +1107,7 @@ class MainWindow(QMainWindow):
             )  # This ensures a fallback to a common monospace font
             item.setFont(font)
             item.setText(value)
+            item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
         table.resizeColumnsToContents()
         # self.ui.groupBox_2.resize()
         table.setSortingEnabled(True)

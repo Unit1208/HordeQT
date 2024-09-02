@@ -46,7 +46,7 @@
 - [ ] When saving/Loading current state, trim off model worker count and match by that when loading.
 - [x] Use actual rate limit values returned by API calls instead of tracking it manually
 - [ ] Use retry-after header
-- [ ] Disable table editing
+- [x] Disable table editing
 - [ ] Double click table entry to jump to location in gallery and open popup
 - [ ] Allow sorting queued table by creation time or filter by a certain metric
   - [See pythonguis.com](https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/)
