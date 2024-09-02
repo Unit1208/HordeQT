@@ -23,5 +23,4 @@ class PromptLibrary(QDialog):
         self.ui.setupUi(self)
 
     def add_item(self, ui_type: str, ui_value: str):
-        # self.ui.scrollAreaWidgetContents
         self.ui.verticalLayout.addWidget(PromptItem(None,ui_type,ui_value))        
