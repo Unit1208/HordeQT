@@ -76,40 +76,40 @@ jobs:
             hordeqt_py/dist/mainwindow.bin
           if-no-files-found: ignore
 
-    build-windows:
-      runs-on: windows-latest
+  build-windows:
+    runs-on: windows-latest
 
-      steps:
-        - name: Check out repository
-          uses: actions/checkout@v3
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
 
-        - name: Set up Python 3.11
-          uses: actions/setup-python@v4
-          with:
-            python-version: 3.11
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
 
-        - name: Install Poetry
-          run: |
-            Invoke-WebRequest -Uri https://install.python-poetry.org -OutFile install-poetry.py
-            python install-poetry.py
+      - name: Install Poetry
+        run: |
+          Invoke-WebRequest -Uri https://install.python-poetry.org -OutFile install-poetry.py
+          python install-poetry.py
 
-        - name: Install dependencies
-          run: |
-            $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
-            & "$env:APPDATA\Python\Scripts\poetry" install
+      - name: Install dependencies
+        run: |
+          $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
+          & "$env:APPDATA\Python\Scripts\poetry" install
 
-        - name: Build application
-          run: |
-            $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
-            & "$env:APPDATA\Python\Scripts\poetry" run build
+      - name: Build application
+        run: |
+          $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
+          & "$env:APPDATA\Python\Scripts\poetry" run build
 
-        - name: Upload artifact
-          uses: actions/upload-artifact@v3
-          with:
-            name: HordeQt.exe
-            path: |
-              hordeqt_py/dist/mainwindow.exe
-            if-no-files-found: ignore
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: HordeQt.exe
+          path: |
+            hordeqt_py/dist/mainwindow.exe
+          if-no-files-found: ignore
 
 
   bump_version:
