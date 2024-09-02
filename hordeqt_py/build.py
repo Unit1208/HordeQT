@@ -52,11 +52,13 @@ def main():
         "--noinclude-qt-translations",
         "--remove-output",
         "--enable-plugin=pyside6",
-        "--macos-create-app-bundle",
+        "--include-qt-plugins=accessiblebridge,platforminputcontexts,platforms/darwin",
         f"--linux-icon={iconpath}",
+        "--macos-create-app-bundle",
         f"--macos-app-icon={iconpath}",
         f"--windows-icon-from-ico={iconpath}",
         f"--output-dir={current_dir / 'dist'}",
+        "--assume-yes-for-downloads",
         str(entry_script),
     ]
     subprocess.run(command, check=True)
