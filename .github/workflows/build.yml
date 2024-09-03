@@ -155,7 +155,7 @@ jobs:
   create_release:
     needs: [build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
-
+    permissions: write-all
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
