@@ -1,0 +1,199 @@
+name: Build all versions
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Cache ccache
+        uses: actions/cache@v3
+        with:
+          path: ~/.ccache
+          key: ${{ runner.os }}-ccache-${{ hashFiles('**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+
+      - name: Install dependencies
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry install
+          sudo apt-get update && sudo apt-get install -y ccache libpython3-dev
+
+      - name: Build application
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HordeQt-Linux
+          path: ./hordeqt_py/HordeQT.bin
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Cache ccache
+        uses: actions/cache@v3
+        with:
+          path: ~/.ccache
+          key: ${{ runner.os }}-ccache-${{ hashFiles('**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+
+      - name: Install dependencies
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry install
+
+      - name: Build application
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          poetry run build
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HordeQt-macos
+          path: hordeqt_py/HordeQT.app
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v3
+        with:
+          path: C:\Users\runneradmin\AppData\Local\pypoetry\Cache\virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Cache ccache
+        uses: actions/cache@v3
+        with:
+          path: C:\Users\runneradmin\.ccache
+          key: ${{ runner.os }}-ccache-${{ hashFiles('**/*') }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-
+
+      - name: Install Poetry
+        run: |
+          Invoke-WebRequest -Uri https://install.python-poetry.org -OutFile install-poetry.py
+          python install-poetry.py
+
+      - name: Install dependencies
+        run: |
+          $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
+          & "$env:APPDATA\Python\Scripts\poetry" install
+
+      - name: Build application
+        run: |
+          $env:PATH = "C:\Users\runneradmin\.local\bin;$env:PATH"
+          & "$env:APPDATA\Python\Scripts\poetry" run build
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HordeQt.exe
+          path: hordeqt_py/__main__.exe
+
+
+  create_release:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: get_version
+        run: echo "VERSION=$(git rev-parse --verify HEAD --short)" >> $GITHUB_ENV
+
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ env.VERSION }}
+          name: Release ${{ env.VERSION }}
+          draft: false
+          prerelease: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Linux Artifact to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: HordeQt.bin
+          asset_name: HordeQt Linux
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS Artifact to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: HordeQt.app
+          asset_name: HordeQt MacOS
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows Artifact to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: HordeQt.exe
+          asset_name: HordeQt Windows
+          asset_content_type: application/octet-stream
