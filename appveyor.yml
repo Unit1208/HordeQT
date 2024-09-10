@@ -15,7 +15,7 @@ install:
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
         sudo apt-get update
-        sudo apt-get install -y python3 ccache libpython3-dev pipx
+        sudo apt-get install -y python3.11 ccache libpython3-dev pipx
         pipx ensurepath
         pipx install poetry
         /home/appveyor/.local/bin/poetry install
@@ -24,7 +24,7 @@ install:
 
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'MacOS') {
-        brew install python pipx
+        brew install python@3.11 pipx
         pipx ensurepath
         curl -sSL https://install.python-poetry.org | python3 -
         /Users/appveyor/.local/bin/poetry install
@@ -39,7 +39,8 @@ install:
         scoop install main/pipx
         pipx ensurepath
         pipx install poetry
-        & "$env:APPDATA\Python\Scripts\poetry" run build
+        & "$env:APPDATA\Python\Scripts\poetry.exe" run build
+
 
       }
 
@@ -59,7 +60,8 @@ build_script:
 
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2022') {
-        & "$env:APPDATA\Python\Scripts\poetry" run build
+        & "$env:APPDATA\Python\Scripts\poetry.exe" run build
+
       }
   # Conditional artifact pushing
   - ps: |
