@@ -45,15 +45,18 @@ build_script:
   # Build the project using poetry
   - poetry run build
 
+  # Conditional artifact pushing
+  - ps: |
+      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
+        appveyor PushArtifact "hordeqt_py/HordeQT.bin" -FileName "HordeQT-Linux.bin"
+      } elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'macos-12') {
+        appveyor PushArtifact "hordeqt_py/HordeQT.app" -FileName "HordeQT-Mac.app"
+      } elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -match 'Visual Studio') {
+        appveyor PushArtifact "horde_qt\\__main__.exe" -FileName "HordeQT-Windows.exe"
+      }
+
 artifacts:
+  # Placeholder in case automatic artifact pushing is not triggered.
   - path: hordeqt_py/HordeQT.bin
-    name: Linux-Build
-    condition: APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204'
-
   - path: hordeqt_py/HordeQT.app
-    name: MacOS-Build
-    condition: APPVEYOR_BUILD_WORKER_IMAGE -eq 'macos-12'
-
   - path: horde_qt\__main__.exe
-    name: Windows-Build
-    condition: APPVEYOR_BUILD_WORKER_IMAGE -match 'Visual Studio'
