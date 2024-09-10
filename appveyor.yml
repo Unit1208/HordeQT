@@ -69,7 +69,7 @@ build_script:
   # Conditional artifact pushing
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
-        appveyor PushArtifact "hordeqt_py/HordeQT.bin" -FileName "HordeQT-Linux.bin"
+        appveyor PushArtifact "hordeqt_py/__main__.bin" -FileName "HordeQT-Linux.bin"
       } elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'macos-12') {
         appveyor PushArtifact "hordeqt_py/HordeQT.app" -FileName "HordeQT-Mac.app"
       } elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -match 'Visual Studio') {
@@ -78,6 +78,6 @@ build_script:
 
 artifacts:
   # Placeholder in case automatic artifact pushing is not triggered.
-  - path: hordeqt_py/HordeQT.bin
+  - path: hordeqt_py/__main__.bin
   - path: hordeqt_py/HordeQT.app
   - path: horde_qt\__main__.exe
