@@ -12,7 +12,6 @@ platform:
 
 # Install dependencies
 install:
-  - pipx install poetry
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
         sudo apt-get update
