@@ -15,7 +15,7 @@ install:
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
         sudo apt-get update
-        sudo apt-get install -y python3.12 ccache libpython3.12-dev pipx
+        sudo apt-get install -y python3.11 ccache libpython3.11-dev pipx
         pipx ensurepath
         pipx install poetry
         /home/appveyor/.local/bin/poetry install
@@ -40,9 +40,13 @@ install:
         pipx ensurepath
         pipx install poetry
         
-        $poetryPath = (pipx list --json | ConvertFrom-Json).venvs.poetry.bin_path
-        & "$poetryPath\poetry.exe" run build
+        # Locate where poetry.exe is installed
+        $poetryPath = (where.exe poetry) -replace "`r`n", ""
+        
+        # Run poetry build
+        & "$poetryPath" run build
       }
+
 
 
 build_script:
