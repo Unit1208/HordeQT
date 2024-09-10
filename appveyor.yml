@@ -3,39 +3,29 @@
 version: 1.0.{build}
 
 image:
-  - Visual Studio 2022
-  - macos-12
   - Ubuntu2204
+  - Visual Studio 2022
+  - MacOS
 
 platform:
   - x64
-
-environment:
-  global:
-    PYTHON_VERSION: 3.11
 
 # Install dependencies
 install:
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
         sudo apt-get update
-        sudo apt-get install -y ccache libpython3-dev
-        wget https://www.python.org/ftp/python/$env:PYTHON_VERSION/Python-$env:PYTHON_VERSION.tgz
-        tar -xzf Python-$env:PYTHON_VERSION.tgz
-        cd Python-$env:PYTHON_VERSION
-        ./configure --enable-optimizations
-        make
-        sudo make altinstall
+        sudo apt-get install -y python3 ccache libpython3-dev
       }
 
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'macos-12') {
-        brew install python@$env:PYTHON_VERSION
+        brew install python
       }
 
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2022') {
-        choco install python --version=$env:PYTHON_VERSION
+        choco install python
       }
 
   # Install Poetry
