@@ -15,7 +15,9 @@ install:
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
         sudo apt-get update
-        sudo apt-get install -y python3.11 ccache libpython3.11-dev pipx
+        sudo add-apt-repository ppa:deadsnakes/ppa -y
+        sudo apt update
+        sudo apt-get install -y python3.12 ccache libpython3.12-dev pipx
         pipx ensurepath
         pipx install poetry
         /home/appveyor/.local/bin/poetry install
@@ -39,12 +41,7 @@ install:
         scoop install main/pipx
         pipx ensurepath
         pipx install poetry
-        
-        # Locate where poetry.exe is installed
-        $poetryPath = (where.exe poetry) -replace "`r`n", ""
-        
-        # Run poetry build
-        & "$poetryPath" run build
+        pipx run poetry install
       }
 
 
@@ -65,7 +62,8 @@ build_script:
 
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2022') {
-        & "$env:APPDATA\Python\Scripts\poetry.exe" run build
+        pipx run poetry run build
+
 
       }
   # Conditional artifact pushing
