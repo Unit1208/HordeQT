@@ -1,0 +1,59 @@
+# AppVeyor CI configuration file
+
+version: 1.0.{build}
+
+image:
+  - Visual Studio 2022
+  - macos-12
+  - Ubuntu2204
+
+platform:
+  - x64
+
+environment:
+  global:
+    PYTHON_VERSION: 3.11
+
+# Install dependencies
+install:
+  - ps: |
+      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
+        sudo apt-get update
+        sudo apt-get install -y ccache libpython3-dev
+      }
+  - ps: Install-Module -Name 'Python' -Force -Scope CurrentUser
+  - ps: Install-Module -Name 'Poetry' -Force -Scope CurrentUser
+
+  - ps: |
+      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
+        wget https://www.python.org/ftp/python/$env:PYTHON_VERSION/Python-$env:PYTHON_VERSION.tgz
+        tar xzf Python-$env:PYTHON_VERSION.tgz
+        cd Python-$env:PYTHON_VERSION && ./configure --enable-optimizations && make && sudo make altinstall
+      } elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'macos-12') {
+        brew install python@$env:PYTHON_VERSION
+      } else {
+        choco install python --version=$env:PYTHON_VERSION
+      }
+
+  # Install Poetry
+  - curl -sSL https://install.python-poetry.org | python3 -
+
+  # Install project dependencies using poetry
+  - poetry install
+
+build_script:
+  # Build the project using poetry
+  - poetry run build
+
+artifacts:
+  - path: hordeqt_py/HordeQT.bin
+    name: Linux-Build
+    condition: APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204'
+
+  - path: hordeqt_py/HordeQT.app
+    name: MacOS-Build
+    condition: APPVEYOR_BUILD_WORKER_IMAGE -eq 'macos-12'
+
+  - path: horde_qt\__main__.exe
+    name: Windows-Build
+    condition: APPVEYOR_BUILD_WORKER_IMAGE -match 'Visual Studio'
