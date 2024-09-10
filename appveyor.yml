@@ -15,7 +15,7 @@ install:
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
         sudo apt-get update
-        sudo apt-get install -y python3.11 ccache python3-dev pipx
+        sudo apt-get install -y python3.11 ccache libpython3.11-dev pipx
         pipx ensurepath
         pipx install poetry
         /home/appveyor/.local/bin/poetry install
