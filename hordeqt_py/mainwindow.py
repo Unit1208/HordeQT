@@ -415,6 +415,7 @@ class SavedData:
         api: APIManagerThread,
         nsfw: bool,
         max_jobs: int,
+        save_metadata:bool,
         dlthread: DownloadThread,
         job_config: dict,
         share_images: bool,
@@ -430,6 +431,7 @@ class SavedData:
         self.max_jobs = max_jobs
         self.nsfw_allowed = nsfw
         self.share_images = share_images
+        self.save_metadata=save_metadata
         self.job_config = job_config
         self.current_open_tab = current_open_tab
         self.prefered_format = prefered_format
@@ -439,6 +441,7 @@ class SavedData:
             "api_state": self.api_state,
             "max_jobs": self.max_jobs,
             "nsfw_allowed": self.nsfw_allowed,
+            "save_metadata":self.save_metadata,
             "current_images": self.current_images,
             "queued_downloads": self.queued_downloads,
             "job_config": self.job_config,
@@ -459,6 +462,7 @@ class SavedData:
             j = dict()
         self.api_state = j.get("api_state", {})
         self.max_jobs = j.get("max_jobs", 5)
+        self.save_metadata=j.get("save_metadata",True)
         self.current_images = j.get("current_images", [])
         self.queued_downloads = j.get("queued_downloads", [])
         self.nsfw_allowed = j.get("nsfw_allowed", False)
@@ -514,6 +518,7 @@ class MainWindow(QMainWindow):
         self.ui.maxJobsSpinBox.setValue(self.savedData.max_jobs)
         self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
         self.ui.shareImagesCheckBox.setChecked(self.savedData.share_images)
+        self.ui.saveMetadataCheckBox.setChecked(self.savedData.save_metadata)
         self.ui.tabWidget.setCurrentIndex(self.savedData.current_open_tab)
         self.ui.saveFormatComboBox.setCurrentText(self.savedData.prefered_format)
         LOGGER.debug("Initializing API thread")
@@ -605,11 +610,12 @@ class MainWindow(QMainWindow):
             self.api_thread,
             self.ui.NSFWCheckBox.isChecked(),
             self.ui.maxJobsSpinBox.value(),
+            self.ui.saveMetadataCheckBox.isChecked(),
             self.download_thread,
             self.get_job_config(),
             self.ui.shareImagesCheckBox.isChecked(),
             self.ui.tabWidget.currentIndex(),
-            self.ui.saveFormatComboBox.currentText(),
+            self.ui.saveFormatComboBox.currentText()
         )
         LOGGER.debug("Writing saved data")
         self.savedData.write()
