@@ -12,25 +12,33 @@ platform:
 
 # Install dependencies
 install:
+  - pipx install poetry
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
         sudo apt-get update
-        sudo apt-get install -y python3 ccache libpython3-dev
-        curl -sSL https://install.python-poetry.org | python3 -
+        sudo apt-get install -y python3 ccache libpython3-dev pipx
+        pipx ensurepath
+        pipx install poetry
+        $env:PATH = "$HOME\.local\bin;$env:PATH"
+
       }
 
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'MacOS') {
-        brew install python
+        brew install python pipx
+        pipx ensurepath
         curl -sSL https://install.python-poetry.org | python3 -
-
+        $env:PATH = "$HOME\.local\bin;$env:PATH"
       }
 
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2022') {
-        choco install python
-        curl -sSL https://install.python-poetry.org | python -
-
+        scoop bucket add main
+        scoop install main/python
+        scoop install main/pipx
+        pipx ensurepath
+        pipx install poetry
+        $env:PATH = "$env:APPDATA\Python\Scripts;$env:PATH"
       }
 
   # Install project dependencies using poetry
