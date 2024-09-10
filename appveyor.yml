@@ -18,7 +18,7 @@ install:
         sudo apt-get install -y python3 ccache libpython3-dev pipx
         pipx ensurepath
         pipx install poetry
-        poetry install
+        /home/appveyor/.local/bin/poetry install
 
       }
 
@@ -39,7 +39,8 @@ install:
         scoop install main/pipx
         pipx ensurepath
         pipx install poetry
-        $env:APPDATA\Python\Scripts\poetry install
+        & "$env:APPDATA\Python\Scripts\poetry" run build
+
       }
 
 build_script:
@@ -58,7 +59,7 @@ build_script:
 
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2022') {
-        $env:APPDATA\Python\Scripts\poetry run build
+        & "$env:APPDATA\Python\Scripts\poetry" run build
       }
   # Conditional artifact pushing
   - ps: |
