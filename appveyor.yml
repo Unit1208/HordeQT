@@ -20,18 +20,21 @@ install:
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
         sudo apt-get update
         sudo apt-get install -y ccache libpython3-dev
+        wget https://www.python.org/ftp/python/$env:PYTHON_VERSION/Python-$env:PYTHON_VERSION.tgz
+        tar -xzf Python-$env:PYTHON_VERSION.tgz
+        cd Python-$env:PYTHON_VERSION
+        ./configure --enable-optimizations
+        make
+        sudo make altinstall
       }
-  - ps: Install-Module -Name 'Python' -Force -Scope CurrentUser
-  - ps: Install-Module -Name 'Poetry' -Force -Scope CurrentUser
 
   - ps: |
-      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
-        wget https://www.python.org/ftp/python/$env:PYTHON_VERSION/Python-$env:PYTHON_VERSION.tgz
-        tar xzf Python-$env:PYTHON_VERSION.tgz
-        cd Python-$env:PYTHON_VERSION && ./configure --enable-optimizations && make && sudo make altinstall
-      } elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'macos-12') {
+      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'macos-12') {
         brew install python@$env:PYTHON_VERSION
-      } else {
+      }
+
+  - ps: |
+      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2022') {
         choco install python --version=$env:PYTHON_VERSION
       }
 
