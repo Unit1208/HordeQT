@@ -29,14 +29,13 @@ install:
         pipx ensurepath
         curl -sSL https://install.python-poetry.org | python3 -
         $env:PATH = "$HOME\.local\bin;$env:PATH"
-        poetry install
+        /Users/appveyor/.local/bin/poetry install
 
       }
 
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2022') {
-        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
-        Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+        iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
         scoop bucket add main
         scoop install main/python
         scoop install main/pipx
@@ -46,13 +45,24 @@ install:
         poetry install
       }
 
-  # Install project dependencies using poetry
-  - poetry install
-
 build_script:
   # Build the project using poetry
-  - poetry run build
+  - ps: |
+      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
+        /home/appveyor/.local/bin/poetry run build
 
+      }
+
+  - ps: |
+      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'MacOS') {
+        /Users/appveyor/.local/bin/poetry run build
+
+      }
+
+  - ps: |
+      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2022') {
+        $env:APPDATA\Python\Scripts\poetry run build
+      }
   # Conditional artifact pushing
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
