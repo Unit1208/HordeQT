@@ -57,3 +57,4 @@
 - [ ] Warning when trying to use a Pony model incorrectly.
 - [ ] Paginate images (25-50-100)?
 - [~] Refactor code into more managable chunks.
+- [ ] Get appveyor working
