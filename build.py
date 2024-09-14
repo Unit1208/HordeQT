@@ -142,6 +142,8 @@ def main():
         formats.append("dmg")
         formats.append("pkg")
     briefcase_exec = str((real_prefix / "briefcase").with_suffix(executable_suffix))
+    print(briefcase_exec)
+    print(os.listdir(briefcase_exec))
     subprocess.run([briefcase_exec, "dev", "--no-run", "-r"])
     convert_uic_files()
     
