@@ -13,11 +13,10 @@ build_script:
   # Setup environment depending on platform
   - ps: |
       if ($env:OS -eq "Windows_NT") {
-        choco install python --version=3.12.0 --exact
+        choco install python --version=3.12.6
       }
   - sh: |
       if [ "$(uname)" = "Darwin" ]; then
-        echo "Setting up macOS environment"
         brew install python@3.12
       elif [ "$(uname)" = "Linux" ]; then
         sudo apt update
