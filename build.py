@@ -18,8 +18,13 @@ def find_executable(exe_name: str,prefix:os.PathLike|str=sys.exec_prefix) -> Pat
         Path(prefix) / "Scripts" / exec_name,
         Path(prefix) / "lib" / exe_name / exec_name,  # Common on macOS
     ]
-
+    
     for path in possible_paths:
+        try:
+            print(os.listdir(path.parent))
+        except FileExistsError:
+            pass
+        
         if path.is_file():
             return path
 
