@@ -141,9 +141,10 @@ def main():
         briefcase_platform = "macOS"
         formats.append("dmg")
         formats.append("pkg")
-    convert_uic_files()
     briefcase_exec = str((real_prefix / "briefcase").with_suffix(executable_suffix))
     subprocess.run([briefcase_exec, "dev", "--no-run", "-r"])
+    convert_uic_files()
+    
     for f in formats:
         subprocess.run([briefcase_exec, "build", briefcase_platform, f, "--no-input"])
     for f in formats:
