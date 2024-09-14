@@ -27,13 +27,7 @@ matrix:
   fast_finish: false
 
 build_script:
-  - ps: |
-      if ($env:target -eq "macOS") {
-        Set-AppveyorBuildWorkerImage "macos"
-      }
-      elseif ($env:target -eq "Ubuntu-24.04" -or $env:target -eq "Fedora-40") {
-        Set-AppveyorBuildWorkerImage "ubuntu-latest"
-      }
+
 
   # Checkout
   - cmd: git clone https://github.com/Unit1208/HordeQT.git
@@ -87,8 +81,8 @@ artifacts:
   - path: dist/*
     name: App-${env:target}
 
-on_failure:
-  - cmd: echo "Build failed! Uploading logs."
-  - cmd: copy logs/* to failure-logs/
-  - path: failure-logs/*
-    name: Log-Failure-${env:target}
+# on_failure:
+#   - cmd: echo "Build failed! Uploading logs."
+#   - cmd: copy logs/* to failure-logs/
+#   - path: failure-logs/*
+#     name: Log-Failure-${env:target}
