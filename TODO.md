@@ -58,7 +58,8 @@
 - [ ] Paginate images (25-50-100)?
 - [~] Refactor code into more managable chunks.
 - [ ] Get appveyor working
-  - [ ] Use build.py instead of appveyor.yml.
+  - [x] Use build.py instead of appveyor.yml.
+  - [ ] Why is MacOS taking so long to start?
 - [ ] Fix Flux
   - [ ] Allow for custom models that aren't in the official list
   - [ ] Don't freak out when a model has parenthesis in the name.
