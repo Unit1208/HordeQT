@@ -1,7 +1,7 @@
 from typing import Optional
 from PySide6.QtCore import Qt
-from hordeqt.ui_prompt_library import Ui_Dialog as PromptLibraryWidget
-from hordeqt.ui_prompt_item import Ui_Form as PromptItemWidget
+from hordeqt.gen.ui_prompt_library import Ui_Dialog as PromptLibraryWidget
+from hordeqt.gen.ui_prompt_item import Ui_Form as PromptItemWidget
 
 from PySide6.QtWidgets import QDialog, QWidget
 

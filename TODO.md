@@ -62,3 +62,4 @@
 - [ ] Fix Flux
   - [ ] Allow for custom models that aren't in the official list
   - [ ] Don't freak out when a model has parenthesis in the name.
+  

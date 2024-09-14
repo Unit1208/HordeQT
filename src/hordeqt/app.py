@@ -38,7 +38,7 @@ import sys
 
 from hordeqt.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
 from hordeqt.model_dialog import ModelPopup
-from hordeqt.ui_form import Ui_MainWindow
+from hordeqt.gen.ui_form import Ui_MainWindow
 
 import keyring
 import requests

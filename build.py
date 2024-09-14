@@ -29,31 +29,21 @@ def find_pyside_executable(ex_name: str) -> Path:
     raise FileNotFoundError(f"{exec_name} not found. Ensure PySide6 is installed.")
 
 
-def convert_uic_files(current_dir: Path | None = None):
-    current_dir = current_dir or Path(__file__).parent
+def convert_uic_files():
     ui_fns = ["form.ui", "modelinfo.ui", "prompt_item.ui", "prompt_library.ui"]
-    ui_files: List[Path] = [current_dir / Path(x) for x in ui_fns]
+    ui_files: List[Path] = [Path(__file__).parent/"src"/"hordeqt"/x for x in ui_fns]
     uic = find_pyside_executable("pyside6-uic")
     for file in ui_files:
-        new_py_fpath = file.with_name("ui_" + file.stem).with_suffix(".py").resolve()
+        new_py_fpath = (Path(__file__).parent/"src"/"hordeqt"/"gen"/"tmp").with_name("ui_" + file.stem).with_suffix(".py").resolve()
+        print(new_py_fpath)
         cmd = [str(uic.resolve()), str(file.resolve()), f"-o={str(new_py_fpath)}"]
         subprocess.run(cmd, check=True)
         print(f"Converted {str(file)} to {str(new_py_fpath)}")
 
 
 def main():
-    current_dir = Path(__file__).parent
     s = os.curdir
-    convert_uic_files(current_dir)
-    a = current_dir / "pysidedeploy.spec"
-    b = current_dir / "pysidedeploy.template"
-    os.chdir(current_dir)
-    with open(a, "wt") as fo, open(b, "rt") as fi:
-        fo.write(fi.read())
-    # iconpath = current_dir / "QTHordeAssets" / "IconSmall.png"
-    executable = find_pyside_executable("pyside6-deploy")
-    command = [str(executable), f"-c={str(a)}"]
-    subprocess.run(command, check=True)
+    convert_uic_files()
     os.chdir(s)
 
 
