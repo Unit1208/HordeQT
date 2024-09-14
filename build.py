@@ -8,26 +8,40 @@ from typing import List,Optional
 import platform
 
 
-def find_executable(exe_name: str,prefix:os.PathLike|str=sys.exec_prefix) -> Path:
+import os
+import sys
+from pathlib import Path
+import shutil
+
+def find_executable(exe_name: str, prefix: os.PathLike | str = sys.exec_prefix) -> Path:
     # Determine the correct executable name based on the platform
     exec_name = (exe_name + ".exe") if sys.platform == "win32" else exe_name
 
-    # Check common paths where scripts might be located
+    # First, try to find in PATH environment variable
+    uic_path = shutil.which(exec_name)
+    if uic_path:
+        return Path(uic_path)
+
+    # Check common paths where scripts might be located, adjusting for platform
     possible_paths = [
-        Path(prefix) / "bin" / exec_name,
-        Path(prefix) / "Scripts" / exec_name,
-        Path(prefix) / "lib" / exe_name / exec_name,  # Common on macOS
+        Path(prefix) / "bin" / exec_name,              # Common for Linux/macOS
+        Path(prefix) / "Scripts" / exec_name,          # Common for Windows virtualenvs
+        Path(prefix) / "Library" / "bin" / exec_name,  # Anaconda and some Windows setups
     ]
-    
+
+    # Look in additional directories like virtualenv and custom prefixes
+    if 'VIRTUAL_ENV' in os.environ:
+        virtualenv_prefix = Path(os.environ['VIRTUAL_ENV'])
+        possible_paths.append(virtualenv_prefix / "bin" / exec_name)
+        possible_paths.append(virtualenv_prefix / "Scripts" / exec_name)
+
+    # Search in the possible paths
     for path in possible_paths:
         try:
-            print(os.listdir(path.parent))
-        except FileExistsError:
+            if path.is_file():
+                return path
+        except FileNotFoundError:
             pass
-        
-        if path.is_file():
-            return path
-
     # If not found, attempt to find in PATH environment variable
     uic_path = shutil.which(exec_name)
     if uic_path:
