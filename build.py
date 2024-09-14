@@ -8,11 +8,11 @@ from typing import List
 import platform
 
 
-def find_pyside_executable(ex_name: str) -> Path:
+def find_executable(ex_name: str) -> Path:
     # Determine the correct executable name based on the platform
     exec_name = (ex_name + ".exe") if sys.platform == "win32" else ex_name
 
-    # Check common paths where pyside6-uic might be located
+    # Check common paths where scripts might be located
     possible_paths = [
         Path(sys.exec_prefix) / "bin" / exec_name,
         Path(sys.exec_prefix) / "Scripts" / exec_name,  # Common on Windows
@@ -28,7 +28,7 @@ def find_pyside_executable(ex_name: str) -> Path:
     if uic_path:
         return Path(uic_path)
 
-    raise FileNotFoundError(f"{exec_name} not found. Ensure PySide6 is installed.")
+    raise FileNotFoundError(f"{exec_name} not found. Ensure all dependencies are installed.")
 
 
 def convert_uic_files():
@@ -36,7 +36,7 @@ def convert_uic_files():
     ui_files: List[Path] = [
         Path(__file__).parent / "src" / "hordeqt" / x for x in ui_fns
     ]
-    uic = find_pyside_executable("pyside6-uic")
+    uic = find_executable("pyside6-uic")
     for file in ui_files:
         new_py_fpath = (
             Path(__file__).parent
@@ -51,13 +51,11 @@ def convert_uic_files():
 
 
 def get_real_prefix(path_to_python: os.PathLike):
-    with tempfile.NamedTemporaryFile() as t:
-        subprocess.run(
-            [str(path_to_python), "-c", "import sys;print(sys.prefix)"],
-            stdout=t,
-        )
-        b = t.read()
-    return Path(str(b, "utf-8"))
+    s=subprocess.run(
+        [str(path_to_python), "-c", "import sys;print(sys.prefix)"],
+        capture_output=True
+    )
+    return Path(s.stdout.decode("utf-8"))
 
 
 def detect_platform():
@@ -141,9 +139,9 @@ def main():
         briefcase_platform = "macOS"
         formats.append("dmg")
         formats.append("pkg")
-    briefcase_exec = str((real_prefix / "briefcase").with_suffix(executable_suffix))
+    briefcase_exec = find_executable("briefcase")
     print(briefcase_exec)
-    print(os.listdir(briefcase_exec))
+    print(os.listdir(briefcase_exec.parent))
     subprocess.run([briefcase_exec, "dev", "--no-run", "-r"])
     convert_uic_files()
     
