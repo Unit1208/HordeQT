@@ -1,4 +1,3 @@
-# This Python file uses the following encoding: utf-8
 import datetime as dt
 import tempfile
 import human_readable as hr

@@ -1636,7 +1636,7 @@
        </property>
        <attribute name="icon">
         <iconset>
-         <normaloff>QTHordeAssets/IconSmaller.png</normaloff>QTHordeAssets/IconSmaller.png</iconset>
+         <normaloff>resources/IconSmaller.png</normaloff>resources/IconSmaller.png</iconset>
        </attribute>
        <attribute name="title">
         <string>About</string>

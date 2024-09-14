@@ -1,35 +1,11 @@
 version: 1.0.{build}
 image:
   - "Visual Studio 2022"
-  - "Ubuntu-24.04"
-  - "macOS-12"
-  - "Fedora-40"
+  - "Ubuntu"
+  - "macOS"
 
 environment:
   FORCE_COLOR: "1"
-
-matrix:
-  fast_finish: false
-  include:
-    - platform: "Windows"
-      target: "Windows"
-      output-format: "app"
-    - platform: "macOS"
-      target: "macOS"
-      output-format: "app"
-    - platform: "Ubuntu-24.04"
-      target: "Linux"
-      output-format: "system"
-      pre-command: "sudo apt -y install socat"
-      briefcase-run-prefix: "xvfb-run"
-      briefcase-args: "--target ubuntu:24.04"
-    - platform: "Fedora-40"
-      target: "Linux"
-      output-format: "system"
-      pre-command: "sudo dnf -y install socat"
-      briefcase-run-prefix: "xvfb-run"
-      briefcase-args: "--target fedora:40"
-
 build_script:
   # Checkout
   - cmd: git clone https://github.com/Unit1208/HordeQT.git
@@ -38,43 +14,18 @@ build_script:
   - ps: |
       if ($env:platform -eq "Windows") {
         choco install python --version=3.12
-        pip install -U pip setuptools wheel
-        pip install briefcase
       }
       elseif ($env:platform -eq "macOS") {
         echo "Setting up macOS environment"
         brew install python@3.12
-        pip3 install -U pip setuptools wheel
-        pip3 install briefcase
       }
       elseif ($env:platform -eq "Ubuntu-24.04") {
         sudo apt update
-        sudo apt install -y python3 python3-pip
-        pip3 install -U pip setuptools wheel
-        pip3 install briefcase
-      }
-      elseif ($env:platform -eq "Fedora-40") {
-        sudo dnf install -y python3 python3-pip
-        pip3 install -U pip setuptools wheel
-        pip3 install briefcase
+        sudo apt install -y python3 python3-pip python3-venv
       }
 
   # Build App
-  - ps: |
-      & briefcase build `
-        --target $env:target `
-        --output-format $env:output-format `
-        --no-input `
-        $env:briefcase-args
-
-  # Package App
-  - ps: |
-      & briefcase package `
-        --target $env:target `
-        --output-format $env:output-format `
-        --no-input `
-        $env:briefcase-package-prefix `
-        $env:briefcase-args
+  - ps: python build.py
 
 artifacts:
   - path: dist/*
