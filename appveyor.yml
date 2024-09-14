@@ -18,18 +18,15 @@ install:
         sudo add-apt-repository ppa:deadsnakes/ppa -y
         sudo apt update
         sudo apt-get install -y python3.12 ccache libpython3.12-dev pipx
-        pipx ensurepath
-        pipx install poetry
-        /home/appveyor/.local/bin/poetry install
-
+        python -m venv venv
+        source venv/bin/activate
       }
 
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'MacOS') {
-        brew install python@3.12 pipx
-        pipx ensurepath
-        curl -sSL https://install.python-poetry.org | python3 -
-        /Users/appveyor/.local/bin/poetry install
+        brew install python@3.12
+        python -m venv venv
+        source venv/bin/activate
 
       }
 
@@ -38,16 +35,13 @@ install:
         iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
         scoop bucket add main
         scoop install main/python
-        scoop install main/pipx
-        pipx ensurepath
-        pipx install poetry
-        pipx run poetry install
+        python -m venv venv
+        call venv\scripts\activate.bat
       }
 
 
 
 build_script:
-  # Build the project using poetry
   - ps: |
       if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
         /home/appveyor/.local/bin/poetry run build

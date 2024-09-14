@@ -1,12 +1,18 @@
-[tool.poetry]
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
 name = "hordeqt-py"
 version = "0.1.0"
 description = ""
-authors = ["Unit1208 <unit1208@national.shitposting.agency>"]
 readme = "README.md"
+authors = [
+    {name = "Unit1208", email = "unit1208@national.shitposting.agency"}
+]
+requires-python = ">=3.11,<3.13"
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.13"
+[project.dependencies]
 black = "^24.8.0"
 autopep8 = "^2.3.1"
 pyside6 = "^6.7.2"
@@ -22,15 +28,6 @@ coloredlogs = "^15.0.1"
 colorama = "^0.4.6"
 imageio = "^2.35.1"
 
-[tool.poetry.scripts]
-
-build = "hordeqt_py.build:main"
-regen = "hordeqt_py.build:convert_uic_files"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
 [tool.nuitka]
 standalone = true
 onefile = true
@@ -38,7 +35,11 @@ remove-output = true
 output-dir = "dist"
 
 [tool.black]
-extend-exclude='''
+extend-exclude = '''
 (
 ^/hordeqt_py/ui_[_a-zA-Z]+\.py
 )'''
+
+[project.scripts]
+build = "hordeqt_py.build:main"
+regen = "hordeqt_py.build:convert_uic_files"
