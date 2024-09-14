@@ -20,10 +20,7 @@ build_script:
         brew install python@3.12
       elif [ "$(uname)" = "Linux" ]; then
         sudo apt update
-        sudo apt install software-properties-common -y
-        sudo apt update
-        sudo apt install python3.11-dev python3.11-venv python3.11-full
-        curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+        sudo apt install python3.11-dev python3.11-venv python3.11-full python3-pip
       fi
 
   # Build App
