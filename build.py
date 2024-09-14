@@ -50,12 +50,6 @@ def convert_uic_files():
         print(f"Converted {str(file)} to {str(new_py_fpath)}")
 
 
-def get_real_prefix(path_to_python: os.PathLike):
-    s=subprocess.run(
-        [str(path_to_python), "-c", "import sys;print(sys.prefix)"],
-        capture_output=True
-    )
-    return Path(s.stdout.decode("utf-8"))
 
 
 def detect_platform():
@@ -112,7 +106,6 @@ def main():
     else:
         print(f'Unsupported OS: "{curr_platform}"')
         exit(1)
-    real_prefix = get_real_prefix(new_python)
     subprocess.run(
         [
             str(new_python),
