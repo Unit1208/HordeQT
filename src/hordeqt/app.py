@@ -6,7 +6,6 @@ from pathlib import Path
 import json
 import os
 import random
-import sys
 import time
 from typing import List, Dict, Optional, Self, Type
 from PySide6.QtWidgets import (
@@ -35,9 +34,7 @@ from PySide6.QtGui import QPixmap, QDesktopServices, QFont, QClipboard
 from queue import Queue
 import logging
 import coloredlogs
-import importlib.metadata
 import sys
-
 
 from hordeqt.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
 from hordeqt.model_dialog import ModelPopup
@@ -45,7 +42,7 @@ from hordeqt.ui_form import Ui_MainWindow
 
 import keyring
 import requests
-from hordeqt.util import create_uuid, get_headers, prompt_matrix
+from hordeqt.util import create_uuid, get_headers, prompt_matrix, get_metadata
 from hordeqt.classes import Job, LocalJob, Model, apply_metadata_to_image
 
 ANON_API_KEY = "0000000000"
@@ -417,7 +414,7 @@ class SavedData:
         api: APIManagerThread,
         nsfw: bool,
         max_jobs: int,
-        save_metadata:bool,
+        save_metadata: bool,
         dlthread: DownloadThread,
         job_config: dict,
         share_images: bool,
@@ -433,7 +430,7 @@ class SavedData:
         self.max_jobs = max_jobs
         self.nsfw_allowed = nsfw
         self.share_images = share_images
-        self.save_metadata=save_metadata
+        self.save_metadata = save_metadata
         self.job_config = job_config
         self.current_open_tab = current_open_tab
         self.prefered_format = prefered_format
@@ -443,7 +440,7 @@ class SavedData:
             "api_state": self.api_state,
             "max_jobs": self.max_jobs,
             "nsfw_allowed": self.nsfw_allowed,
-            "save_metadata":self.save_metadata,
+            "save_metadata": self.save_metadata,
             "current_images": self.current_images,
             "queued_downloads": self.queued_downloads,
             "job_config": self.job_config,
@@ -464,7 +461,7 @@ class SavedData:
             j = dict()
         self.api_state = j.get("api_state", {})
         self.max_jobs = j.get("max_jobs", 5)
-        self.save_metadata=j.get("save_metadata",True)
+        self.save_metadata = j.get("save_metadata", True)
         self.current_images = j.get("current_images", [])
         self.queued_downloads = j.get("queued_downloads", [])
         self.nsfw_allowed = j.get("nsfw_allowed", False)
@@ -617,7 +614,7 @@ class HordeQt(QMainWindow):
             self.get_job_config(),
             self.ui.shareImagesCheckBox.isChecked(),
             self.ui.tabWidget.currentIndex(),
-            self.ui.saveFormatComboBox.currentText()
+            self.ui.saveFormatComboBox.currentText(),
         )
         LOGGER.debug("Writing saved data")
         self.savedData.write()
@@ -1167,13 +1164,13 @@ class HordeQt(QMainWindow):
 def main():
     # I don't care.
     global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH
-    app_module = sys.modules["__main__"].__package__
-    # Retrieve the app's metadata
-    metadata = importlib.metadata.metadata(app_module)
+    metadata = get_metadata()
+    print(metadata)
 
     app = QApplication(sys.argv)
-    app.setApplicationName(metadata["Formal-Name"])
-    app.setOrganizationName("Unit1208")
+    app.setApplicationDisplayName(metadata["Formal-Name"])
+    app.setApplicationName(metadata["Name"])
+    app.setOrganizationName(metadata["Author"])
     SAVED_DATA_DIR_PATH = Path(
         QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
     )

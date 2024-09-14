@@ -2,7 +2,17 @@ import json
 import re
 from typing import List
 import uuid
-from pathlib import Path
+import sys
+import importlib.metadata
+
+
+def get_metadata():
+    app_module = sys.modules["__main__"].__package__
+    # Retrieve the app's metadata
+    if app_module is None:
+        raise Exception("Invalid package metadata")
+    metadata = importlib.metadata.metadata(app_module)
+    return metadata
 
 
 def create_uuid():
@@ -10,9 +20,10 @@ def create_uuid():
 
 
 def get_headers(api_key: str):
+    version = get_metadata()["Version"]
     return {
         "apikey": api_key,
-        "Client-Agent": "HordeQt:0.0.1:Unit1208",
+        "Client-Agent": f"HordeQt:{version}:Unit1208",
         "accept": "application/json",
         "Content-Type": "application/json",
     }

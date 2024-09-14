@@ -43,21 +43,19 @@ def convert_uic_files(current_dir: Path | None = None):
 
 def main():
     current_dir = Path(__file__).parent
-    s=os.curdir
+    s = os.curdir
     convert_uic_files(current_dir)
     a = current_dir / "pysidedeploy.spec"
-    b = current_dir / "pysidedeploy.template"   
+    b = current_dir / "pysidedeploy.template"
     os.chdir(current_dir)
-    with open(a,"wt") as fo, open(b,"rt") as fi:
+    with open(a, "wt") as fo, open(b, "rt") as fi:
         fo.write(fi.read())
     # iconpath = current_dir / "QTHordeAssets" / "IconSmall.png"
-    executable=find_pyside_executable("pyside6-deploy")
-    command = [
-        str(executable),
-        f"-c={str(a)}"
-    ]
+    executable = find_pyside_executable("pyside6-deploy")
+    command = [str(executable), f"-c={str(a)}"]
     subprocess.run(command, check=True)
     os.chdir(s)
+
 
 if __name__ == "__main__":
     main()
