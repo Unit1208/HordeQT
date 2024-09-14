@@ -39,14 +39,14 @@ import importlib.metadata
 import sys
 
 
-from gallery import ImageGalleryWidget, ImagePopup, ImageWidget
-from model_dialog import ModelPopup
-from ui_form import Ui_MainWindow
+from hordeqt.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
+from hordeqt.model_dialog import ModelPopup
+from hordeqt.ui_form import Ui_MainWindow
 
 import keyring
 import requests
-from util import create_uuid, get_headers, prompt_matrix
-from classes import Job, LocalJob, Model, apply_metadata_to_image
+from hordeqt.util import create_uuid, get_headers, prompt_matrix
+from hordeqt.classes import Job, LocalJob, Model, apply_metadata_to_image
 
 ANON_API_KEY = "0000000000"
 BASE_URL = "https://aihorde.net/api/v2/"
@@ -1164,7 +1164,7 @@ class HordeQt(QMainWindow):
             )
 
 
-def run_main_window():
+def main():
     # I don't care.
     global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH
     app_module = sys.modules["__main__"].__package__

@@ -3,7 +3,7 @@ from pathlib import Path
 import time
 from typing import Dict, Optional, Self
 
-from util import create_uuid
+from hordeqt.util import create_uuid
 from PIL import Image, ExifTags
 
 

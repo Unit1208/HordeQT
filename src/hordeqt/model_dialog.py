@@ -1,4 +1,4 @@
-from ui_modelinfo import Ui_Dialog
+from hordeqt.ui_modelinfo import Ui_Dialog
 from PySide6.QtWidgets import QDialog
 
 

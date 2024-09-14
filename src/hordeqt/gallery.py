@@ -1,4 +1,4 @@
-from classes import LocalJob
+from hordeqt.classes import LocalJob
 from typing import List
 from PySide6.QtWidgets import (
     QWidget,
