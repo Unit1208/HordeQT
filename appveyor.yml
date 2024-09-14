@@ -1,77 +1,102 @@
-# AppVeyor CI configuration file
-
 version: 1.0.{build}
+image: Visual Studio 2022
 
-image:
-  - Ubuntu2204
-  - Visual Studio 2022
-  - MacOS
+environment:
+  FORCE_COLOR: "1"
+  matrix:
+    - target: "Windows"
+      platform: "x64"
+      output-format: "app"
+    - target: "macOS"
+      platform: "x64"
+      output-format: "app"
+    - target: "Ubuntu-24.04"
+      platform: "Linux"
+      output-format: "system"
+      pre-command: "sudo apt -y install socat"
+      briefcase-run-prefix: "xvfb-run"
+      briefcase-args: "--target ubuntu:24.04"
+    - target: "Fedora-40"
+      platform: "Linux"
+      output-format: "system"
+      pre-command: "sudo apt -y install socat"
+      briefcase-run-prefix: "xvfb-run"
+      briefcase-args: "--target fedora:40"
 
-platform:
-  - x64
-
-# Install dependencies
-install:
-  - ps: |
-      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
-        sudo apt-get update
-        sudo add-apt-repository ppa:deadsnakes/ppa -y
-        sudo apt update
-        sudo apt-get install -y python3.12 ccache libpython3.12-dev pipx
-        python -m venv venv
-        source venv/bin/activate
-      }
-
-  - ps: |
-      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'MacOS') {
-        brew install python@3.12
-        python -m venv venv
-        source venv/bin/activate
-
-      }
-
-  - ps: |
-      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2022') {
-        iex "& {$(irm get.scoop.sh)} -RunAsAdmin"
-        scoop bucket add main
-        scoop install main/python
-        python -m venv venv
-        call venv\scripts\activate.bat
-      }
-
-
+matrix:
+  fast_finish: false
 
 build_script:
   - ps: |
-      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
-        /home/appveyor/.local/bin/poetry run build
-
+      if ($env:target -eq "macOS") {
+        Set-AppveyorBuildWorkerImage "macos"
+      }
+      elseif ($env:target -eq "Ubuntu-24.04" -or $env:target -eq "Fedora-40") {
+        Set-AppveyorBuildWorkerImage "ubuntu-latest"
       }
 
+  # Checkout
+  - cmd: git clone https://github.com/Unit1208/HordeQT.git
+
+  # Setup Python
   - ps: |
-      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'MacOS') {
-        /Users/appveyor/.local/bin/poetry run build
-
+      if ($env:platform -eq "Linux" -or $env:platform -eq "macOS") {
+        sudo apt update
+        sudo apt install -y python3 python3-pip
       }
+      else {
+        choco install python --version=3.12
+      }
+  
+  # Install Briefcase
+  - pip install -U pip setuptools wheel
+  - pip install briefcase
 
+  # Setup environment
   - ps: |
-      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Visual Studio 2022') {
-        pipx run poetry run build
-
-
+      if ($env:target -eq "Windows") {
+        Write-Host "Windows environment setup"
       }
-  # Conditional artifact pushing
+      elseif ($env:target -eq "macOS") {
+        Write-Host "macOS environment setup"
+        echo $JAVA_HOME_17_X64 | Out-File -Append -FilePath env-vars.txt
+      }
+      else {
+        sudo apt -y install socat
+      }
+
+  # Build App
   - ps: |
-      if ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'Ubuntu2204') {
-        appveyor PushArtifact "hordeqt_py/__main__.bin" -FileName "HordeQT-Linux.bin"
-      } elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -eq 'macos-12') {
-        appveyor PushArtifact "hordeqt_py/HordeQT.app" -FileName "HordeQT-Mac.app"
-      } elseif ($env:APPVEYOR_BUILD_WORKER_IMAGE -match 'Visual Studio') {
-        appveyor PushArtifact "horde_qt\\__main__.exe" -FileName "HordeQT-Windows.exe"
-      }
+      & briefcase build `
+        --target $env:target `
+        --output-format $env:output-format `
+        --no-input `
+        $env:briefcase-args
+
+  # Test App
+  - ps: |
+      & briefcase run `
+        --target $env:target `
+        --output-format $env:output-format `
+        --no-input `
+        $env:briefcase-run-prefix `
+        $env:briefcase-args
+
+  # Package App
+  - ps: |
+      & briefcase package `
+        --target $env:target `
+        --output-format $env:output-format `
+        --no-input `
+        $env:briefcase-package-prefix `
+        $env:briefcase-args
 
 artifacts:
-  # Placeholder in case automatic artifact pushing is not triggered.
-  - path: hordeqt_py/__main__.bin
-  - path: hordeqt_py/HordeQT.app
-  - path: horde_qt\__main__.exe
+  - path: dist/*
+    name: App-${env:target}
+
+on_failure:
+  - cmd: echo "Build failed! Uploading logs."
+  - cmd: copy logs/* to failure-logs/
+  - path: failure-logs/*
+    name: Log-Failure-${env:target}
