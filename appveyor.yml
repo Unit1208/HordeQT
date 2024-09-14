@@ -12,6 +12,7 @@ build_script:
 
   # Setup environment depending on platform
   - ps: |
+      echo "$env:platform"
       if ($env:platform -eq "Windows") {
         choco install python --version=3.12
       }

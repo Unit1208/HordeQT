@@ -137,7 +137,7 @@ def main():
         briefcase_platform = "macOS"
         formats.append("dmg")
         formats.append("pkg")
-    briefcase_exec = find_executable("briefcase",new_python.parent)
+    briefcase_exec = find_executable("briefcase",venv_path)
     print(briefcase_exec)
     print(os.listdir(briefcase_exec.parent))
     subprocess.run([briefcase_exec, "dev", "--no-run", "-r"])
