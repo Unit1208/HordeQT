@@ -35,6 +35,8 @@ from PySide6.QtGui import QPixmap, QDesktopServices, QFont, QClipboard
 from queue import Queue
 import logging
 import coloredlogs
+import importlib.metadata
+import sys
 
 
 from gallery import ImageGalleryWidget, ImagePopup, ImageWidget
@@ -472,7 +474,7 @@ class SavedData:
         self.prefered_format = j.get("prefered_format", "webp")
 
 
-class MainWindow(QMainWindow):
+class HordeQt(QMainWindow):
 
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
@@ -1165,8 +1167,12 @@ class MainWindow(QMainWindow):
 def run_main_window():
     # I don't care.
     global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH
+    app_module = sys.modules["__main__"].__package__
+    # Retrieve the app's metadata
+    metadata = importlib.metadata.metadata(app_module)
+
     app = QApplication(sys.argv)
-    app.setApplicationName("Horde QT")
+    app.setApplicationName(metadata["Formal-Name"])
     app.setOrganizationName("Unit1208")
     SAVED_DATA_DIR_PATH = Path(
         QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
@@ -1181,6 +1187,6 @@ def run_main_window():
     os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
     os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
 
-    widget = MainWindow(app)
+    widget = HordeQt(app)
     widget.show()
     sys.exit(app.exec())
