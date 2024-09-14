@@ -10,6 +10,7 @@ author_email = "unit1208@national.shitposting.agency"
 
 [tool.briefcase.app.hordeqt]
 icon="src/hordeqt/resources/Icon"
+
 formal_name = "HordeQT"
 description = "Generate images using the AI Horde"
 long_description="HordeQT is a local frontend to the AI Horde. It is primarily aimed at power users and people already familiar with Stable Diffusion."
