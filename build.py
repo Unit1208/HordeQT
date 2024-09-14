@@ -4,19 +4,19 @@ import subprocess
 import sys
 from pathlib import Path
 import tempfile
-from typing import List
+from typing import List,Optional
 import platform
 
 
-def find_executable(ex_name: str) -> Path:
+def find_executable(exe_name: str,prefix:os.PathLike|str=sys.exec_prefix) -> Path:
     # Determine the correct executable name based on the platform
-    exec_name = (ex_name + ".exe") if sys.platform == "win32" else ex_name
+    exec_name = (exe_name + ".exe") if sys.platform == "win32" else exe_name
 
     # Check common paths where scripts might be located
     possible_paths = [
-        Path(sys.exec_prefix) / "bin" / exec_name,
-        Path(sys.exec_prefix) / "Scripts" / exec_name,  # Common on Windows
-        Path(sys.exec_prefix) / "lib" / ex_name / exec_name,  # Common on macOS
+        Path(prefix) / "bin" / exec_name,
+        Path(prefix) / "Scripts" / exec_name,
+        Path(prefix) / "lib" / exe_name / exec_name,  # Common on macOS
     ]
 
     for path in possible_paths:
@@ -99,10 +99,8 @@ def main():
     if is_linux or is_macos:
 
         new_python = venv_path / "bin" / "python"
-        executable_suffix = ""
     elif is_windows:
         new_python = venv_path / "Scripts" / "python.exe"
-        executable_suffix = ".exe"
     else:
         print(f'Unsupported OS: "{curr_platform}"')
         exit(1)
@@ -132,7 +130,7 @@ def main():
         briefcase_platform = "macOS"
         formats.append("dmg")
         formats.append("pkg")
-    briefcase_exec = find_executable("briefcase")
+    briefcase_exec = find_executable("briefcase",new_python.parent)
     print(briefcase_exec)
     print(os.listdir(briefcase_exec.parent))
     subprocess.run([briefcase_exec, "dev", "--no-run", "-r"])
