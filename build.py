@@ -42,20 +42,16 @@ def find_executable(exe_name: str, prefix: os.PathLike | str = sys.exec_prefix) 
                 return path
         except FileNotFoundError:
             pass
-    # If not found, attempt to find in PATH environment variable
-    uic_path = shutil.which(exec_name)
-    if uic_path:
-        return Path(uic_path)
 
     raise FileNotFoundError(f"{exec_name} not found. Ensure all dependencies are installed.")
 
 
-def convert_uic_files():
+def convert_uic_files(prefix:Path):
     ui_fns = ["form.ui", "modelinfo.ui", "prompt_item.ui", "prompt_library.ui"]
     ui_files: List[Path] = [
         Path(__file__).parent / "src" / "hordeqt" / x for x in ui_fns
     ]
-    uic = find_executable("pyside6-uic")
+    uic = find_executable("pyside6-uic",prefix)
     for file in ui_files:
         new_py_fpath = (
             Path(__file__).parent
@@ -155,7 +151,7 @@ def main():
     print(briefcase_exec)
     print(os.listdir(briefcase_exec.parent))
     subprocess.run([briefcase_exec, "dev", "--no-run", "-r"])
-    convert_uic_files()
+    convert_uic_files(venv_path)
     
     for f in formats:
         subprocess.run([briefcase_exec, "build", briefcase_platform, f, "--no-input"])

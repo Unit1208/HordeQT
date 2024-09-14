@@ -12,22 +12,21 @@ build_script:
 
   # Setup environment depending on platform
   - ps: |
-      echo "$env:platform"
-      if ($env:platform -eq "Windows") {
-        choco install python --version=3.12
+      if ($env:OS -eq "Windows_NT") {
+        choco install python --version=3.12.0 --exact
       }
-      elseif ($env:platform -eq "macOS") {
+  - sh: |
+      if [ "$(uname)" = "Darwin" ]; then
         echo "Setting up macOS environment"
         brew install python@3.12
-      }
-      elseif ($env:platform -eq "Linux") {
+      elif [ "$(uname)" = "Linux" ]; then
         sudo apt update
         sudo apt install software-properties-common -y
         sudo add-apt-repository ppa:deadsnakes/ppa -y
         sudo apt update
         sudo apt install python3.12-dev python3.12-venv python3.12-full
-        curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 
-      }
+        curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12
+      fi
 
   # Build App
   - ps: python build.py
