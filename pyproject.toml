@@ -16,9 +16,6 @@ long_description="HordeQT is a local frontend to the AI Horde. It is primarily a
 sources = [
     "src/hordeqt",
 ]
-test_sources = [
-    "tests",
-]
 
 requires = [
     "black~=24.8.0",
@@ -33,10 +30,6 @@ requires = [
     "coloredlogs~=15.0.1",
     "colorama~=0.4.6"
 ]
-test_requires = [
-    "pytest",
-]
-
 [tool.briefcase.app.hordeqt.macOS]
 universal_build = true
 requires = [

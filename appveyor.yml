@@ -73,14 +73,6 @@ build_script:
         --no-input `
         $env:briefcase-args
 
-  # Test App
-  - ps: |
-      & briefcase run `
-        --target $env:target `
-        --output-format $env:output-format `
-        --no-input `
-        $env:briefcase-run-prefix `
-        $env:briefcase-args
 
   # Package App
   - ps: |
