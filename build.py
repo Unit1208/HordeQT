@@ -99,6 +99,8 @@ def main():
     venv_path = (curr_dir / "venv").resolve()
     install_sys_reqs()
     subprocess.run(["python", "-m", "venv", str(venv_path)])
+    print(venv_path)
+    print(os.listdir(venv_path))
     curr_platform, is_windows, is_linux, is_macos = detect_platform()
 
     if is_linux or is_macos:

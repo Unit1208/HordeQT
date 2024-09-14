@@ -19,9 +19,13 @@ build_script:
         echo "Setting up macOS environment"
         brew install python@3.12
       }
-      elseif ($env:platform -eq "Ubuntu-24.04") {
+      elseif ($env:platform -eq "Ubuntu") {
         sudo apt update
-        sudo apt install -y python3 python3-pip python3-venv
+        sudo apt install software-properties-common -y
+        sudo add-apt-repository ppa:deadsnakes/ppa -y
+        sudo apt update
+        sudo apt install python3.12-{dev,venv,full}
+        curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12 
       }
 
   # Build App
