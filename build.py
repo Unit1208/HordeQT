@@ -31,11 +31,15 @@ def find_pyside_executable(ex_name: str) -> Path:
 
 def convert_uic_files():
     ui_fns = ["form.ui", "modelinfo.ui", "prompt_item.ui", "prompt_library.ui"]
-    ui_files: List[Path] = [Path(__file__).parent/"src"/"hordeqt"/x for x in ui_fns]
+    ui_files: List[Path] = [
+        Path(__file__).parent / "src" / "hordeqt" / x for x in ui_fns
+    ]
     uic = find_pyside_executable("pyside6-uic")
     for file in ui_files:
-        new_py_fpath = (Path(__file__).parent/"src"/"hordeqt"/"gen"/"tmp").with_name("ui_" + file.stem).with_suffix(".py").resolve()
-        print(new_py_fpath)
+        new_py_fpath = (
+            (Path(__file__).parent / "src" / "hordeqt" / "gen" / ("ui_"+file.stem+".py"))
+            .resolve()
+        )
         cmd = [str(uic.resolve()), str(file.resolve()), f"-o={str(new_py_fpath)}"]
         subprocess.run(cmd, check=True)
         print(f"Converted {str(file)} to {str(new_py_fpath)}")
