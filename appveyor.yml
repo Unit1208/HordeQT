@@ -1,62 +1,62 @@
 version: 1.0.{build}
-image: Visual Studio 2022
+image:
+  - "Visual Studio 2022"
+  - "Ubuntu-24.04"
+  - "macOS-12"
+  - "Fedora-40"
 
 environment:
   FORCE_COLOR: "1"
-  matrix:
-    - target: "Windows"
-      platform: "x64"
+
+matrix:
+  fast_finish: false
+  include:
+    - platform: "Windows"
+      target: "Windows"
       output-format: "app"
-    - target: "macOS"
-      platform: "x64"
+    - platform: "macOS"
+      target: "macOS"
       output-format: "app"
-    - target: "Ubuntu-24.04"
-      platform: "Linux"
+    - platform: "Ubuntu-24.04"
+      target: "Linux"
       output-format: "system"
       pre-command: "sudo apt -y install socat"
       briefcase-run-prefix: "xvfb-run"
       briefcase-args: "--target ubuntu:24.04"
-    - target: "Fedora-40"
-      platform: "Linux"
+    - platform: "Fedora-40"
+      target: "Linux"
       output-format: "system"
-      pre-command: "sudo apt -y install socat"
+      pre-command: "sudo dnf -y install socat"
       briefcase-run-prefix: "xvfb-run"
       briefcase-args: "--target fedora:40"
 
-matrix:
-  fast_finish: false
-
 build_script:
-
-
   # Checkout
   - cmd: git clone https://github.com/Unit1208/HordeQT.git
 
-  # Setup Python
+  # Setup environment depending on platform
   - ps: |
-      if ($env:platform -eq "Linux" -or $env:platform -eq "macOS") {
+      if ($env:platform -eq "Windows") {
+        choco install python --version=3.12
+        pip install -U pip setuptools wheel
+        pip install briefcase
+      }
+      elseif ($env:platform -eq "macOS") {
+        echo "Setting up macOS environment"
+        brew install python@3.12
+        pip3 install -U pip setuptools wheel
+        pip3 install briefcase
+      }
+      elseif ($env:platform -eq "Ubuntu-24.04") {
         sudo apt update
         sudo apt install -y python3 python3-pip
+        pip3 install -U pip setuptools wheel
+        pip3 install briefcase
       }
-      else {
-        choco install python --version=3.12
-      }
-  
-  # Install Briefcase
-  - pip install -U pip setuptools wheel
-  - pip install briefcase
-
-  # Setup environment
-  - ps: |
-      if ($env:target -eq "Windows") {
-        Write-Host "Windows environment setup"
-      }
-      elseif ($env:target -eq "macOS") {
-        Write-Host "macOS environment setup"
-        echo $JAVA_HOME_17_X64 | Out-File -Append -FilePath env-vars.txt
-      }
-      else {
-        sudo apt -y install socat
+      elseif ($env:platform -eq "Fedora-40") {
+        sudo dnf install -y python3 python3-pip
+        pip3 install -U pip setuptools wheel
+        pip3 install briefcase
       }
 
   # Build App
@@ -66,7 +66,6 @@ build_script:
         --output-format $env:output-format `
         --no-input `
         $env:briefcase-args
-
 
   # Package App
   - ps: |
@@ -80,9 +79,3 @@ build_script:
 artifacts:
   - path: dist/*
     name: App-${env:target}
-
-# on_failure:
-#   - cmd: echo "Build failed! Uploading logs."
-#   - cmd: copy logs/* to failure-logs/
-#   - path: failure-logs/*
-#     name: Log-Failure-${env:target}
