@@ -293,12 +293,12 @@ class DownloadThread(QThread):
                 try:
                     self.completed_downloads.remove(lj)
                 except ValueError as e:
-                    LOGGER.warn(f"Failed to delete {lj.id}")
+                    LOGGER.warning(f"Failed to delete {lj.id}")
                 if os.path.exists(lj.path):
                     if lj.path.is_file():
                         lj.path.unlink()
                     else:
-                        LOGGER.warn(
+                        LOGGER.warning(
                             f'Path referred to by {lj.id} ("{lj.path}") is a directory'
                         )
             time.sleep(0.1)
@@ -765,7 +765,7 @@ class HordeQt(QMainWindow):
     def update_user_info(self, r: requests.Response):
         if r.status_code == 404:
             self.show_error_toast("Invalid API key", "User could not be found.")
-            LOGGER.warn("User not found, API key is invalid.")
+            LOGGER.warning("User not found, API key is invalid.")
             return
         j = r.json()
         self.user_info = j
@@ -863,7 +863,7 @@ class HordeQt(QMainWindow):
             "requirements", None
         )
         if reqs is not None:
-            LOGGER.warn(
+            LOGGER.warning(
                 "Model has requirements. This is a WIP feature, and may have issues."
             )
             # Pony is the largest family of models to have this issue, but dreamshaperXL also has a specific configuration.
@@ -874,6 +874,7 @@ class HordeQt(QMainWindow):
                     )
                     self.ui.clipSkipSpinBox.setValue(2)
                     return None
+            #TODO: make sure this works for flux! 
             if (mins := reqs.get("min_steps", 0)) != 0:
                 if steps < int(mins):
                     self.show_warn_toast(
@@ -954,14 +955,13 @@ class HordeQt(QMainWindow):
     def construct_model_dict(self, mod):
         self.ui.modelComboBox.clear()
 
-        # mod = sd_mod_ref
         models: List[Model] = self.get_available_models()
         models.sort(key=lambda k: k.get("count"), reverse=True)
         model_dict: Dict[str, Model] = {}
         for n in models:
             name = n.get("name", "Unknown")
             count = n.get("count", 0)
-            self.ui.modelComboBox.addItem(k := f"{name} ({count})")
+            self.ui.modelComboBox.addItem(name)
             m = Model()
             m.count = count
             m.eta = n.get("eta", 0)
@@ -970,8 +970,12 @@ class HordeQt(QMainWindow):
             m.performance = n.get("performance", 0)
             m.queued = n.get("queued", 0)
             m.type = "image"
-            m.details = mod[m.name]
-            model_dict[k] = m
+            try:
+                m.details = mod[m.name]
+            except KeyError:
+                self.show_warn_toast("Unknown Model",f"{m.name} is not on the official model list. This may be a custom model, or may be an extremely new model.")
+                m.details={}
+            model_dict[name] = m
         self.ui.modelComboBox.setCurrentIndex(0)
         self.model_dict = model_dict
 
@@ -1044,6 +1048,7 @@ class HordeQt(QMainWindow):
             else ToastPreset.INFORMATION_DARK
         )
         info_toast.show()
+        LOGGER.info(f"{title}: {message}")
 
     def show_error_toast(self, title, message, duration=5000):
         error_toast = Toast(self)
@@ -1056,6 +1061,7 @@ class HordeQt(QMainWindow):
             else ToastPreset.ERROR_DARK
         )
         error_toast.show()
+        LOGGER.error(f"{title}: {message}")
 
     def show_warn_toast(self, title, message, duration=5000):
         warn_toast = Toast(self)
@@ -1068,6 +1074,7 @@ class HordeQt(QMainWindow):
             else ToastPreset.WARNING_DARK
         )
         warn_toast.show()
+        LOGGER.warning(f"{title}: {message}")
 
     def update_row(
         self, row, id: str, status: str, prompt: str, model: str, eta: float
