@@ -80,8 +80,8 @@
             <rect>
              <x>10</x>
              <y>10</y>
-             <width>941</width>
-             <height>891</height>
+             <width>881</width>
+             <height>971</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -107,8 +107,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>925</width>
-              <height>889</height>
+              <width>865</width>
+              <height>979</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -515,24 +515,7 @@
                </property>
               </widget>
              </item>
-             <item row="27" column="0">
-              <widget class="QLabel" name="clipSkipLabel">
-               <property name="text">
-                <string>Clip Skip</string>
-               </property>
-              </widget>
-             </item>
-             <item row="27" column="1">
-              <widget class="QSpinBox" name="clipSkipSpinBox">
-               <property name="minimum">
-                <number>1</number>
-               </property>
-               <property name="maximum">
-                <number>12</number>
-               </property>
-              </widget>
-             </item>
-             <item row="28" column="1">
+             <item row="31" column="1">
               <layout class="QHBoxLayout" name="horizontalLayout_7">
                <item>
                 <widget class="QPushButton" name="resetSettingsButton">
@@ -573,6 +556,82 @@
                 </widget>
                </item>
               </layout>
+             </item>
+             <item row="29" column="1">
+              <layout class="QFormLayout" name="formLayout_4">
+               <item row="0" column="0">
+                <widget class="QCheckBox" name="highResFixCheckBox">
+                 <property name="text">
+                  <string>Hi-res fix</string>
+                 </property>
+                </widget>
+               </item>
+               <item row="1" column="0">
+                <widget class="QCheckBox" name="karrasCheckBox">
+                 <property name="text">
+                  <string>Karras</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item row="28" column="0">
+              <widget class="QLabel" name="clipSkipLabel">
+               <property name="text">
+                <string>Clip Skip</string>
+               </property>
+              </widget>
+             </item>
+             <item row="28" column="1">
+              <widget class="QSpinBox" name="clipSkipSpinBox">
+               <property name="minimum">
+                <number>1</number>
+               </property>
+               <property name="maximum">
+                <number>12</number>
+               </property>
+              </widget>
+             </item>
+             <item row="30" column="1">
+              <widget class="QComboBox" name="comboBox">
+               <item>
+                <property name="text">
+                 <string>None</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>RealESRGAN 2x</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>RealESRGAN 4x</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>RealESRGAN 4x Anime</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>NMKD Siax</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Anime 4x</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+             <item row="30" column="0">
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Upscaler</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>

@@ -11,9 +11,15 @@ import requests
 from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QDesktopServices, QFont
-from PySide6.QtWidgets import (QApplication, QLineEdit, QMainWindow,
-                               QScrollArea, QSizePolicy, QTableWidgetItem,
-                               QVBoxLayout)
+from PySide6.QtWidgets import (
+    QApplication,
+    QLineEdit,
+    QMainWindow,
+    QScrollArea,
+    QSizePolicy,
+    QTableWidgetItem,
+    QVBoxLayout,
+)
 
 from hordeqt.classes import Job, LocalJob, Model
 from hordeqt.consts import ANON_API_KEY, BASE_URL, LOGGER
@@ -131,8 +137,8 @@ class HordeQt(QMainWindow):
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None
         self.job_history: List[Dict] = []
-        self.current_kudos_preview_cost=10.0
-        
+        self.current_kudos_preview_cost = 10.0
+
         LOGGER.debug("Initializing Masonry/Gallery layout")
         self.ui.galleryViewFrame.setSizePolicy(sizePolicy)
         container_layout = QVBoxLayout(self.ui.galleryViewFrame)
@@ -158,7 +164,7 @@ class HordeQt(QMainWindow):
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
-        
+
     def closeEvent(self, event):
         LOGGER.debug("Close clicked.")
 
@@ -174,7 +180,7 @@ class HordeQt(QMainWindow):
             self.ui.maxJobsSpinBox.value(),
             self.ui.saveMetadataCheckBox.isChecked(),
             self.download_thread,
-            self.get_job_config(),
+            self.save_job_config(),
             self.ui.shareImagesCheckBox.isChecked(),
             self.ui.tabWidget.currentIndex(),
             self.ui.saveFormatComboBox.currentText(),
@@ -183,39 +189,31 @@ class HordeQt(QMainWindow):
         self.savedData.write()
         LOGGER.debug("Closing Main window")
         QMainWindow.closeEvent(self, event)
+
     def update_kudos_preview(self):
-        jobs=self.create_jobs()
+        jobs = self.create_jobs()
         self.ui.GenerateButton.setText("Generate (Cost: Loading)")
         if jobs is not None:
-            #FIXME: for now, this will work. However, if multi-config is added (i.e. request with multiple step counts), this might undershoot or overshoot.
+            # FIXME: for now, this will work. However, if multi-config is added (i.e. request with multiple step counts), this might undershoot or overshoot.
             self.api_thread.request_kudo_cost_update.emit(jobs[0])
-            self.api_thread.job_count=len(jobs)
+            self.api_thread.job_count = len(jobs)
 
-    def on_kudo_cost_get(self,value: float):
-        LOGGER.debug(f"Got signal that kudos cost would be {value}. Multiplying by {self.api_thread.job_count} for total kudos cost of {value*self.api_thread.job_count}")
-        
-        self.ui.GenerateButton.setText(f:=f"Generate (Cost: {round(value)*self.api_thread.job_count} Kudos)")
-        
+    def on_kudo_cost_get(self, value: float):
+        LOGGER.debug(
+            f"Got signal that kudos cost would be {value}. Multiplying by {self.api_thread.job_count} for total kudos cost of {value*self.api_thread.job_count}"
+        )
+
+        self.ui.GenerateButton.setText(
+            f := f"Generate (Cost: {round(value)*self.api_thread.job_count} Kudos)"
+        )
+
         LOGGER.debug(f"Tried to update generate button text to {f}")
-        
-        self.current_kudos_preview_cost=value
-    def update_images_created(self,value:int):
-        self.api_thread.job_count=value
+
+        self.current_kudos_preview_cost = value
+
+    def update_images_created(self, value: int):
+        self.api_thread.job_count = value
         self.on_kudo_cost_get(self.current_kudos_preview_cost)
-    def get_job_config(self):
-        return {
-            "prompt": self.ui.PromptBox.toPlainText(),
-            "negative_prompt": self.ui.NegativePromptBox.toPlainText(),
-            "sampler_name": self.ui.samplerComboBox.currentText(),
-            "cfg_scale": self.ui.guidenceDoubleSpinBox.value(),
-            "seed": self.ui.seedSpinBox.value(),
-            "width": self.ui.widthSpinBox.value(),
-            "height": self.ui.heightSpinBox.value(),
-            "clip_skip": self.ui.clipSkipSpinBox.value(),
-            "steps": self.ui.stepsSpinBox.value(),
-            "model": self.ui.modelComboBox.currentText(),
-            "images": self.ui.imagesSpinBox.value(),
-        }
 
     def on_width_change(self):
         if not self.preset_being_updated:
@@ -309,7 +307,23 @@ class HordeQt(QMainWindow):
         QTimer.singleShot(300, self.update_kudos_preview)
         LOGGER.debug("Hiding progress bar after 500 ms")
         QTimer.singleShot(500, self.ui.progressBar.hide)
-        
+
+    def save_job_config(self):
+        return {
+            "prompt": self.ui.PromptBox.toPlainText(),
+            "negative_prompt": self.ui.NegativePromptBox.toPlainText(),
+            "sampler_name": self.ui.samplerComboBox.currentText(),
+            "cfg_scale": self.ui.guidenceDoubleSpinBox.value(),
+            "seed": self.ui.seedSpinBox.value(),
+            "width": self.ui.widthSpinBox.value(),
+            "height": self.ui.heightSpinBox.value(),
+            "clip_skip": self.ui.clipSkipSpinBox.value(),
+            "steps": self.ui.stepsSpinBox.value(),
+            "model": self.ui.modelComboBox.currentText(),
+            "images": self.ui.imagesSpinBox.value(),
+            "hires_fix": self.ui.highResFixCheckBox.isChecked(),
+            "karras": self.ui.karrasCheckBox.isChecked(),
+        }
 
     def restore_job_config(self, job_config: dict):
 
@@ -327,15 +341,16 @@ class HordeQt(QMainWindow):
         self.ui.clipSkipSpinBox.setValue(job_config.get("clip_skip", 1))
         self.ui.stepsSpinBox.setValue(job_config.get("steps", 20))
         self.ui.modelComboBox.setCurrentText(job_config.get("model", "default"))
-        self.ui.NSFWCheckBox.setChecked(job_config.get("allow_nsfw", False))
         self.ui.imagesSpinBox.setValue(job_config.get("images", 1))
+        self.ui.highResFixCheckBox.setChecked(job_config.get("hires_fix", True))
+        self.ui.karrasCheckBox.setCheckable(job_config.get("karras", True))
 
     def undo_reset_job_config(self):
         if self.last_job_config is not None:
             self.restore_job_config(self.last_job_config)
 
     def reset_job_config(self):
-        self.last_job_config = self.get_job_config()
+        self.last_job_config = self.save_job_config()
         self.ui.undoResetButton.setEnabled(True)
         # Restore the job config, using the defaults for everything. Model needs to be set after, as the default is "default"
         self.restore_job_config({})
@@ -488,11 +503,10 @@ class HordeQt(QMainWindow):
                 if cfg_scale != cfgreq:
                     self.show_warn_toast(
                         "Min Steps",
-                        f"This model requires a CFG value of {cfgreq}, currently {cfg_scale}",
+                        f"This model requires a CFG (Guidence) value of {cfgreq}, currently {cfg_scale}",
                     )
                     self.ui.guidenceDoubleSpinBox.setValue(float(cfgreq))
                     return None
-
             if (rsamplers := reqs.get("samplers", [])) != []:  # type: ignore
                 if type(rsamplers) == type(str):
                     rsamplers = [rsamplers]
@@ -511,8 +525,8 @@ class HordeQt(QMainWindow):
                         )
                         self.ui.samplerComboBox.setCurrentText(rsamplers[0])
                         return None
-        karras = True
-        hires_fix = True
+        karras = self.ui.karrasCheckBox.isChecked()
+        hires_fix = self.ui.highResFixCheckBox.isChecked()
         allow_nsfw = self.ui.NSFWCheckBox.isChecked()
         share_image = self.ui.shareImagesCheckBox.isChecked()
         prompts = prompt_matrix(prompt)
@@ -596,7 +610,7 @@ class HordeQt(QMainWindow):
         ModelPopup(curr_model.details)
 
     def on_generate_click(self):
-        self.job_history.append(self.get_job_config())
+        self.job_history.append(self.save_job_config())
         jobs = self.create_jobs()
         if jobs is not None:
             for n in range(len(jobs)):
