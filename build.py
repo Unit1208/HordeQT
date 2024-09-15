@@ -146,16 +146,27 @@ def main():
         formats.append("dmg")
         formats.append("pkg")
     briefcase_exec = find_executable("briefcase", venv_path)
+    print(platform.architecture(str(new_python)))
+    print(platform.machine())
+    print(platform.node())
+    print(platform.processor())
+    print(platform.python_branch())    
+    print(platform.python_build())    
+    print(platform.python_compiler())    
+    print(platform.python_version_tuple())    
+    print(platform.system())    
+    print(platform.uname())    
     
+        
 
-    subprocess.run([new_python, briefcase_exec, "update", "--no-input", "-r","--update-resources"])
+    subprocess.run([str(new_python), briefcase_exec, "update", "--no-input", "-r","--update-resources"])
     
     convert_uic_files(venv_path)
 
     for f in formats:
-        subprocess.run([new_python,briefcase_exec, "build", briefcase_platform, f, "--no-input"])
+        subprocess.run([str(new_python),briefcase_exec, "build", briefcase_platform, f, "--no-input"])
     for f in formats:
-        subprocess.run([new_python,briefcase_exec, "package", briefcase_platform, f, "--no-input"])
+        subprocess.run([str(new_python),briefcase_exec, "package", briefcase_platform, f, "--no-input"])
 
 
 if __name__ == "__main__":
