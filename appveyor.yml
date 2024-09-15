@@ -8,7 +8,7 @@ environment:
   FORCE_COLOR: "1"
 build_script:
   # Checkout
-  - cmd: git clone https://github.com/Unit1208/HordeQT.git
+  - cmd: git clone https://github.com/Unit1208/HordeQT.git .
 
   # Setup environment depending on platform
   - ps: |
