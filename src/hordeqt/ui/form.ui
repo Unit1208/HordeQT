@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>1000</width>
-    <height>1200</height>
+    <height>1000</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -39,7 +39,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>6</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -80,8 +80,8 @@
             <rect>
              <x>10</x>
              <y>10</y>
-             <width>881</width>
-             <height>971</height>
+             <width>951</width>
+             <height>901</height>
             </rect>
            </property>
            <property name="sizePolicy">
@@ -107,7 +107,7 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>865</width>
+              <width>935</width>
               <height>979</height>
              </rect>
             </property>
@@ -659,7 +659,7 @@
           <x>10</x>
           <y>30</y>
           <width>951</width>
-          <height>1091</height>
+          <height>861</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -677,7 +677,7 @@
            <x>0</x>
            <y>0</y>
            <width>951</width>
-           <height>1091</height>
+           <height>851</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -746,7 +746,7 @@
           <x>10</x>
           <y>10</y>
           <width>961</width>
-          <height>1111</height>
+          <height>911</height>
          </rect>
         </property>
         <widget class="QWidget" name="verticalLayoutWidget_2">
@@ -997,7 +997,7 @@
           <x>9</x>
           <y>9</y>
           <width>961</width>
-          <height>1111</height>
+          <height>771</height>
          </rect>
         </property>
         <layout class="QFormLayout" name="formLayout_2">
@@ -1673,17 +1673,140 @@
         <iconset theme="QIcon::ThemeIcon::HelpAbout"/>
        </attribute>
        <attribute name="title">
-        <string>Stats</string>
+        <string>Horde Stats</string>
        </attribute>
-       <widget class="QTreeView" name="localStats">
+       <widget class="QWidget" name="formLayoutWidget_3">
         <property name="geometry">
          <rect>
-          <x>0</x>
-          <y>10</y>
-          <width>971</width>
-          <height>801</height>
+          <x>9</x>
+          <y>9</y>
+          <width>951</width>
+          <height>321</height>
          </rect>
         </property>
+        <layout class="QFormLayout" name="formLayout_5">
+         <item row="0" column="0">
+          <widget class="QLabel" name="lastMinuteImagesLabel">
+           <property name="text">
+            <string>Last minute images</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lastMinuteImagesLineEdit"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="lastHourImagesLabel">
+           <property name="text">
+            <string>Last hour images</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="lastHourImagesLineEdit"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="lastDayImagesLabel">
+           <property name="text">
+            <string>Last day images</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="lastDayImagesLineEdit"/>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="lastMonthImagesLabel">
+           <property name="text">
+            <string>Last month images</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QLineEdit" name="lastMonthImagesLineEdit"/>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="allTimeImagesLabel">
+           <property name="text">
+            <string>All time images</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QLineEdit" name="allTimeImagesLineEdit"/>
+         </item>
+         <item row="5" column="1">
+          <widget class="Line" name="line_7">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="queuedRequestsLabel">
+           <property name="text">
+            <string>Queued requests</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QLineEdit" name="queuedRequestsLineEdit"/>
+         </item>
+         <item row="7" column="1">
+          <widget class="Line" name="line_8">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="workerCountLabel">
+           <property name="text">
+            <string>Image Worker Count</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1">
+          <widget class="QLineEdit" name="workerCountLineEdit"/>
+         </item>
+         <item row="9" column="0">
+          <widget class="QLabel" name="imageThreadCountLabel">
+           <property name="text">
+            <string>Image Thread Count</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="1">
+          <widget class="QLineEdit" name="imageThreadCountLineEdit"/>
+         </item>
+         <item row="10" column="1">
+          <widget class="Line" name="line_9">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="0">
+          <widget class="QLabel" name="queuedMPSLabel">
+           <property name="text">
+            <string>Queued MPS</string>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="1">
+          <widget class="QLineEdit" name="queuedMPSLineEdit"/>
+         </item>
+         <item row="13" column="0">
+          <widget class="QLabel" name="pastMinuteMPSLabel">
+           <property name="text">
+            <string>Past Minute MPS</string>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="1">
+          <widget class="QLineEdit" name="pastMinuteMPSLineEdit"/>
+         </item>
+        </layout>
        </widget>
       </widget>
       <widget class="QWidget" name="About_tab">
@@ -1700,17 +1823,6 @@
        <attribute name="title">
         <string>About</string>
        </attribute>
-       <widget class="QWidget" name="verticalLayoutWidget">
-        <property name="geometry">
-         <rect>
-          <x>-1</x>
-          <y>-1</y>
-          <width>771</width>
-          <height>691</height>
-         </rect>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout"/>
-       </widget>
       </widget>
      </widget>
     </item>

@@ -3,7 +3,7 @@ import os
 import random
 import sys
 import time
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import human_readable as hr
 import keyring
@@ -105,6 +105,7 @@ class HordeQt(QMainWindow):
         self.loading_thread.progress.connect(self.update_progress)
         self.loading_thread.model_info.connect(self.construct_model_dict)
         self.loading_thread.user_info.connect(self.update_user_info)
+        self.loading_thread.horde_info.connect(self.update_horde_info)
         LOGGER.debug("Connecting UI signals")
         self.ui.GenerateButton.clicked.connect(self.on_generate_click)
         self.ui.modelDetailsButton.clicked.connect(self.on_model_open_click)
@@ -379,7 +380,6 @@ class HordeQt(QMainWindow):
     def update_user_info(self, r: requests.Response):
         if r.status_code == 404:
             self.show_error_toast("Invalid API key", "User could not be found.")
-            LOGGER.warning("User not found, API key is invalid.")
             return
         j = r.json()
         self.user_info = j
@@ -425,7 +425,30 @@ class HordeQt(QMainWindow):
 
         self.ui.tokensGeneratedSpinBox.setValue(contrib["tokens"])
         self.ui.megapixelstepsGeneratedDoubleSpinBox.setValue(contrib["megapixelsteps"])
-
+    def update_horde_info(self,l:Tuple[requests.Response,requests.Response]):
+        (r1,r2)=l
+    
+        if r1.status_code!=200:
+            self.show_error_toast("Horde API Error","The AI Horde API didn't respond correctly, something is likely extremely broken")
+            return
+        j1=r1.json()
+        if r2.status_code!=200:
+            #Subtly different, to make it easier to tell which endpoint is misbehaving.
+            self.show_error_toast("Horde API Error","The AI Horde API didn't respond correctly, something is probably extremely broken")
+            return
+        j2=r2.json()
+        self.horde_info={"stats":j1,"perf":j2}
+        self.ui.lastMinuteImagesLineEdit.setText(str(j1["minute"]["images"]))
+        self.ui.lastHourImagesLineEdit.setText(str(j1["hour"]["images"]))
+        self.ui.lastDayImagesLineEdit.setText(str(j1["day"]["images"]))
+        self.ui.lastMonthImagesLineEdit.setText(str(j1["month"]["images"]))
+        self.ui.allTimeImagesLineEdit.setText(str(j1["total"]["images"]))
+        self.ui.pastMinuteMPSLineEdit.setText(str(j2["past_minute_megapixelsteps"]))
+        self.ui.queuedMPSLineEdit.setText(str(j2["queued_megapixelsteps"]))
+        self.ui.queuedRequestsLineEdit.setText(str(j2["queued_requests"]))
+        self.ui.workerCountLineEdit.setText(str(j2["worker_count"]))
+        self.ui.imageThreadCountLineEdit.setText(str(j2["thread_count"]))
+        
     def toggle_api_key_visibility(self):
         visible = self.ui.apiKeyEntry.echoMode() == QLineEdit.EchoMode.Normal
         if visible:

@@ -75,3 +75,5 @@
 - [ ] Upscale combobox
 - [ ] Cancel button on in-progress images
 - [x] Add "open in native viewer" to image popup
+- [x] Horde stats page
+- [ ] Local stats page
