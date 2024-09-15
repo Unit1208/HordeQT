@@ -21,7 +21,7 @@ from hordeqt.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.model_dialog import ModelPopup
 from hordeqt.saved_data import SavedData
-from hordeqt.threads.api_manager_thread import APIManagerThread
+from hordeqt.threads.job_manager_thread import JobManagerThread
 from hordeqt.threads.download_thread import DownloadThread
 from hordeqt.threads.load_thread import LoadThread
 from hordeqt.util import get_dynamic_constants, prompt_matrix
@@ -77,7 +77,7 @@ class HordeQt(QMainWindow):
         self.ui.tabWidget.setCurrentIndex(self.savedData.current_open_tab)
         self.ui.saveFormatComboBox.setCurrentText(self.savedData.prefered_format)
         LOGGER.debug("Initializing API thread")
-        self.api_thread = APIManagerThread.deserialize(
+        self.api_thread = JobManagerThread.deserialize(
             self.savedData.api_state,
             api_key=self.api_key,
             max_requests=self.savedData.max_jobs,

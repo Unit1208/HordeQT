@@ -2,7 +2,7 @@ import json
 import os
 from typing import Dict, List
 
-from hordeqt.threads.api_manager_thread import APIManagerThread
+from hordeqt.threads.job_manager_thread import JobManagerThread
 from hordeqt.threads.download_thread import DownloadThread
 from hordeqt.util import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
 
@@ -24,7 +24,7 @@ class SavedData:
 
     def update(
         self,
-        api: APIManagerThread,
+        api: JobManagerThread,
         nsfw: bool,
         max_jobs: int,
         save_metadata: bool,

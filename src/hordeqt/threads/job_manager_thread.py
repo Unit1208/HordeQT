@@ -11,7 +11,7 @@ from hordeqt.consts import BASE_URL, LOGGER
 from hordeqt.util import SAVED_IMAGE_DIR_PATH, get_headers
 
 
-class APIManagerThread(QThread):
+class JobManagerThread(QThread):
     job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
     updated = Signal()
 
@@ -49,7 +49,7 @@ class APIManagerThread(QThread):
             "completed_jobs": [_.serialize() for _ in self.completed_jobs],
             "errored_jobs": [_.serialize() for _ in self.errored_jobs],
         }
-
+    # def get_kudos_cost(self):
     @classmethod
     def deserialize(
         cls,
