@@ -1,10 +1,19 @@
 from typing import List
 
-from PySide6.QtCore import QRect, QSize, Qt, Signal
-from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QLayout,
-                               QLayoutItem, QPlainTextEdit, QPushButton,
-                               QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtCore import QRect, QSize, Qt, Signal, QUrl
+from PySide6.QtGui import QPixmap, QDesktopServices
+from PySide6.QtWidgets import (
+    QDockWidget,
+    QHBoxLayout,
+    QLabel,
+    QLayout,
+    QLayoutItem,
+    QPlainTextEdit,
+    QPushButton,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 from hordeqt.classes import LocalJob
 from hordeqt.consts import LOGGER
@@ -86,6 +95,9 @@ class ImagePopup(QDockWidget):
         self._parent.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, popup)
         popup.show()
 
+    def open_in_native_menu(self):
+        QDesktopServices.openUrl(QUrl.fromLocalFile(self.lj.path))
+
     # TODO: Implement buttons for use_*.  Signal for each.
     def __init__(self, pixmap: QPixmap, lj: LocalJob, parent):
         super().__init__("Image Viewer", parent)
@@ -95,6 +107,7 @@ class ImagePopup(QDockWidget):
         )
         self.lj = lj
         # Create a label to display the image
+
         self.label = QLabel(self)
         self.label.setPixmap(pixmap)
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -105,6 +118,9 @@ class ImagePopup(QDockWidget):
         # Create buttons
         use_prompt = QPushButton("Use Prompt")
         use_all = QPushButton("Use All")
+        # NOT IMPLEMETED YET
+        use_all.setEnabled(False)
+        use_prompt.setEnabled(False)
         copy_prompt = QPushButton("Copy Prompt")
         copy_prompt.clicked.connect(self.copy_prompt)
         copy_all = QPushButton("Copy All")
@@ -113,7 +129,8 @@ class ImagePopup(QDockWidget):
         show_details.clicked.connect(self.open_details)
         delete_image = QPushButton("Delete Image")
         delete_image.clicked.connect(self.delete_image)
-
+        open_in_native = QPushButton("Open with OS picture viewer")
+        open_in_native.clicked.connect(self.open_in_native_menu)
         # Create horizontal layouts for button pairs
         copy_layout = QHBoxLayout()
         copy_layout.addWidget(copy_prompt)
@@ -130,6 +147,7 @@ class ImagePopup(QDockWidget):
         layout.addLayout(use_layout)
         layout.addWidget(show_details)
         layout.addWidget(delete_image)
+        layout.addWidget(open_in_native)
 
         # Create a central widget to set the layout
         widget = QWidget()
