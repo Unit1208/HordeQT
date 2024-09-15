@@ -80,7 +80,7 @@ def install_sys_reqs():
     curr_platform, is_windows, is_linux, is_macos = detect_platform()
     if is_linux:
         os_rel = platform.freedesktop_os_release()
-        match os_rel.get("id"):
+        match os_rel.get("ID"):
             case "debian":
                 os.system(
                     "sudo apt install git build-essential pkg-config python3-dev python3-venv libgirepository1.0-dev libcairo2-dev gir1.2-gtk-3.0 libcanberra-gtk3-module elfutils flatpak flatpak-builder -y"
@@ -139,15 +139,17 @@ def main():
     )
 
     formats = ["app"]
+    additional_args=[]
     briefcase_platform = ""
     if is_linux:
         briefcase_platform = "linux"
         formats=["flatpak"]
     if is_windows:
         briefcase_platform = "windows"
-
+        additional_args.append("--adhoc-sign")
     if is_macos:
         briefcase_platform = "macOS"
+        
     briefcase_exec = find_executable("briefcase", venv_path)
 
     subprocess.run([str(new_python), briefcase_exec, "create"])
