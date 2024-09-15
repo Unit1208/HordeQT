@@ -1,19 +1,10 @@
 from typing import List
 
-from PySide6.QtCore import QRect, QSize, Qt, Signal, QUrl
-from PySide6.QtGui import QPixmap, QDesktopServices
-from PySide6.QtWidgets import (
-    QDockWidget,
-    QHBoxLayout,
-    QLabel,
-    QLayout,
-    QLayoutItem,
-    QPlainTextEdit,
-    QPushButton,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtCore import QRect, QSize, Qt, QUrl, Signal
+from PySide6.QtGui import QDesktopServices, QPixmap
+from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QLayout,
+                               QLayoutItem, QPlainTextEdit, QPushButton,
+                               QSizePolicy, QVBoxLayout, QWidget)
 
 from hordeqt.classes import LocalJob
 from hordeqt.consts import LOGGER

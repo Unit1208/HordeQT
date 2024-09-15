@@ -6,7 +6,7 @@ from typing import Dict, List, Self
 
 import requests
 from PIL import Image
-from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition
+from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
 
 from hordeqt.classes import LocalJob, apply_metadata_to_image
 from hordeqt.consts import LOGGER
@@ -33,8 +33,8 @@ class DownloadThread(QThread):
         self.completed_downloads = completed_downloads
         self.queued_deletes = queued_deletes
         self.running = True
-        self.wait_condition=QWaitCondition()
-        self.mutex=QMutex()
+        self.wait_condition = QWaitCondition()
+        self.mutex = QMutex()
         self.image_dir_path = SAVED_IMAGE_DIR_PATH
         self.use_metadata = use_metadata
 
@@ -49,11 +49,9 @@ class DownloadThread(QThread):
                 break
             self.pop_downloads()
             self.pop_deletes()
-            self.wait_condition.wait(
-                self.mutex,100
-            )
+            self.wait_condition.wait(self.mutex, 100)
             self.mutex.unlock()
-            
+
     def pop_downloads(self):
         if len(self.queued_downloads) > 0:
             lj = self.queued_downloads.pop()
@@ -83,8 +81,8 @@ class DownloadThread(QThread):
                     lj.path.unlink()
                 else:
                     LOGGER.warning(
-                            f'Path referred to by {lj.id} ("{lj.path}") is a directory'
-                        )
+                        f'Path referred to by {lj.id} ("{lj.path}") is a directory'
+                    )
 
     def serialize(self):
         return {
@@ -125,7 +123,6 @@ class DownloadThread(QThread):
         self.wait_condition.wakeAll()  # Wake the thread immediately to exit
         self.mutex.unlock()
         self.wait()
-
 
     def delete_image(self, image: LocalJob):
         self.queued_deletes.append(image)

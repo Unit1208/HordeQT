@@ -425,19 +425,26 @@ class HordeQt(QMainWindow):
 
         self.ui.tokensGeneratedSpinBox.setValue(contrib["tokens"])
         self.ui.megapixelstepsGeneratedDoubleSpinBox.setValue(contrib["megapixelsteps"])
-    def update_horde_info(self,l:Tuple[requests.Response,requests.Response]):
-        (r1,r2)=l
-    
-        if r1.status_code!=200:
-            self.show_error_toast("Horde API Error","The AI Horde API didn't respond correctly, something is likely extremely broken")
+
+    def update_horde_info(self, l: Tuple[requests.Response, requests.Response]):
+        (r1, r2) = l
+
+        if r1.status_code != 200:
+            self.show_error_toast(
+                "Horde API Error",
+                "The AI Horde API didn't respond correctly, something is likely extremely broken",
+            )
             return
-        j1=r1.json()
-        if r2.status_code!=200:
-            #Subtly different, to make it easier to tell which endpoint is misbehaving.
-            self.show_error_toast("Horde API Error","The AI Horde API didn't respond correctly, something is probably extremely broken")
+        j1 = r1.json()
+        if r2.status_code != 200:
+            # Subtly different, to make it easier to tell which endpoint is misbehaving.
+            self.show_error_toast(
+                "Horde API Error",
+                "The AI Horde API didn't respond correctly, something is probably extremely broken",
+            )
             return
-        j2=r2.json()
-        self.horde_info={"stats":j1,"perf":j2}
+        j2 = r2.json()
+        self.horde_info = {"stats": j1, "perf": j2}
         self.ui.lastMinuteImagesLineEdit.setText(str(j1["minute"]["images"]))
         self.ui.lastHourImagesLineEdit.setText(str(j1["hour"]["images"]))
         self.ui.lastDayImagesLineEdit.setText(str(j1["day"]["images"]))
@@ -448,7 +455,7 @@ class HordeQt(QMainWindow):
         self.ui.queuedRequestsLineEdit.setText(str(j2["queued_requests"]))
         self.ui.workerCountLineEdit.setText(str(j2["worker_count"]))
         self.ui.imageThreadCountLineEdit.setText(str(j2["thread_count"]))
-        
+
     def toggle_api_key_visibility(self):
         visible = self.ui.apiKeyEntry.echoMode() == QLineEdit.EchoMode.Normal
         if visible:

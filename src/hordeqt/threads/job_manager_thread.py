@@ -5,8 +5,7 @@ from queue import Queue
 from typing import Dict, List, Optional
 
 import requests
-from PySide6.QtCore import QThread, Signal
-from PySide6.QtCore import QMutex, QThread, QWaitCondition
+from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
 
 from hordeqt.classes import Job, LocalJob
 from hordeqt.consts import BASE_URL, LOGGER
@@ -38,12 +37,11 @@ class JobManagerThread(QThread):
         self.wait_condition = QWaitCondition()  # Condition variable
         self.mutex = QMutex()  # Mutex for synchronization
 
-
         self.errored_jobs: List[Job] = []
         self.request_kudo_cost_update.connect(self.get_kudos_cost)
 
     def run(self):
-        LOGGER.debug("API thread started")        
+        LOGGER.debug("API thread started")
         while self.running:
             # Acquire the mutex to check for stop conditions
             self.mutex.lock()
@@ -54,10 +52,9 @@ class JobManagerThread(QThread):
             self.handle_queue()
             self.updated.emit()
 
-            self.wait_condition.wait(
-                self.mutex, 1000
-            ) 
+            self.wait_condition.wait(self.mutex, 1000)
             self.mutex.unlock()
+
     def serialize(self):
         return {
             "current_requests": {
@@ -84,7 +81,7 @@ class JobManagerThread(QThread):
         try:
             c = copy.deepcopy(job)
             c.dry_run = True
-            c.prompt="KUDOS!" #Prevent empty prompt from interfering
+            c.prompt = "KUDOS!"  # Prevent empty prompt from interfering
             d = json.dumps(c.to_json())
             LOGGER.info(f"Requesting kudos count for {job.job_id}")
 
