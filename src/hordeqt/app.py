@@ -24,6 +24,7 @@ from hordeqt.saved_data import SavedData
 from hordeqt.threads.download_thread import DownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
 from hordeqt.threads.load_thread import LoadThread
+from hordeqt.threads.save_thread import SaveThread
 from hordeqt.util import get_dynamic_constants, prompt_matrix
 
 
@@ -93,6 +94,7 @@ class HordeQt(QMainWindow):
                 "queued_downloads": self.savedData.queued_downloads,
             },
         )
+        self.save_thread=SaveThread(self)
         LOGGER.debug("Connecting DL signals")
         self.download_thread.completed.connect(self.on_image_fully_downloaded)
         self.download_thread.use_metadata = self.savedData.save_metadata
@@ -161,6 +163,10 @@ class HordeQt(QMainWindow):
         Toast.setPosition(toast_enums.ToastPosition.TOP_RIGHT)
         Toast.setPositionRelativeToWidget(self)
         LOGGER.debug("Starting threads")
+        self.loading_thread.start()
+        self.download_thread.start()
+        self.api_thread.start()
+        self.save_thread.start()
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
@@ -169,7 +175,7 @@ class HordeQt(QMainWindow):
         LOGGER.debug("Close clicked.")
 
         self.api_thread.stop()
-
+        self.save_thread.running=False
         LOGGER.debug("Stopping DL thread")
         self.download_thread.stop()
         LOGGER.debug("DL thread stopped")

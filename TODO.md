@@ -23,7 +23,7 @@
   - [x] Prompt Matrices
 - [x] Conversion from NAI prompt formatting
 - [ ] DeepDanbooru integration
-- [ ] Insert Danbooru or similar url, get formatted result
+  - [ ] Insert Danbooru or similar url, get formatted result
 - [ ] Get prompt from metadata (DnD interface)
 - [x] Preset box for sizing
 - [x] Reset to defaults button
