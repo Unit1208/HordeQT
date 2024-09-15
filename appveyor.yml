@@ -40,3 +40,5 @@ artifacts:
     name: HordeQT-Windows-msi
   # - path: build/hordeqt/windows/app/src/HordeQT.exe
   #   name: HordeQT-Windows-exe
+skip_paths:
+  - /home/appveyor/projects/hordeqt/build/*
