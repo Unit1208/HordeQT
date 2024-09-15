@@ -29,4 +29,4 @@ build_script:
 
 artifacts:
   - path: dist/*
-    name: App-${env:target}
+    name: HordeQT

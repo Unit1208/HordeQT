@@ -79,28 +79,19 @@ def detect_platform():
 def install_sys_reqs():
     curr_platform, is_windows, is_linux, is_macos = detect_platform()
     if is_linux:
-        os_rel = platform.freedesktop_os_release()
-        match os_rel.get("ID"):
-            case "debian":
-                os.system(
-                    "sudo apt install git build-essential pkg-config python3-dev python3-venv libgirepository1.0-dev libcairo2-dev gir1.2-gtk-3.0 libcanberra-gtk3-module elfutils flatpak flatpak-builder -y"
-                )
-                pass
-            case "fedora":
-                os.system(
-                    "sudo dnf install git gcc make pkg-config rpm-build python3-devel gobject-introspection-devel cairo-gobject-devel gtk3 libcanberra-gtk3 flatpak flatpak-builder -y"
-                )
-            case "arch":
-                os.system(
-                    "sudo pacman -Syu git base-devel pkgconf python3 gobject-introspection cairo gtk3 libcanberra flatpak flatpak-builder "
-                )
-            case "opensuse":
-                os.system(
-                    "sudo zypper install git patterns-devel-base-devel_basis pkgconf-pkg-config python3-devel gobject-introspection-devel cairo-devel gtk3 'typelib(Gtk)=3.0' libcanberra-gtk3-module flatpak flatpak-builder "
-                )
-    # TODO: else:
-
-    pass
+        # one will probably work, I guess.        
+        os.system(
+            "sudo apt install git build-essential pkg-config python3-dev python3-venv libgirepository1.0-dev libcairo2-dev gir1.2-gtk-3.0 libcanberra-gtk3-module elfutils flatpak flatpak-builder -y"
+        )
+        os.system(
+            "sudo dnf install git gcc make pkg-config rpm-build python3-devel gobject-introspection-devel cairo-gobject-devel gtk3 libcanberra-gtk3 flatpak flatpak-builder -y"
+        )
+        os.system(
+            "sudo pacman -Syu git base-devel pkgconf python3 gobject-introspection cairo gtk3 libcanberra flatpak flatpak-builder "
+        )
+        os.system(
+            "sudo zypper install git patterns-devel-base-devel_basis pkgconf-pkg-config python3-devel gobject-introspection-devel cairo-devel gtk3 'typelib(Gtk)=3.0' libcanberra-gtk3-module flatpak flatpak-builder "
+        )
 
 
 def main():
