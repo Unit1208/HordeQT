@@ -2,7 +2,7 @@ version: 1.0.{build}
 image:
   - "Visual Studio 2022"
   - "Ubuntu2204"
-  - "macOS"
+  # - "macOS"
 
 environment:
   FORCE_COLOR: "1"
@@ -28,5 +28,7 @@ build_script:
   - ps: python build.py
 
 artifacts:
-  - path: dist/*
-    name: HordeQT
+  - path: dist/*.flatpak
+    name: HordeQT-Linux
+  - path: dist/*.exe
+    name: HordeQT-Windows
