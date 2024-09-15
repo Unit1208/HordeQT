@@ -42,8 +42,8 @@
   - [ ] Errored/Censored job state + handling
 - [x] Add a toggle for metadata?
 - [ ] Why isn't the gallery working on certain machines?
-- [ ] Delete button on images
-- [ ] When saving/Loading current state, trim off model worker count and match by that when loading.
+- [x] Delete button on images
+- [x] When saving/Loading current state, trim off model worker count and match by that when loading.
 - [x] Use actual rate limit values returned by API calls instead of tracking it manually
 - [ ] Use retry-after header
 - [x] Disable table editing
@@ -65,3 +65,5 @@
   - [x] Allow for custom models that aren't in the official list
   - [x] Don't freak out when a model has parenthesis in the name.
 - [ ] Save unknown models to saved data, don't remind again.
+- [ ] Autosave every ~60s  
+- [ ] Add errored jobs to a signal on API thread, then connect to a warning on the app

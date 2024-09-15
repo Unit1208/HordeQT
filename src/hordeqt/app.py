@@ -174,6 +174,7 @@ class HordeQt(QMainWindow):
         )
         LOGGER.debug("Writing saved data")
         self.savedData.write()
+        LOGGER.debug("Closing Main window")
         QMainWindow.closeEvent(self, event)
 
     def get_job_config(self):
@@ -203,6 +204,9 @@ class HordeQt(QMainWindow):
         current_model_needs_1024 = self.model_dict[
             self.ui.modelComboBox.currentText()
         ].details.get("baseline", None) in ["stable_diffusion_xl", "stable_cascade"]
+        # FIXME: when flux becomes official, make this less hacky.
+        if "flux" in self.ui.modelComboBox.currentText().lower():
+            current_model_needs_1024=True
         self.preset_being_updated = True
         match self.ui.presetComboBox.currentIndex():
             case 0:
