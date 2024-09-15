@@ -168,7 +168,6 @@ def main():
                 briefcase_platform,
                 f,
                 "--no-input",
-                *additional_args   
             ]
         )
     for f in formats:

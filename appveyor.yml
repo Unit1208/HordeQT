@@ -1,7 +1,7 @@
 version: 1.0.{build}
 image:
-  - "Visual Studio 2022"
   - "Ubuntu2204"
+  - "Visual Studio 2022"
   # - "macOS"
 
 environment:
