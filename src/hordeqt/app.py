@@ -175,7 +175,7 @@ class HordeQt(QMainWindow):
         LOGGER.debug("Close clicked.")
 
         self.api_thread.stop()
-        self.save_thread.running=False
+        self.save_thread.stop()
         LOGGER.debug("Stopping DL thread")
         self.download_thread.stop()
         LOGGER.debug("DL thread stopped")
