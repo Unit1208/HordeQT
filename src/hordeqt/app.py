@@ -356,7 +356,7 @@ class HordeQt(QMainWindow):
     def undo_reset_job_config(self):
         if self.last_job_config is not None:
             self.restore_job_config(self.last_job_config)
-    
+
     def reset_job_config(self):
         self.last_job_config = self.save_job_config()
         self.ui.undoResetButton.setEnabled(True)

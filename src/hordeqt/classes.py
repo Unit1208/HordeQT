@@ -74,14 +74,15 @@ class Job:
         self.kudos = kudos
         self.creation_time = time.time()
         self.mod_time = time.time()
+
     def to_job_config(self):
-        pandnp=self.prompt.split("###")
-        if len(pandnp)==1:
-            prompt=pandnp[0]
-            neg_prompt=""
+        pandnp = self.prompt.split("###")
+        if len(pandnp) == 1:
+            prompt = pandnp[0]
+            neg_prompt = ""
         else:
-            prompt=pandnp[0]
-            neg_prompt=pandnp[1]
+            prompt = pandnp[0]
+            neg_prompt = pandnp[1]
         return {
             "prompt": prompt,
             "negative_prompt": neg_prompt,
@@ -97,6 +98,7 @@ class Job:
             "hires_fix": self.hires_fix,
             "karras": self.karras,
         }
+
     def to_json(self) -> Dict:
         return {
             "prompt": self.prompt,
