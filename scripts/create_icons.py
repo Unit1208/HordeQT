@@ -1,17 +1,8 @@
-import os
-import shutil
-import subprocess
-import sys
-from pathlib import Path
-from typing import List, Optional
-import platform
+
 import os
 from PIL import Image
 
-import os
-import sys
 from pathlib import Path
-import shutil
 def convert_icon(icon_path, output_dir):
     # Ensure the output directory exists
     if not os.path.exists(output_dir):

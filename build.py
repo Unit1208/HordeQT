@@ -3,14 +3,8 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 import platform
-import os
-from PIL import Image
-
-import os
-import sys
-from pathlib import Path
 import shutil
 
 
