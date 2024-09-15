@@ -9,7 +9,7 @@ author = "Unit1208"
 author_email = "unit1208@national.shitposting.agency"
 
 [tool.briefcase.app.hordeqt]
-icon="src/hordeqt/resources/Icon"
+icon="src/hordeqt/resources/icons/icon"
 
 formal_name = "HordeQT"
 description = "Generate images using the AI Horde"
