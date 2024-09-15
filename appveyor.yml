@@ -27,10 +27,10 @@ build_script:
   # Build App
   - ps: python build.py
   - sh: |
-    if [ "$(uname)" = "Linux" ]; then
-      sudo chmod -R 777 build/
-      sudo chmod -R 777 dist/
-    fi
+      if [ "$(uname)" = "Linux" ]; then
+        sudo chmod -R 777 build/
+        sudo chmod -R 777 dist/
+      fi
 
 
 artifacts:
