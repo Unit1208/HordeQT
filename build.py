@@ -48,7 +48,7 @@ def find_executable(exe_name: str, prefix: os.PathLike | str = sys.exec_prefix) 
 def convert_uic_files(prefix: Path):
     ui_fns = ["form.ui", "modelinfo.ui", "prompt_item.ui", "prompt_library.ui"]
     ui_files: List[Path] = [
-        Path(__file__).parent / "src" / "hordeqt" "ui" / x for x in ui_fns
+        Path(__file__).parent / "src" / "hordeqt"/"ui" / x for x in ui_fns
     ]
     uic = find_executable("pyside6-uic", prefix)
 
