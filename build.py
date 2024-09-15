@@ -142,19 +142,23 @@ def main():
         additional_args.append("--adhoc-sign")
 
     briefcase_exec = find_executable("briefcase", venv_path)
+    for f in formats:
+        subprocess.run(
+            [str(new_python), briefcase_exec, "create", briefcase_platform, f]
+        )
 
-    subprocess.run([str(new_python), briefcase_exec, "create"])
-
-    subprocess.run(
-        [
-            str(new_python),
-            briefcase_exec,
-            "update",
-            "--no-input",
-            "-r",
-            "--update-resources",
-        ]
-    )
+        subprocess.run(
+            [
+                str(new_python),
+                briefcase_exec,
+                "update",
+                briefcase_platform,
+                f,
+                "--no-input",
+                "-r",
+                "--update-resources",
+            ]
+        )
 
     convert_uic_files(venv_path)
 
@@ -169,7 +173,6 @@ def main():
                 "--no-input",
             ]
         )
-    for f in formats:
         subprocess.run(
             [
                 str(new_python),
