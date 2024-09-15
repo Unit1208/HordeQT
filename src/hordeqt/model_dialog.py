@@ -1,5 +1,6 @@
-from hordeqt.gen.ui_modelinfo import Ui_Dialog
 from PySide6.QtWidgets import QDialog
+
+from hordeqt.gen.ui_modelinfo import Ui_Dialog
 
 
 class ModelPopup(QDialog):

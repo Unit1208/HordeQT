@@ -1,17 +1,15 @@
-import logging
-from hordeqt.classes import LocalJob, apply_metadata_to_image
-from hordeqt.util import SAVED_IMAGE_DIR_PATH
-
-import requests
-from PySide6.QtCore import QThread, Signal
-
-
 import os
 import tempfile
 import time
 from pathlib import Path
 from typing import Dict, List, Self
+
+import requests
+from PySide6.QtCore import QThread, Signal
+
+from hordeqt.classes import LocalJob, apply_metadata_to_image
 from hordeqt.consts import LOGGER
+from hordeqt.util import SAVED_IMAGE_DIR_PATH
 
 
 class DownloadThread(QThread):
@@ -93,7 +91,6 @@ class DownloadThread(QThread):
             qd: List[dict] = qd
             nqd = [LocalJob.deserialize(x, SAVED_IMAGE_DIR_PATH) for x in qd]
         return cls(
-            
             completed_downloads=ncd,
             queued_downloads=nqdl,
             queued_deletes=nqd,

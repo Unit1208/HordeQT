@@ -1,45 +1,30 @@
 import datetime as dt
-import human_readable as hr
 import os
 import random
-import time
-from typing import List, Dict, Optional
-from PySide6.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QLineEdit,
-    QWidget,
-    QSizePolicy,
-    QLabel,
-    QScrollArea,
-    QTableWidgetItem,
-    QVBoxLayout,
-)
-from PySide6.QtCore import (
-    QTimer,
-    Qt,
-    QUrl,
-)
-from pyqttoast import Toast, ToastPreset, toast_enums
-from PySide6.QtGui import QPixmap, QDesktopServices, QFont, QClipboard
-
-import logging
-import coloredlogs
 import sys
+import time
+from typing import Dict, List, Optional
 
-from hordeqt.saved_data import SavedData
-from hordeqt.threads.api_manager_thread import APIManagerThread
-from hordeqt.threads.load_thread import LoadThread
-from hordeqt.threads.download_thread import DownloadThread
-from hordeqt.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
-from hordeqt.model_dialog import ModelPopup
-from hordeqt.gen.ui_form import Ui_MainWindow
-
+import human_readable as hr
 import keyring
 import requests
-from hordeqt.util import create_uuid, prompt_matrix,get_dynamic_constants
+from pyqttoast import Toast, ToastPreset, toast_enums
+from PySide6.QtCore import Qt, QTimer, QUrl
+from PySide6.QtGui import QDesktopServices, QFont
+from PySide6.QtWidgets import (QApplication, QLineEdit, QMainWindow,
+                               QScrollArea, QSizePolicy, QTableWidgetItem,
+                               QVBoxLayout)
+
 from hordeqt.classes import Job, LocalJob, Model
 from hordeqt.consts import ANON_API_KEY, BASE_URL, LOGGER
+from hordeqt.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
+from hordeqt.gen.ui_form import Ui_MainWindow
+from hordeqt.model_dialog import ModelPopup
+from hordeqt.saved_data import SavedData
+from hordeqt.threads.api_manager_thread import APIManagerThread
+from hordeqt.threads.download_thread import DownloadThread
+from hordeqt.threads.load_thread import LoadThread
+from hordeqt.util import get_dynamic_constants, prompt_matrix
 
 
 class HordeQt(QMainWindow):
@@ -743,9 +728,11 @@ class HordeQt(QMainWindow):
 
 
 def main():
-    global app, SAVED_DATA_DIR_PATH,SAVED_DATA_PATH,SAVED_IMAGE_DIR_PATH
+    global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH
     # I don't care.
-    (app,SAVED_DATA_DIR_PATH,SAVED_DATA_PATH,SAVED_IMAGE_DIR_PATH)=get_dynamic_constants()
+    (app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH) = (
+        get_dynamic_constants()
+    )
 
     os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
     os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
@@ -753,4 +740,3 @@ def main():
     widget = HordeQt(app)
     widget.show()
     sys.exit(app.exec())
-

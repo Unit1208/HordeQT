@@ -1,15 +1,13 @@
-from hordeqt.consts import BASE_URL,LOGGER
-from hordeqt.util import get_headers
-
-
-import requests
-from PySide6.QtCore import QObject, QStandardPaths, QThread, Signal
-
-
 import json
 import os
 import time
 from pathlib import Path
+
+import requests
+from PySide6.QtCore import QObject, QStandardPaths, QThread, Signal
+
+from hordeqt.consts import BASE_URL, LOGGER
+from hordeqt.util import get_headers
 
 
 class LoadThread(QThread):
@@ -42,7 +40,6 @@ class LoadThread(QThread):
             )
         )
         model_cache_path = p / "model_ref.json"
-
 
         if (
             not model_cache_path.exists()

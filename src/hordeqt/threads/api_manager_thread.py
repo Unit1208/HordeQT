@@ -1,26 +1,21 @@
-from pathlib import Path
-from hordeqt.classes import Job, LocalJob
-from hordeqt.consts import BASE_URL, LOGGER
-from hordeqt.util import SAVED_IMAGE_DIR_PATH, get_headers
-
-
-import requests
-from PySide6.QtCore import QThread, Signal
-
-
 import json
 import time
 from queue import Queue
 from typing import Dict, List
+
+import requests
+from PySide6.QtCore import QThread, Signal
+
+from hordeqt.classes import Job, LocalJob
+from hordeqt.consts import BASE_URL, LOGGER
+from hordeqt.util import SAVED_IMAGE_DIR_PATH, get_headers
 
 
 class APIManagerThread(QThread):
     job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
     updated = Signal()
 
-    def __init__(
-        self, api_key: str, max_requests: int, parent=None
-    ):
+    def __init__(self, api_key: str, max_requests: int, parent=None):
         super().__init__(parent)
         self.api_key = api_key
         self.max_requests = max_requests

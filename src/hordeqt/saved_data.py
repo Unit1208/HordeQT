@@ -1,11 +1,10 @@
-from hordeqt.util import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
-from hordeqt.threads.api_manager_thread import APIManagerThread
-from hordeqt.threads.download_thread import DownloadThread
-
-
 import json
 import os
 from typing import Dict, List
+
+from hordeqt.threads.api_manager_thread import APIManagerThread
+from hordeqt.threads.download_thread import DownloadThread
+from hordeqt.util import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
 
 
 class SavedData:

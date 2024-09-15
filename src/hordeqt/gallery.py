@@ -1,35 +1,14 @@
-from hordeqt.classes import LocalJob
-from typing import List
-from PySide6.QtWidgets import (
-    QWidget,
-    QSizePolicy,
-    QLabel,
-    QLayout,
-    QLayoutItem,
-    QVBoxLayout,
-)
-from PySide6.QtCore import (
-    Signal,
-    Qt,
-    QSize,
-    QRect,
-)
-from PySide6.QtGui import QPixmap
 import logging
-import coloredlogs
+from typing import List
 
-from PySide6.QtCore import Qt, Signal
+import coloredlogs
+from PySide6.QtCore import QRect, QSize, Qt, Signal
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (
-    QDockWidget,
-    QHBoxLayout,
-    QLabel,
-    QPushButton,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-    QPlainTextEdit,
-)
+from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QLayout,
+                               QLayoutItem, QPlainTextEdit, QPushButton,
+                               QSizePolicy, QVBoxLayout, QWidget)
+
+from hordeqt.classes import LocalJob
 
 LOGGER = logging.getLogger("HordeQT")
 coloredlogs.install("DEBUG", milliseconds=True)

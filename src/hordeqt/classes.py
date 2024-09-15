@@ -1,10 +1,11 @@
 import json
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Dict, Optional, Self
 
+from PIL import ExifTags, Image
+
 from hordeqt.util import create_uuid
-from PIL import Image, ExifTags
 
 
 class Model:
