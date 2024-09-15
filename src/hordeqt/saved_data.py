@@ -85,4 +85,4 @@ class SavedData:
         self.job_config = j.get("job_config", {})
         self.current_open_tab = j.get("current_open_tab", 0)
         self.prefered_format = j.get("prefered_format", "webp")
-        self.warned_models=j.get("warned_models",[])
+        self.warned_models = j.get("warned_models", [])

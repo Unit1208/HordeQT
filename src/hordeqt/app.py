@@ -76,7 +76,7 @@ class HordeQt(QMainWindow):
         self.ui.saveMetadataCheckBox.setChecked(self.savedData.save_metadata)
         self.ui.tabWidget.setCurrentIndex(self.savedData.current_open_tab)
         self.ui.saveFormatComboBox.setCurrentText(self.savedData.prefered_format)
-        self.warned_models=self.savedData.warned_models
+        self.warned_models = self.savedData.warned_models
         LOGGER.debug("Initializing API thread")
         self.api_thread = JobManagerThread.deserialize(
             self.savedData.api_state,
@@ -95,7 +95,7 @@ class HordeQt(QMainWindow):
         )
         LOGGER.debug("Connecting DL signals")
         self.download_thread.completed.connect(self.on_image_fully_downloaded)
-        self.download_thread.use_metadata=self.savedData.save_metadata
+        self.download_thread.use_metadata = self.savedData.save_metadata
         LOGGER.debug("Connecting API signals")
         self.api_thread.job_completed.connect(self.on_job_completed)
         self.api_thread.updated.connect(self.update_inprogess_table)
@@ -107,7 +107,9 @@ class HordeQt(QMainWindow):
         LOGGER.debug("Connecting UI signals")
         self.ui.GenerateButton.clicked.connect(self.on_generate_click)
         self.ui.modelDetailsButton.clicked.connect(self.on_model_open_click)
-        self.ui.saveMetadataCheckBox.checkStateChanged.connect(self.update_metadata_save)
+        self.ui.saveMetadataCheckBox.checkStateChanged.connect(
+            self.update_metadata_save
+        )
 
         self.ui.apiKeyEntry.returnPressed.connect(self.save_api_key)
         self.ui.saveAPIkey.clicked.connect(self.save_api_key)
@@ -188,9 +190,10 @@ class HordeQt(QMainWindow):
         self.savedData.write()
         LOGGER.debug("Closing Main window")
         QMainWindow.closeEvent(self, event)
+
     def update_metadata_save(self):
-        self.download_thread.use_metadata=self.ui.saveMetadataCheckBox.isChecked()
-        
+        self.download_thread.use_metadata = self.ui.saveMetadataCheckBox.isChecked()
+
     def update_kudos_preview(self):
         jobs = self.create_jobs()
         self.ui.GenerateButton.setText("Generate (Cost: Loading)")
@@ -590,7 +593,9 @@ class HordeQt(QMainWindow):
                     m.details = {}
                     self.warned_models.append(m.name)
                 else:
-                    LOGGER.warning(f"Unknown model {m.name} is already known, not warning user.")
+                    LOGGER.warning(
+                        f"Unknown model {m.name} is already known, not warning user."
+                    )
             model_dict[name] = m
         self.ui.modelComboBox.setCurrentIndex(0)
         self.model_dict = model_dict
