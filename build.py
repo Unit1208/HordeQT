@@ -140,6 +140,7 @@ def main():
         additional_args.append("--adhoc-sign")
     if is_macos:
         briefcase_platform = "macOS"
+        additional_args.append("--adhoc-sign")
         
     briefcase_exec = find_executable("briefcase", venv_path)
 

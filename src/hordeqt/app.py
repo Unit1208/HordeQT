@@ -206,7 +206,7 @@ class HordeQt(QMainWindow):
         ].details.get("baseline", None) in ["stable_diffusion_xl", "stable_cascade"]
         # FIXME: when flux becomes official, make this less hacky.
         if "flux" in self.ui.modelComboBox.currentText().lower():
-            current_model_needs_1024=True
+            current_model_needs_1024 = True
         self.preset_being_updated = True
         match self.ui.presetComboBox.currentIndex():
             case 0:

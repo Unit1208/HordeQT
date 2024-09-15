@@ -103,12 +103,14 @@ class APIManagerThread(QThread):
                         self.job_queue.put(job)
                         self.generate_rl_reset = time.time() + 5
                         return
-                    if response.status_code==400:
-                        valid_error=response.json()
+                    if response.status_code == 400:
+                        valid_error = response.json()
                         rc = valid_error.get("rc")
                         message = valid_error.get("message")
-                        errors=", ".join(valid_error.get("errors",{}).keys())
-                        LOGGER.error(f"Job {job.job_id} failed validation: \"{rc}\" {message}. {errors}")
+                        errors = ", ".join(valid_error.get("errors", {}).keys())
+                        LOGGER.error(
+                            f'Job {job.job_id} failed validation: "{rc}" {message}. {errors}'
+                        )
                         return
                     response.raise_for_status()
                     horde_job_id = response.json().get("id")
@@ -125,12 +127,12 @@ class APIManagerThread(QThread):
                     )
                 except requests.RequestException as e:
                     LOGGER.error(e)
-                    #Nested try: except feels like bad practice.
+                    # Nested try: except feels like bad practice.
                     try:
-                        valid_error=response.json() # type: ignore
+                        valid_error = response.json()  # type: ignore
                         rc = valid_error.get("rc")
                         message = valid_error.get("message")
-                        LOGGER.error(f"Job {job.job_id} errored: \"{rc}\" {message}")
+                        LOGGER.error(f'Job {job.job_id} errored: "{rc}" {message}')
                     except NameError:
                         pass
                     except json.JSONDecodeError:
