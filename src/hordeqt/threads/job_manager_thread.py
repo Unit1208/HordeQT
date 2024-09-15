@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 
 import requests
 from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QMutex, QThread, QWaitCondition
 
 from hordeqt.classes import Job, LocalJob
 from hordeqt.consts import BASE_URL, LOGGER
@@ -34,17 +35,29 @@ class JobManagerThread(QThread):
         self.status_rl_remaining = 1
         self.status_reset_time = time.time()
 
+        self.wait_condition = QWaitCondition()  # Condition variable
+        self.mutex = QMutex()  # Mutex for synchronization
+
+
         self.errored_jobs: List[Job] = []
         self.request_kudo_cost_update.connect(self.get_kudos_cost)
 
     def run(self):
-        LOGGER.debug("API thread started")
+        LOGGER.debug("API thread started")        
         while self.running:
+            # Acquire the mutex to check for stop conditions
+            self.mutex.lock()
+            if not self.running:
+                self.mutex.unlock()
+                break
 
             self.handle_queue()
             self.updated.emit()
-            time.sleep(1)  # Sleep for a short time to avoid high CPU usage
 
+            self.wait_condition.wait(
+                self.mutex, 1000
+            ) 
+            self.mutex.unlock()
     def serialize(self):
         return {
             "current_requests": {
@@ -280,7 +293,10 @@ class JobManagerThread(QThread):
 
     def stop(self):
         LOGGER.debug("Stopping API thread")
+        self.mutex.lock()
         self.running = False
+        self.wait_condition.wakeAll()  # Wake the thread immediately to exit
+        self.mutex.unlock()
         self.wait()
         LOGGER.debug("API thread stopped.")
 

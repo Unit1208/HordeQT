@@ -29,7 +29,7 @@
 - [x] Reset to defaults button
 - [x] Undo reset button
 - [ ] Prompt/Config History
-- [ ] Figure out why closing takes so long
+- [x] Figure out why closing takes so long
 - [ ] Figure out why opening takes so long
 - [ ] Reload button for user details
 - [x] Preview kudos cost

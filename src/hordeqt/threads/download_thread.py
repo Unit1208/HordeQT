@@ -6,7 +6,7 @@ from typing import Dict, List, Self
 
 import requests
 from PIL import Image
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition
 
 from hordeqt.classes import LocalJob, apply_metadata_to_image
 from hordeqt.consts import LOGGER
@@ -33,43 +33,58 @@ class DownloadThread(QThread):
         self.completed_downloads = completed_downloads
         self.queued_deletes = queued_deletes
         self.running = True
+        self.wait_condition=QWaitCondition()
+        self.mutex=QMutex()
         self.image_dir_path = SAVED_IMAGE_DIR_PATH
-        self.use_metadata = True
+        self.use_metadata = use_metadata
 
     def add_dl(self, local_job: LocalJob):
         self.queued_downloads.append(local_job)
 
     def run(self):
         while self.running:
-            if len(self.queued_downloads) > 0:
-                lj = self.queued_downloads.pop()
-                LOGGER.info(f"Downloading {lj.id}")
-                tf = tempfile.NamedTemporaryFile()
-                tf.write(requests.get(lj.downloadURL).content)
-                if self.use_metadata:
-                    apply_metadata_to_image(Path(tf.name), lj)
+            self.mutex.lock()
+            if not self.running:
+                self.mutex.unlock()
+                break
+            self.pop_downloads()
+            self.pop_deletes()
+            self.wait_condition.wait(
+                self.mutex,100
+            )
+            self.mutex.unlock()
+            
+    def pop_downloads(self):
+        if len(self.queued_downloads) > 0:
+            lj = self.queued_downloads.pop()
+            LOGGER.info(f"Downloading {lj.id}")
+            tf = tempfile.NamedTemporaryFile()
+            tf.write(requests.get(lj.downloadURL).content)
+            if self.use_metadata:
+                apply_metadata_to_image(Path(tf.name), lj)
+            else:
+                im = Image.open(Path(tf.name))
+                im.save(lj.path)
+            tf.close()
+            LOGGER.debug(f"{lj.id} downloaded")
+            self.completed.emit(lj)
+            self.completed_downloads.append(lj)
+
+    def pop_deletes(self):
+        if len(self.queued_deletes) > 0:
+            lj = self.queued_deletes.pop()
+            LOGGER.info(f"Deleting {lj.id}")
+            try:
+                self.completed_downloads.remove(lj)
+            except ValueError as e:
+                LOGGER.warning(f"Failed to delete {lj.id}")
+            if os.path.exists(lj.path):
+                if lj.path.is_file():
+                    lj.path.unlink()
                 else:
-                    im = Image.open(Path(tf.name))
-                    im.save(lj.path)
-                tf.close()
-                LOGGER.debug(f"{lj.id} downloaded")
-                self.completed.emit(lj)
-                self.completed_downloads.append(lj)
-            if len(self.queued_deletes) > 0:
-                lj = self.queued_deletes.pop()
-                LOGGER.info(f"Deleting {lj.id}")
-                try:
-                    self.completed_downloads.remove(lj)
-                except ValueError as e:
-                    LOGGER.warning(f"Failed to delete {lj.id}")
-                if os.path.exists(lj.path):
-                    if lj.path.is_file():
-                        lj.path.unlink()
-                    else:
-                        LOGGER.warning(
+                    LOGGER.warning(
                             f'Path referred to by {lj.id} ("{lj.path}") is a directory'
                         )
-            time.sleep(0.1)
 
     def serialize(self):
         return {
@@ -105,8 +120,12 @@ class DownloadThread(QThread):
         )
 
     def stop(self):
+        self.mutex.lock()
         self.running = False
+        self.wait_condition.wakeAll()  # Wake the thread immediately to exit
+        self.mutex.unlock()
         self.wait()
+
 
     def delete_image(self, image: LocalJob):
         self.queued_deletes.append(image)
