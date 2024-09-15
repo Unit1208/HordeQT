@@ -36,6 +36,7 @@ def find_executable(exe_name: str, prefix: os.PathLike | str = sys.exec_prefix) 
     # Search in the possible paths
     for path in possible_paths:
         try:
+            print(os.listdir(path.parent))
             if path.is_file():
                 return path
         except FileNotFoundError:
@@ -52,6 +53,7 @@ def convert_uic_files(prefix: Path):
         Path(__file__).parent / "src" / "hordeqt" / x for x in ui_fns
     ]
     uic = find_executable("pyside6-uic", prefix)
+    
     for file in ui_files:
         new_py_fpath = (
             Path(__file__).parent
