@@ -74,7 +74,29 @@ class Job:
         self.kudos = kudos
         self.creation_time = time.time()
         self.mod_time = time.time()
-
+    def to_job_config(self):
+        pandnp=self.prompt.split("###")
+        if len(pandnp)==1:
+            prompt=pandnp[0]
+            neg_prompt=""
+        else:
+            prompt=pandnp[0]
+            neg_prompt=pandnp[1]
+        return {
+            "prompt": prompt,
+            "negative_prompt": neg_prompt,
+            "sampler_name": self.sampler_name,
+            "cfg_scale": self.cfg_scale,
+            "seed": int(self.seed),
+            "width": self.width,
+            "height": self.height,
+            "clip_skip": self.clip_skip,
+            "steps": self.steps,
+            "model": self.model,
+            "images": 1,
+            "hires_fix": self.hires_fix,
+            "karras": self.karras,
+        }
     def to_json(self) -> Dict:
         return {
             "prompt": self.prompt,

@@ -1,10 +1,25 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from typing import List
+
+if TYPE_CHECKING:
+    from hordeqt.app import HordeQt
 
 from PySide6.QtCore import QRect, QSize, Qt, QUrl, Signal
 from PySide6.QtGui import QDesktopServices, QPixmap
-from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QLayout,
-                               QLayoutItem, QPlainTextEdit, QPushButton,
-                               QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QDockWidget,
+    QHBoxLayout,
+    QLabel,
+    QLayout,
+    QLayoutItem,
+    QPlainTextEdit,
+    QPushButton,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 from hordeqt.classes import LocalJob
 from hordeqt.consts import LOGGER
@@ -80,6 +95,16 @@ class ImagePopup(QDockWidget):
 
         self._parent.clipboard.setText(self.lj.pretty_format())
 
+    def use_prompt(self):
+        self._parent.ui.PromptBox.setPlainText(self.lj.original.prompt.split("###")[0])
+        self._parent.ui.tabWidget.setCurrentIndex(0)
+
+    def use_all(self):
+        self._parent.last_job_config = self._parent.save_job_config()
+        self._parent.ui.undoResetButton.setEnabled(True)
+        self._parent.ui.tabWidget.setCurrentIndex(0)
+        self._parent.restore_job_config(self.lj.original.to_job_config())
+
     def open_details(self):
         LOGGER.debug(f"Opening details for {self.lj.id}")
         popup = ImageDetailsPopup(self.lj, self._parent)
@@ -89,8 +114,7 @@ class ImagePopup(QDockWidget):
     def open_in_native_menu(self):
         QDesktopServices.openUrl(QUrl.fromLocalFile(self.lj.path))
 
-    # TODO: Implement buttons for use_*.  Signal for each.
-    def __init__(self, pixmap: QPixmap, lj: LocalJob, parent):
+    def __init__(self, pixmap: QPixmap, lj: LocalJob, parent: HordeQt):
         super().__init__("Image Viewer", parent)
         self._parent = parent
         self.setAllowedAreas(
@@ -114,10 +138,9 @@ class ImagePopup(QDockWidget):
 
         # Create buttons
         use_prompt = QPushButton("Use Prompt")
+        use_prompt.clicked.connect(self.use_prompt)
         use_all = QPushButton("Use All")
-        # NOT IMPLEMETED YET
-        use_all.setEnabled(False)
-        use_prompt.setEnabled(False)
+        use_all.clicked.connect(self.use_all)
         copy_prompt = QPushButton("Copy Prompt")
         copy_prompt.clicked.connect(self.copy_prompt)
         copy_all = QPushButton("Copy All")
