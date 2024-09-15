@@ -36,7 +36,6 @@ def find_executable(exe_name: str, prefix: os.PathLike | str = sys.exec_prefix) 
     # Search in the possible paths
     for path in possible_paths:
         try:
-            print(os.listdir(path.parent))
             if path.is_file():
                 return path
         except FileNotFoundError:
@@ -84,20 +83,20 @@ def install_sys_reqs():
         match os_rel.get("id"):
             case "debian":
                 os.system(
-                    "yes | sudo apt install git build-essential pkg-config python3-dev python3-venv libgirepository1.0-dev libcairo2-dev gir1.2-gtk-3.0 libcanberra-gtk3-module elfutils -y"
+                    "sudo apt install git build-essential pkg-config python3-dev python3-venv libgirepository1.0-dev libcairo2-dev gir1.2-gtk-3.0 libcanberra-gtk3-module elfutils flatpak flatpak-builder -y"
                 )
                 pass
             case "fedora":
                 os.system(
-                    "yes | sudo dnf install git gcc make pkg-config rpm-build python3-devel gobject-introspection-devel cairo-gobject-devel gtk3 libcanberra-gtk3"
+                    "sudo dnf install git gcc make pkg-config rpm-build python3-devel gobject-introspection-devel cairo-gobject-devel gtk3 libcanberra-gtk3 flatpak flatpak-builder -y"
                 )
             case "arch":
                 os.system(
-                    "yes | sudo pacman -Syu git base-devel pkgconf python3 gobject-introspection cairo gtk3 libcanberra"
+                    "sudo pacman -Syu git base-devel pkgconf python3 gobject-introspection cairo gtk3 libcanberra flatpak flatpak-builder "
                 )
             case "opensuse":
                 os.system(
-                    "yes | sudo zypper install git patterns-devel-base-devel_basis pkgconf-pkg-config python3-devel gobject-introspection-devel cairo-devel gtk3 'typelib(Gtk)=3.0' libcanberra-gtk3-module"
+                    "sudo zypper install git patterns-devel-base-devel_basis pkgconf-pkg-config python3-devel gobject-introspection-devel cairo-devel gtk3 'typelib(Gtk)=3.0' libcanberra-gtk3-module flatpak flatpak-builder "
                 )
     # TODO: else:
 
@@ -139,19 +138,16 @@ def main():
         ]
     )
 
-    formats = []
+    formats = ["app"]
     briefcase_platform = ""
+    if is_linux:
+        briefcase_platform = "linux"
+        format=["flatpak"]
     if is_windows:
         briefcase_platform = "windows"
-        formats.append("msi")
-        formats.append("zip")
-    elif is_linux:
-        briefcase_platform = "linux"
-        formats.append("flatpak")
-    elif is_macos:
+
+    if is_macos:
         briefcase_platform = "macOS"
-        formats.append("dmg")
-        formats.append("pkg")
     briefcase_exec = find_executable("briefcase", venv_path)
 
     subprocess.run([str(new_python), briefcase_exec, "create"])
