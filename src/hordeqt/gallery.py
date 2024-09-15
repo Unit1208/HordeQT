@@ -109,11 +109,17 @@ class ImagePopup(QDockWidget):
         # Create a label to display the image
 
         self.label = QLabel(self)
-        self.label.setPixmap(pixmap)
-        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        self.label.setPixmap(
+            pixmap.scaled(
+                512,
+                512,
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
         )
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
+        self.label.setMaximumSize(512, 512)
 
         # Create buttons
         use_prompt = QPushButton("Use Prompt")

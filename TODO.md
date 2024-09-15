@@ -53,7 +53,7 @@
   - [See pythonguis.com](https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/)
 - [ ] Sort options on gallery.
 - [ ] Move loading images to load_thread
-- [ ] Resize images to fit screen on popup
+- [x] Resize images to fit screen on popup
 - [ ] LoRAs/TIs
 - [ ] Warning when trying to use a Pony model incorrectly.
   - [ ] "" for Flux

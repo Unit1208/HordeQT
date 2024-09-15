@@ -66,7 +66,6 @@ class HordeQt(QMainWindow):
         self.ui.frame.setSizePolicy(sizePolicy)
         self.ui.scrollArea.setSizePolicy(sizePolicy)
         self.ui.scrollArea.setWidgetResizable(True)
-
         LOGGER.debug("Showing main window")
 
         self.show()
@@ -167,9 +166,6 @@ class HordeQt(QMainWindow):
         self.download_thread.start()
         self.api_thread.start()
         self.save_thread.start()
-        QTimer.singleShot(0, self.loading_thread.start)
-        QTimer.singleShot(0, self.download_thread.start)
-        QTimer.singleShot(0, self.api_thread.start)
 
     def closeEvent(self, event):
         LOGGER.debug("Close clicked.")
