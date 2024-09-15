@@ -39,7 +39,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>6</number>
+       <number>5</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -1693,7 +1693,11 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QLineEdit" name="lastMinuteImagesLineEdit"/>
+          <widget class="QLineEdit" name="lastMinuteImagesLineEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="lastHourImagesLabel">
@@ -1703,7 +1707,11 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QLineEdit" name="lastHourImagesLineEdit"/>
+          <widget class="QLineEdit" name="lastHourImagesLineEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="lastDayImagesLabel">
@@ -1713,7 +1721,11 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QLineEdit" name="lastDayImagesLineEdit"/>
+          <widget class="QLineEdit" name="lastDayImagesLineEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="3" column="0">
           <widget class="QLabel" name="lastMonthImagesLabel">
@@ -1723,7 +1735,11 @@
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QLineEdit" name="lastMonthImagesLineEdit"/>
+          <widget class="QLineEdit" name="lastMonthImagesLineEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="4" column="0">
           <widget class="QLabel" name="allTimeImagesLabel">
@@ -1733,7 +1749,11 @@
           </widget>
          </item>
          <item row="4" column="1">
-          <widget class="QLineEdit" name="allTimeImagesLineEdit"/>
+          <widget class="QLineEdit" name="allTimeImagesLineEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="5" column="1">
           <widget class="Line" name="line_7">
@@ -1750,7 +1770,11 @@
           </widget>
          </item>
          <item row="6" column="1">
-          <widget class="QLineEdit" name="queuedRequestsLineEdit"/>
+          <widget class="QLineEdit" name="queuedRequestsLineEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="7" column="1">
           <widget class="Line" name="line_8">
@@ -1767,7 +1791,11 @@
           </widget>
          </item>
          <item row="8" column="1">
-          <widget class="QLineEdit" name="workerCountLineEdit"/>
+          <widget class="QLineEdit" name="workerCountLineEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="9" column="0">
           <widget class="QLabel" name="imageThreadCountLabel">
@@ -1777,7 +1805,11 @@
           </widget>
          </item>
          <item row="9" column="1">
-          <widget class="QLineEdit" name="imageThreadCountLineEdit"/>
+          <widget class="QLineEdit" name="imageThreadCountLineEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="10" column="1">
           <widget class="Line" name="line_9">
@@ -1794,7 +1826,11 @@
           </widget>
          </item>
          <item row="11" column="1">
-          <widget class="QLineEdit" name="queuedMPSLineEdit"/>
+          <widget class="QLineEdit" name="queuedMPSLineEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
          <item row="13" column="0">
           <widget class="QLabel" name="pastMinuteMPSLabel">
@@ -1804,7 +1840,11 @@
           </widget>
          </item>
          <item row="13" column="1">
-          <widget class="QLineEdit" name="pastMinuteMPSLineEdit"/>
+          <widget class="QLineEdit" name="pastMinuteMPSLineEdit">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
