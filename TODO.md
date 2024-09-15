@@ -32,7 +32,8 @@
 - [ ] Figure out why closing takes so long
 - [ ] Figure out why opening takes so long
 - [ ] Reload button for user details
-- [ ] Preview kudos cost
+- [x] Preview kudos cost
+  - [ ] Debug thread issue - it hangs every time a parameter is changed
 - [ ] Toggle for done jobs
 - [x] Why isn't the scrollbar working on the Masonry layout?
 - [ ] Handle resizing
@@ -64,6 +65,7 @@
 - [ ] Fix Flux
   - [x] Allow for custom models that aren't in the official list
   - [x] Don't freak out when a model has parenthesis in the name.
+  - [ ] Hires-fix toggle
 - [ ] Save unknown models to saved data, don't remind again.
 - [ ] Autosave every ~60s  
 - [ ] Add errored jobs to a signal on API thread, then connect to a warning on the app

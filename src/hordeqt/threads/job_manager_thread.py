@@ -1,7 +1,8 @@
+import copy
 import json
 import time
 from queue import Queue
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import requests
 from PySide6.QtCore import QThread, Signal
@@ -14,7 +15,9 @@ from hordeqt.util import SAVED_IMAGE_DIR_PATH, get_headers
 class JobManagerThread(QThread):
     job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
     updated = Signal()
-
+    kudos_cost_updated = Signal(type(Optional[float]))
+    request_kudo_cost_update=Signal(Job)
+    job_count=1
     def __init__(self, api_key: str, max_requests: int, parent=None):
         super().__init__(parent)
         self.api_key = api_key
@@ -31,6 +34,7 @@ class JobManagerThread(QThread):
         self.status_reset_time = time.time()
 
         self.errored_jobs: List[Job] = []
+        self.request_kudo_cost_update.connect(self.get_kudos_cost)
 
     def run(self):
         LOGGER.debug("API thread started")
@@ -49,7 +53,64 @@ class JobManagerThread(QThread):
             "completed_jobs": [_.serialize() for _ in self.completed_jobs],
             "errored_jobs": [_.serialize() for _ in self.errored_jobs],
         }
-    # def get_kudos_cost(self):
+
+    def log_error(self, job: Job, response: requests.Response):
+        valid_error: dict = response.json()
+        rc = valid_error.get("rc")
+        message = valid_error.get("message")
+        errors = ", ".join(valid_error.get("errors", {}).keys())
+        LOGGER.error(f'Job {job.job_id} failed validation: "{rc}" {message}. {errors}')
+
+    def get_kudos_cost(self, job: Job):
+        LOGGER.info(f"Getting kudos cost for job {str(job)}")
+        while (
+            not (time.time() - self.generate_rl_reset) > 0
+            and self.generate_rl_remaining > 0
+        ):
+            time.sleep(0.25)
+        try:
+            c = copy.deepcopy(job)
+            c.dry_run = True
+            d = json.dumps(c.to_json())
+            LOGGER.info(f"Requesting kudos count for {job.job_id}")
+
+            response = requests.post(
+                BASE_URL + "generate/async",
+                data=d,
+                headers=get_headers(self.api_key),
+            )
+            if response.status_code == 429:
+                self.generate_rl_reset = time.time() + 5
+                return
+            if response.status_code == 400:
+                self.log_error(job, response)
+                self.kudos_cost_updated.emit(None)
+
+                return
+            response.raise_for_status()
+            kudos_value: float = float(response.json().get("kudos"))
+            LOGGER.info(f"{job.job_id} would cost {kudos_value} Kudos")
+            self.kudos_cost_updated.emit(kudos_value)
+            self.generate_rl_reset = float(
+                response.headers.get("x-ratelimit-reset") or time.time() + 2
+            )
+            self.generate_rl_remaining = int(
+                response.headers.get("x-ratelimit-remaining") or 1
+            )
+        except requests.RequestException as e:
+            LOGGER.error(e)
+            # Nested try: except feels like bad practice.
+            try:
+                self.log_error(job, response)  # type: ignore
+            except NameError:
+                pass
+            except json.JSONDecodeError:
+                pass
+            self.kudos_cost_updated.emit(None)
+        current_time = time.time()
+        if current_time - self.generate_rl_reset > 0:
+            self.generate_rl_remaining = 2
+
     @classmethod
     def deserialize(
         cls,
@@ -104,13 +165,7 @@ class JobManagerThread(QThread):
                         self.generate_rl_reset = time.time() + 5
                         return
                     if response.status_code == 400:
-                        valid_error = response.json()
-                        rc = valid_error.get("rc")
-                        message = valid_error.get("message")
-                        errors = ", ".join(valid_error.get("errors", {}).keys())
-                        LOGGER.error(
-                            f'Job {job.job_id} failed validation: "{rc}" {message}. {errors}'
-                        )
+                        self.log_error(job, response)
                         return
                     response.raise_for_status()
                     horde_job_id = response.json().get("id")
@@ -129,10 +184,7 @@ class JobManagerThread(QThread):
                     LOGGER.error(e)
                     # Nested try: except feels like bad practice.
                     try:
-                        valid_error = response.json()  # type: ignore
-                        rc = valid_error.get("rc")
-                        message = valid_error.get("message")
-                        LOGGER.error(f'Job {job.job_id} errored: "{rc}" {message}')
+                        self.log_error(job, response)  # type: ignore
                     except NameError:
                         pass
                     except json.JSONDecodeError:

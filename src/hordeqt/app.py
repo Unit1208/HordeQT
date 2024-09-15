@@ -97,6 +97,7 @@ class HordeQt(QMainWindow):
         LOGGER.debug("Connecting API signals")
         self.api_thread.job_completed.connect(self.on_job_completed)
         self.api_thread.updated.connect(self.update_inprogess_table)
+        self.api_thread.kudos_cost_updated.connect(self.on_kudo_cost_get)
         LOGGER.debug("Connecting Loading signals")
         self.loading_thread.progress.connect(self.update_progress)
         self.loading_thread.model_info.connect(self.construct_model_dict)
@@ -121,11 +122,17 @@ class HordeQt(QMainWindow):
         self.ui.resetSettingsButton.clicked.connect(self.reset_job_config)
         self.ui.undoResetButton.clicked.connect(self.undo_reset_job_config)
         self.ui.undoResetButton.setEnabled(False)
+        self.ui.samplerComboBox.currentTextChanged.connect(self.update_kudos_preview)
+        self.ui.stepsSpinBox.valueChanged.connect(self.update_kudos_preview)
+        self.ui.guidenceDoubleSpinBox.valueChanged.connect(self.update_kudos_preview)
+        self.ui.imagesSpinBox.valueChanged.connect(self.update_images_created)
         self.ui.progressBar.setValue(0)
 
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None
         self.job_history: List[Dict] = []
+        self.current_kudos_preview_cost=10.0
+        
         LOGGER.debug("Initializing Masonry/Gallery layout")
         self.ui.galleryViewFrame.setSizePolicy(sizePolicy)
         container_layout = QVBoxLayout(self.ui.galleryViewFrame)
@@ -151,7 +158,7 @@ class HordeQt(QMainWindow):
         QTimer.singleShot(0, self.loading_thread.start)
         QTimer.singleShot(0, self.download_thread.start)
         QTimer.singleShot(0, self.api_thread.start)
-
+        
     def closeEvent(self, event):
         LOGGER.debug("Close clicked.")
 
@@ -176,7 +183,25 @@ class HordeQt(QMainWindow):
         self.savedData.write()
         LOGGER.debug("Closing Main window")
         QMainWindow.closeEvent(self, event)
+    def update_kudos_preview(self):
+        jobs=self.create_jobs()
+        self.ui.GenerateButton.setText("Generate (Cost: Loading)")
+        if jobs is not None:
+            #FIXME: for now, this will work. However, if multi-config is added (i.e. request with multiple step counts), this might undershoot or overshoot.
+            self.api_thread.request_kudo_cost_update.emit(jobs[0])
+            self.api_thread.job_count=len(jobs)
 
+    def on_kudo_cost_get(self,value: float):
+        LOGGER.debug(f"Got signal that kudos cost would be {value}. Multiplying by {self.api_thread.job_count} for total kudos cost of {value*self.api_thread.job_count}")
+        
+        self.ui.GenerateButton.setText(f:=f"Generate (Cost: {round(value)*self.api_thread.job_count} Kudos)")
+        
+        LOGGER.debug(f"Tried to update generate button text to {f}")
+        
+        self.current_kudos_preview_cost=value
+    def update_images_created(self,value:int):
+        self.api_thread.job_count=value
+        self.on_kudo_cost_get(self.current_kudos_preview_cost)
     def get_job_config(self):
         return {
             "prompt": self.ui.PromptBox.toPlainText(),
@@ -195,10 +220,12 @@ class HordeQt(QMainWindow):
     def on_width_change(self):
         if not self.preset_being_updated:
             self.ui.presetComboBox.setCurrentIndex(0)
+        self.update_kudos_preview()
 
     def on_height_change(self):
         if not self.preset_being_updated:
             self.ui.presetComboBox.setCurrentIndex(0)
+        self.update_kudos_preview()
 
     def on_preset_change(self):
         current_model_needs_1024 = self.model_dict[
@@ -278,8 +305,11 @@ class HordeQt(QMainWindow):
         self.ui.modelComboBox.setEnabled(True)
         # this doesn't feel right, for some reason.
         self.ui.maxJobsSpinBox.setMaximum(self.ui.maxConcurrencySpinBox.value())
-        LOGGER.debug("Hiding progress bar after 250 ms")
-        QTimer.singleShot(250, lambda: self.ui.progressBar.hide())
+        LOGGER.debug("Loading kudos preview after 300 ms")
+        QTimer.singleShot(300, self.update_kudos_preview)
+        LOGGER.debug("Hiding progress bar after 500 ms")
+        QTimer.singleShot(500, self.ui.progressBar.hide)
+        
 
     def restore_job_config(self, job_config: dict):
 
@@ -310,6 +340,7 @@ class HordeQt(QMainWindow):
         # Restore the job config, using the defaults for everything. Model needs to be set after, as the default is "default"
         self.restore_job_config({})
         self.ui.modelComboBox.setCurrentIndex(0)
+        self.update_kudos_preview()
 
     def on_job_completed(self, job: LocalJob):
         LOGGER.info(f"Job {job.id} completed.")
