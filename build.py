@@ -148,14 +148,14 @@ def main():
     briefcase_exec = find_executable("briefcase", venv_path)
     
 
-    subprocess.run([briefcase_exec, "update", "--no-input", "-r","--update-resources"])
+    subprocess.run([new_python, briefcase_exec, "update", "--no-input", "-r","--update-resources"])
     
     convert_uic_files(venv_path)
 
     for f in formats:
-        subprocess.run([briefcase_exec, "build", briefcase_platform, f, "--no-input"])
+        subprocess.run([new_python,briefcase_exec, "build", briefcase_platform, f, "--no-input"])
     for f in formats:
-        subprocess.run([briefcase_exec, "package", briefcase_platform, f, "--no-input"])
+        subprocess.run([new_python,briefcase_exec, "package", briefcase_platform, f, "--no-input"])
 
 
 if __name__ == "__main__":
