@@ -122,3 +122,7 @@ supported = false
 [tool.briefcase.app.hordeqt.web]
 supported = false
 
+[tool.pyright]
+exclude = [ "build/**", "dist/**", "logs/**"]
+include = ["src"]
+typeCheckingMode="standard"

@@ -94,7 +94,7 @@ class HordeQt(QMainWindow):
                 "queued_downloads": self.savedData.queued_downloads,
             },
         )
-        self.save_thread=SaveThread(self)
+        self.save_thread = SaveThread(self)
         LOGGER.debug("Connecting DL signals")
         self.download_thread.completed.connect(self.on_image_fully_downloaded)
         self.download_thread.use_metadata = self.savedData.save_metadata
