@@ -104,11 +104,15 @@ def install_sys_reqs():
 
 def main():
     curr_dir = Path.cwd()
+    curr_platform, is_windows, is_linux, is_macos = detect_platform()
 
     venv_path = (curr_dir / "venv").resolve()
     install_sys_reqs()
-    subprocess.run(["python", "-m", "venv", str(venv_path)])
-    curr_platform, is_windows, is_linux, is_macos = detect_platform()
+    if is_windows:
+        subprocess.run(["C:\\Python312-x64\\python", "-m","venv",str(venv_path)])
+    else:        
+        
+        subprocess.run(["python", "-m", "venv", str(venv_path)])
 
     if is_linux or is_macos:
 
