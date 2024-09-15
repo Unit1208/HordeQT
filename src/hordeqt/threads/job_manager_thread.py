@@ -84,6 +84,7 @@ class JobManagerThread(QThread):
         try:
             c = copy.deepcopy(job)
             c.dry_run = True
+            c.prompt="KUDOS!" #Prevent empty prompt from interfering
             d = json.dumps(c.to_json())
             LOGGER.info(f"Requesting kudos count for {job.job_id}")
 
