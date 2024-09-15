@@ -1,12 +1,9 @@
 import datetime as dt
-import tempfile
 import human_readable as hr
-from pathlib import Path
-import json
 import os
 import random
 import time
-from typing import List, Dict, Optional, Self, Type
+from typing import List, Dict, Optional
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -19,455 +16,30 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
 )
 from PySide6.QtCore import (
-    QObject,
-    QThread,
-    Signal,
     QTimer,
-    QStandardPaths,
     Qt,
     QUrl,
 )
 from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtGui import QPixmap, QDesktopServices, QFont, QClipboard
 
-from queue import Queue
 import logging
 import coloredlogs
 import sys
 
+from hordeqt.saved_data import SavedData
+from hordeqt.threads.api_manager_thread import APIManagerThread
+from hordeqt.threads.load_thread import LoadThread
+from hordeqt.threads.download_thread import DownloadThread
 from hordeqt.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
 from hordeqt.model_dialog import ModelPopup
 from hordeqt.gen.ui_form import Ui_MainWindow
 
 import keyring
 import requests
-from hordeqt.util import create_uuid, get_headers, prompt_matrix, get_metadata
-from hordeqt.classes import Job, LocalJob, Model, apply_metadata_to_image
-
-ANON_API_KEY = "0000000000"
-BASE_URL = "https://aihorde.net/api/v2/"
-LOGGER = logging.getLogger("HordeQT")
-coloredlogs.install("DEBUG", milliseconds=True)
-
-
-class APIManagerThread(QThread):
-    job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
-    updated = Signal()
-
-    def __init__(self, api_key: str, max_requests: int, parent=None):
-        super().__init__(parent)
-        self.api_key = api_key
-        self.max_requests = max_requests
-        self.current_requests: Dict[str, Job] = {}
-        self.job_queue: Queue[Job] = Queue()
-        self.status_rl_reset = time.time()
-        self.generate_rl_reset = time.time()
-        self.completed_jobs: List[Job] = []
-        self.running = True  # To control the thread's loop
-        self.generate_rl_remaining = 1
-        self.async_reset_time = time.time()
-        self.status_rl_remaining = 1
-        self.status_reset_time = time.time()
-
-        self.errored_jobs: List[Job] = []
-
-    def run(self):
-        LOGGER.debug("API thread started")
-        while self.running:
-
-            self.handle_queue()
-            self.updated.emit()
-            time.sleep(1)  # Sleep for a short time to avoid high CPU usage
-
-    def serialize(self):
-        return {
-            "current_requests": {
-                k: self.current_requests[k].serialize() for k in self.current_requests
-            },
-            "job_queue": [_.serialize() for _ in list(self.job_queue.queue)],
-            "completed_jobs": [_.serialize() for _ in self.completed_jobs],
-            "errored_jobs": [_.serialize() for _ in self.errored_jobs],
-        }
-
-    @classmethod
-    def deserialize(
-        cls,
-        data: Dict,
-        api_key: str,
-        max_requests: int,
-        parent=None,
-    ):
-        instance = cls(api_key, max_requests, parent)
-
-        instance.current_requests = {
-            k: Job.deserialize(v) for k, v in data.get("current_requests", {}).items()
-        }
-
-        instance.job_queue = Queue()
-        for item in data.get("job_queue", []):
-            instance.job_queue.put(Job.deserialize(item))
-
-        instance.completed_jobs = [
-            Job.deserialize(item) for item in data.get("completed_jobs", [])
-        ]
-
-        instance.errored_jobs = [
-            Job.deserialize(item) for item in data.get("errored_jobs", [])
-        ]
-
-        return instance
-
-    def handle_queue(self):
-        self._send_new_jobs()
-        self._update_current_jobs()
-        self._get_download_paths()
-
-    def _send_new_jobs(self):
-        if (
-            len(self.current_requests) < self.max_requests
-            and not self.job_queue.empty()
-        ):
-            if (
-                time.time() - self.generate_rl_reset
-            ) > 0 and self.generate_rl_remaining > 0:
-                job = self.job_queue.get()
-                try:
-                    d = json.dumps(job.to_json())
-                    response = requests.post(
-                        BASE_URL + "generate/async",
-                        data=d,
-                        headers=get_headers(self.api_key),
-                    )
-                    if response.status_code == 429:
-                        self.job_queue.put(job)
-                        self.generate_rl_reset = time.time() + 5
-                        return
-                    response.raise_for_status()
-                    horde_job_id = response.json().get("id")
-                    job.horde_job_id = horde_job_id
-                    self.current_requests[job.job_id] = job
-                    LOGGER.info(
-                        f"Job {job.job_id} now has horde uuid: " + job.horde_job_id
-                    )
-                    self.generate_rl_reset = float(
-                        response.headers.get("x-ratelimit-reset") or time.time() + 2
-                    )
-                    self.generate_rl_remaining = int(
-                        response.headers.get("x-ratelimit-remaining") or 1
-                    )
-                except requests.RequestException as e:
-                    LOGGER.error(e)
-                    self.errored_jobs.append(job)
-                    # self.job_queue.put(job)
-            else:
-                LOGGER.debug(
-                    "Too many requests would be made, skipping a possible new job"
-                )
-            current_time = time.time()
-            if current_time - self.generate_rl_reset > 0:
-                self.generate_rl_remaining = 2
-
-    def _update_current_jobs(self):
-        to_remove = []
-        for job_id, job in self.current_requests.items():
-            if time.time() - job.creation_time > 600:
-                LOGGER.info(
-                    f'Job "{job_id}" was created more than 10 minutes ago, likely errored'
-                )
-                job.faulted = True
-                to_remove.append(job_id)
-                continue
-
-            try:
-                LOGGER.debug(f"Checking job {job_id} - ({job.horde_job_id})")
-                response = requests.get(BASE_URL + f"generate/check/{job.horde_job_id}")
-                response.raise_for_status()
-                job.update_status(response.json())
-                if job.done:
-                    LOGGER.info(f"Job {job_id} done")
-                    self.completed_jobs.append(job)
-                    to_remove.append(job_id)
-
-                    # Emit the signal for the completed job
-            except requests.RequestException as e:
-                LOGGER.error(e)
-
-        for job_id in to_remove:
-            del self.current_requests[job_id]
-
-    def _get_download_paths(self):
-        njobs = []
-        for job in self.completed_jobs:
-            if (
-                time.time() - self.status_rl_reset
-            ) > 0 and self.status_rl_remaining > 0:
-
-                lj = LocalJob(job, SAVED_IMAGE_DIR_PATH)
-                try:
-                    r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
-                    if r.status_code == 429:
-                        njobs.append(job)
-                        self.status_rl_reset = time.time() + 10
-                        continue
-                    r.raise_for_status()
-                    rj = r.json()
-                    gen = rj["generations"][0]
-                    lj.downloadURL = gen["img"]
-                    lj.worker_id = gen["worker_id"]
-                    lj.worker_name = gen["worker_name"]
-                    lj.completed_at = time.time()
-                    self.status_reset_time = float(
-                        r.headers.get("x-ratelimit-reset") or time.time() + 60
-                    )
-                    self.status_rl_remaining = int(
-                        r.headers.get("x-ratelimit-remaining") or 1
-                    )
-                    self.job_completed.emit(lj)
-                except requests.RequestException as e:
-                    LOGGER.error(e)
-                self.status_rl_reset = time.time()
-                if time.time() - self.status_reset_time > 0:
-                    self.status_rl_remaining = 1
-                    self.status_reset_time = time.time()
-            else:
-                njobs.append(job)
-        self.completed_jobs = njobs
-
-    def get_current_jobs(self) -> Dict[str, Job]:
-        return self.current_requests
-
-    def get_queued_jobs(self) -> List[Job]:
-        return list(self.job_queue.queue)
-
-    def get_completed_jobs(self) -> List[Job]:
-        return self.completed_jobs
-
-    def stop(self):
-        LOGGER.debug("Stopping API thread")
-        self.running = False
-        self.wait()
-        LOGGER.debug("API thread stopped.")
-
-    def add_job(self, job: Job):
-        self.job_queue.put(job)
-        print("added job")
-
-
-class DownloadThread(QThread):
-    completed_downloads: List[LocalJob]
-    queued_downloads: List[LocalJob]
-    queued_deletes: List[LocalJob]
-    completed = Signal(LocalJob)
-
-    def __init__(
-        self,
-        queued_downloads=[],
-        completed_downloads=[],
-        queued_deletes=[],
-        parent=None,
-    ) -> None:
-        super().__init__(parent)
-        self.queued_downloads = queued_downloads
-        self.completed_downloads = completed_downloads
-        self.queued_deletes = queued_deletes
-        self.running = True
-
-    def add_dl(self, local_job: LocalJob):
-        self.queued_downloads.append(local_job)
-
-    def run(self):
-        while self.running:
-            if len(self.queued_downloads) > 0:
-                lj = self.queued_downloads.pop()
-                LOGGER.info(f"Downloading {lj.id}")
-                tf = tempfile.NamedTemporaryFile()
-                tf.write(requests.get(lj.downloadURL).content)
-                apply_metadata_to_image(Path(tf.name), lj)
-                tf.close()
-                LOGGER.debug(f"{lj.id} downloaded")
-                self.completed.emit(lj)
-                self.completed_downloads.append(lj)
-            if len(self.queued_deletes) > 0:
-                lj = self.queued_deletes.pop()
-                LOGGER.info(f"Deleting {lj.id}")
-                try:
-                    self.completed_downloads.remove(lj)
-                except ValueError as e:
-                    LOGGER.warning(f"Failed to delete {lj.id}")
-                if os.path.exists(lj.path):
-                    if lj.path.is_file():
-                        lj.path.unlink()
-                    else:
-                        LOGGER.warning(
-                            f'Path referred to by {lj.id} ("{lj.path}") is a directory'
-                        )
-            time.sleep(0.1)
-
-    def serialize(self):
-        return {
-            "completed_downloads": [x.serialize() for x in self.completed_downloads],
-            "queued_downloads": [x.serialize() for x in self.queued_downloads],
-            "queued_deletes": [x.serialize() for x in self.queued_deletes],
-        }
-
-    @classmethod
-    def deserialize(cls: type[Self], value: Dict):
-        if (cd := value.get("completed_downloads", None)) is None:
-            ncd = []
-        else:
-            cd: List[dict] = cd
-            ncd = [LocalJob.deserialize(x, SAVED_IMAGE_DIR_PATH) for x in cd]
-        if (qdl := value.get("queued_downloads", None)) is None:
-            nqdl = []
-        else:
-            qdl: List[dict] = qdl
-            nqdl = [LocalJob.deserialize(x, SAVED_IMAGE_DIR_PATH) for x in qdl]
-        if (qd := value.get("queued_deletes", None)) is None:
-            nqd = []
-        else:
-            qd: List[dict] = qd
-            nqd = [LocalJob.deserialize(x, SAVED_IMAGE_DIR_PATH) for x in qd]
-        return cls(completed_downloads=ncd, queued_downloads=nqdl, queued_deletes=nqd)
-
-    def stop(self):
-        self.running = False
-        self.wait()
-
-    def delete_image(self, image: LocalJob):
-        self.queued_deletes.append(image)
-
-
-class LoadThread(QThread):
-    progress = Signal(int)
-    model_info = Signal(dict)
-    user_info = Signal(requests.Response)
-
-    def __init__(self, api_key: str, parent: QObject | None = None) -> None:
-        super().__init__(parent)
-        self.api_key = api_key
-
-    def reload_user_info(self, api_key):
-        self.api_key = api_key
-        LOGGER.debug("Reloading user info")
-        self.user_info.emit(
-            requests.get(BASE_URL + "find_user", headers=get_headers(api_key))
-        )
-        LOGGER.debug("User info reloaded")
-
-    def run(self):
-        LOGGER.debug("Loading user info")
-        self.user_info.emit(
-            requests.get(BASE_URL + "find_user", headers=get_headers(self.api_key))
-        )
-        LOGGER.debug("User info loaded")
-        self.progress.emit(50)
-        p = Path(
-            QStandardPaths.writableLocation(
-                QStandardPaths.StandardLocation.CacheLocation
-            )
-        )
-        # os.makedirs(p,exist_ok=True)
-        model_cache_path = p / "model_ref.json"
-
-        # print(QStandardPaths.locate(QStandardPaths.StandardLocation.CacheLocation,"model_ref.json"))
-
-        if (
-            not model_cache_path.exists()
-            or time.time() - model_cache_path.stat().st_mtime > 60 * 60 * 24
-        ):
-            LOGGER.debug(f"Refreshing model cache at {model_cache_path}")
-            os.makedirs(p, exist_ok=True)
-            r = requests.get(
-                "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/main/stable_diffusion.json"
-            )
-            j = r.json()
-            with open(model_cache_path, "wt") as f:
-                json.dump(j, f)
-        else:
-            LOGGER.debug(f"Model cache at {model_cache_path} is fresh, not reloading")
-
-            with open(model_cache_path, "rt") as f:
-                j = json.load(f)
-
-        self.model_info.emit(j)
-        self.progress.emit(100)
-
-
-class SavedData:
-    api_state: dict
-    current_open_tab: int
-    current_images: List[dict]
-    finished_jobs: list[Dict]
-    job_config: dict
-    max_jobs: int
-    nsfw_allowed: bool
-    share_images: bool
-    prefered_format: str
-
-    def __init__(self) -> None:
-
-        os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
-
-    def update(
-        self,
-        api: APIManagerThread,
-        nsfw: bool,
-        max_jobs: int,
-        save_metadata: bool,
-        dlthread: DownloadThread,
-        job_config: dict,
-        share_images: bool,
-        current_open_tab: int,
-        prefered_format: str,
-    ):
-        self.api_state = api.serialize()
-        self.current_images = (dlv := dlthread.serialize()).get(
-            ("completed_downloads"), []
-        )
-        self.queued_downloads = dlv.get(("queued_downloads"), [])
-
-        self.max_jobs = max_jobs
-        self.nsfw_allowed = nsfw
-        self.share_images = share_images
-        self.save_metadata = save_metadata
-        self.job_config = job_config
-        self.current_open_tab = current_open_tab
-        self.prefered_format = prefered_format
-
-    def write(self):
-        d = {
-            "api_state": self.api_state,
-            "max_jobs": self.max_jobs,
-            "nsfw_allowed": self.nsfw_allowed,
-            "save_metadata": self.save_metadata,
-            "current_images": self.current_images,
-            "queued_downloads": self.queued_downloads,
-            "job_config": self.job_config,
-            "share_images": self.share_images,
-            "current_open_tab": self.current_open_tab,
-            "prefered_format": self.prefered_format,
-        }
-        # cbor2.dump ?
-        jsondata = json.dumps(d)
-        with open(SAVED_DATA_PATH, "wt") as f:
-            f.write(jsondata)
-
-    def read(self):
-        if SAVED_DATA_PATH.exists():
-            with open(SAVED_DATA_PATH, "rt") as f:
-                j: dict = json.loads(f.read())
-        else:
-            j = dict()
-        self.api_state = j.get("api_state", {})
-        self.max_jobs = j.get("max_jobs", 5)
-        self.save_metadata = j.get("save_metadata", True)
-        self.current_images = j.get("current_images", [])
-        self.queued_downloads = j.get("queued_downloads", [])
-        self.nsfw_allowed = j.get("nsfw_allowed", False)
-        self.share_images = j.get("share_images", True)
-        self.job_config = j.get("job_config", {})
-        self.current_open_tab = j.get("current_open_tab", 0)
-        self.prefered_format = j.get("prefered_format", "webp")
+from hordeqt.util import create_uuid, prompt_matrix,get_dynamic_constants
+from hordeqt.classes import Job, LocalJob, Model
+from hordeqt.consts import ANON_API_KEY, BASE_URL, LOGGER
 
 
 class HordeQt(QMainWindow):
@@ -533,7 +105,7 @@ class HordeQt(QMainWindow):
             {
                 "completed_downloads": self.savedData.current_images,
                 "queued_downloads": self.savedData.queued_downloads,
-            }
+            },
         )
         LOGGER.debug("Connecting DL signals")
         self.download_thread.completed.connect(self.on_image_fully_downloaded)
@@ -874,7 +446,7 @@ class HordeQt(QMainWindow):
                     )
                     self.ui.clipSkipSpinBox.setValue(2)
                     return None
-            #TODO: make sure this works for flux! 
+            # TODO: make sure this works for flux!
             if (mins := reqs.get("min_steps", 0)) != 0:
                 if steps < int(mins):
                     self.show_warn_toast(
@@ -973,8 +545,11 @@ class HordeQt(QMainWindow):
             try:
                 m.details = mod[m.name]
             except KeyError:
-                self.show_warn_toast("Unknown Model",f"{m.name} is not on the official model list. This may be a custom model, or may be an extremely new model.")
-                m.details={}
+                self.show_warn_toast(
+                    "Unknown Model",
+                    f"{m.name} is not on the official model list. This may be a custom model, or may be an extremely new model.",
+                )
+                m.details = {}
             model_dict[name] = m
         self.ui.modelComboBox.setCurrentIndex(0)
         self.model_dict = model_dict
@@ -1168,24 +743,9 @@ class HordeQt(QMainWindow):
 
 
 def main():
+    global app, SAVED_DATA_DIR_PATH,SAVED_DATA_PATH,SAVED_IMAGE_DIR_PATH
     # I don't care.
-    global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH
-    metadata = get_metadata()
-    print(metadata)
-
-    app = QApplication(sys.argv)
-    app.setApplicationDisplayName(metadata["Formal-Name"])
-    app.setApplicationName(metadata["Name"])
-    app.setOrganizationName(metadata["Author"])
-    SAVED_DATA_DIR_PATH = Path(
-        QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
-    )
-    SAVED_IMAGE_DIR_PATH = SAVED_DATA_DIR_PATH / "images"
-
-    SAVED_DATA_PATH = SAVED_DATA_DIR_PATH / "saved_data.json"
-    LOGGER.debug(f"Saved data path: {SAVED_DATA_PATH}")
-    LOGGER.debug(f"Saved data dir: {SAVED_DATA_DIR_PATH}")
-    LOGGER.debug(f"Saved images dir: {SAVED_IMAGE_DIR_PATH}")
+    (app,SAVED_DATA_DIR_PATH,SAVED_DATA_PATH,SAVED_IMAGE_DIR_PATH)=get_dynamic_constants()
 
     os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
     os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
@@ -1193,3 +753,4 @@ def main():
     widget = HordeQt(app)
     widget.show()
     sys.exit(app.exec())
+
