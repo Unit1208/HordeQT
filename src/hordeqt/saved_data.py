@@ -8,15 +8,16 @@ from hordeqt.util import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
 
 
 class SavedData:
-    api_state: dict
+    api_state: Dict
     current_open_tab: int
-    current_images: List[dict]
-    finished_jobs: list[Dict]
-    job_config: dict
+    current_images: List[Dict]
+    finished_jobs: List[Dict]
+    job_config: Dict
     max_jobs: int
     nsfw_allowed: bool
     share_images: bool
     prefered_format: str
+    warned_models: List[str]
 
     def __init__(self) -> None:
 
@@ -33,6 +34,7 @@ class SavedData:
         share_images: bool,
         current_open_tab: int,
         prefered_format: str,
+        warned_models: list[str],
     ):
         self.api_state = api.serialize()
         self.current_images = (dlv := dlthread.serialize()).get(
@@ -47,6 +49,7 @@ class SavedData:
         self.job_config = job_config
         self.current_open_tab = current_open_tab
         self.prefered_format = prefered_format
+        self.warned_models = warned_models
 
     def write(self):
         d = {
@@ -60,8 +63,8 @@ class SavedData:
             "share_images": self.share_images,
             "current_open_tab": self.current_open_tab,
             "prefered_format": self.prefered_format,
+            "warned_models": self.warned_models,
         }
-        # cbor2.dump ?
         jsondata = json.dumps(d)
         with open(SAVED_DATA_PATH, "wt") as f:
             f.write(jsondata)
@@ -82,3 +85,4 @@ class SavedData:
         self.job_config = j.get("job_config", {})
         self.current_open_tab = j.get("current_open_tab", 0)
         self.prefered_format = j.get("prefered_format", "webp")
+        self.warned_models=j.get("warned_models",[])

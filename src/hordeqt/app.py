@@ -76,6 +76,8 @@ class HordeQt(QMainWindow):
         self.ui.saveMetadataCheckBox.setChecked(self.savedData.save_metadata)
         self.ui.tabWidget.setCurrentIndex(self.savedData.current_open_tab)
         self.ui.saveFormatComboBox.setCurrentText(self.savedData.prefered_format)
+        
+        self.warned_models=self.savedData.warned_models
         LOGGER.debug("Initializing API thread")
         self.api_thread = JobManagerThread.deserialize(
             self.savedData.api_state,
@@ -134,7 +136,6 @@ class HordeQt(QMainWindow):
         self.last_job_config: Optional[Dict] = None
         self.job_history: List[Dict] = []
         self.current_kudos_preview_cost = 10.0
-
         LOGGER.debug("Initializing Masonry/Gallery layout")
         self.ui.galleryViewFrame.setSizePolicy(sizePolicy)
         container_layout = QVBoxLayout(self.ui.galleryViewFrame)
@@ -180,6 +181,7 @@ class HordeQt(QMainWindow):
             self.ui.shareImagesCheckBox.isChecked(),
             self.ui.tabWidget.currentIndex(),
             self.ui.saveFormatComboBox.currentText(),
+            self.warned_models,
         )
         LOGGER.debug("Writing saved data")
         self.savedData.write()
@@ -576,11 +578,16 @@ class HordeQt(QMainWindow):
             try:
                 m.details = mod[m.name]
             except KeyError:
-                self.show_warn_toast(
-                    "Unknown Model",
-                    f"{m.name} is not on the official model list. This may be a custom model, or may be an extremely new model.",
-                )
-                m.details = {}
+                if m.name not in self.warned_models:
+
+                    self.show_warn_toast(
+                        "Unknown Model",
+                        f"{m.name} is not on the official model list. This may be a custom model, or may be an extremely new model.",
+                    )
+                    m.details = {}
+                    self.warned_models.append(m.name)
+                else:
+                    LOGGER.warning(f"Unknown model {m.name} is already known, not warning user.")
             model_dict[name] = m
         self.ui.modelComboBox.setCurrentIndex(0)
         self.model_dict = model_dict

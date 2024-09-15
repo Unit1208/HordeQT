@@ -56,6 +56,7 @@
 - [ ] Resize images to fit screen on popup
 - [ ] LoRAs/TIs
 - [ ] Warning when trying to use a Pony model incorrectly.
+  - [ ] "" for Flux
 - [ ] Paginate images (25-50-100)?
 - [~] Refactor code into more managable chunks.
 - [x] Get appveyor working
@@ -67,7 +68,7 @@
   - [x] Don't freak out when a model has parenthesis in the name.
   - [x] Hires-fix toggle
   - [x] Karras toggle
-- [ ] Save unknown models to saved data, don't remind again.
+- [x] Save unknown models to saved data, don't remind again.
 - [ ] Autosave every ~60s  
 - [ ] Add errored jobs to a signal on API thread, then connect to a warning on the app
 - [ ] Allow toggle for slow/extra slow workers
