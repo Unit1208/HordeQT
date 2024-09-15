@@ -3,7 +3,7 @@ import tempfile
 import time
 from pathlib import Path
 from typing import Dict, List, Self
-
+from PIL import Image
 import requests
 from PySide6.QtCore import QThread, Signal
 
@@ -17,13 +17,14 @@ class DownloadThread(QThread):
     queued_downloads: List[LocalJob]
     queued_deletes: List[LocalJob]
     completed = Signal(LocalJob)
-
+    use_metadata: bool
     def __init__(
         self,
         queued_downloads=[],
         completed_downloads=[],
         queued_deletes=[],
         parent=None,
+        use_metadata=True
     ) -> None:
         super().__init__(parent)
         self.queued_downloads = queued_downloads
@@ -31,6 +32,7 @@ class DownloadThread(QThread):
         self.queued_deletes = queued_deletes
         self.running = True
         self.image_dir_path = SAVED_IMAGE_DIR_PATH
+        self.use_metadata=True
 
     def add_dl(self, local_job: LocalJob):
         self.queued_downloads.append(local_job)
@@ -42,7 +44,11 @@ class DownloadThread(QThread):
                 LOGGER.info(f"Downloading {lj.id}")
                 tf = tempfile.NamedTemporaryFile()
                 tf.write(requests.get(lj.downloadURL).content)
-                apply_metadata_to_image(Path(tf.name), lj)
+                if self.use_metadata:
+                    apply_metadata_to_image(Path(tf.name), lj)
+                else:
+                    im = Image.open(Path(tf.name))
+                    im.save(lj.path)
                 tf.close()
                 LOGGER.debug(f"{lj.id} downloaded")
                 self.completed.emit(lj)

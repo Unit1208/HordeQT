@@ -63,7 +63,6 @@ class JobManagerThread(QThread):
         LOGGER.error(f'Job {job.job_id} failed validation: "{rc}" {message}. {errors}')
 
     def get_kudos_cost(self, job: Job):
-        LOGGER.info(f"Getting kudos cost for job {str(job)}")
         while (
             not (time.time() - self.generate_rl_reset) > 0
             and self.generate_rl_remaining > 0

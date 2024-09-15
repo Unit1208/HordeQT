@@ -74,3 +74,4 @@
 - [ ] Allow toggle for slow/extra slow workers
 - [ ] Upscale combobox
 - [ ] Cancel button on in-progress images
+- [ ] Add "open in native viewer" to image popup

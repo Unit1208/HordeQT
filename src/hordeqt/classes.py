@@ -247,5 +247,6 @@ def apply_metadata_to_image(path: Path, lj: LocalJob) -> Path:
     exif = im.getexif()
     exif[ExifTags.Base.Software] = "HordeQT"
     exif[ExifTags.Base.ImageDescription] = json.dumps(lj.convert_to_metadata())
+    exif[ExifTags.Base.UserComment]=lj.pretty_format()
     im.save(lj.path, exif=exif)
     return lj.path
