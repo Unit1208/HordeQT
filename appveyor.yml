@@ -36,5 +36,7 @@ build_script:
 artifacts:
   - path: dist/HordeQT-*.flatpak
     name: HordeQT-Linux
-  - path: dist\*.exe
-    name: HordeQT-Windows
+  - path: dist/*.msi
+    name: HordeQT-Windows-msi
+  # - path: build/hordeqt/windows/app/src/HordeQT.exe
+  #   name: HordeQT-Windows-exe
