@@ -142,7 +142,7 @@ def main():
     briefcase_platform = ""
     if is_linux:
         briefcase_platform = "linux"
-        format=["flatpak"]
+        formats=["flatpak"]
     if is_windows:
         briefcase_platform = "windows"
 
