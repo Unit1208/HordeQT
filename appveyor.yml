@@ -28,8 +28,9 @@ build_script:
   - ps: python build.py
   - sh: |
       if [ "$(uname)" = "Linux" ]; then
-        sudo chmod -R 777 build/
+        sudo rm build/ -rf
         sudo chmod -R 777 dist/
+
       fi
 
 
@@ -40,5 +41,3 @@ artifacts:
     name: HordeQT-Windows-msi
   # - path: build/hordeqt/windows/app/src/HordeQT.exe
   #   name: HordeQT-Windows-exe
-skip_paths:
-  - /home/appveyor/projects/hordeqt/build/*
