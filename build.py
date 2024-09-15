@@ -135,6 +135,7 @@ def main():
             "pip",
             "setuptools",
             "wheel",
+            "pyside6"
         ]
     )
 
