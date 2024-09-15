@@ -17,7 +17,7 @@ def convert_icon(icon_path, output_dir):
     # Convert to PNGs at different sizes
     for size in sizes:
         resized_icon = icon.resize((size, size), Image.Resampling.BICUBIC)
-        resized_icon.save(os.path.join(output_dir, f"icon_{size}.png"))
+        resized_icon.save(os.path.join(output_dir, f"icon-{size}.png"))
     
     # Convert to .icns (macOS icon format)
     if icon.mode != 'RGBA':
