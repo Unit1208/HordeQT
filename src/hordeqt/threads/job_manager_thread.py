@@ -242,18 +242,23 @@ class JobManagerThread(QThread):
                         continue
                     r.raise_for_status()
                     rj = r.json()
-                    gen = rj["generations"][0]
-                    lj.downloadURL = gen["img"]
-                    lj.worker_id = gen["worker_id"]
-                    lj.worker_name = gen["worker_name"]
-                    lj.completed_at = time.time()
-                    self.status_reset_time = float(
-                        r.headers.get("x-ratelimit-reset") or time.time() + 60
-                    )
-                    self.status_rl_remaining = int(
-                        r.headers.get("x-ratelimit-remaining") or 1
-                    )
-                    self.job_completed.emit(lj)
+                    if len(rj["generations"])>0:
+                        gen = rj["generations"][0]
+                        lj.downloadURL = gen["img"]
+                        lj.worker_id = gen["worker_id"]
+                        lj.worker_name = gen["worker_name"]
+                        lj.completed_at = time.time()
+                        self.status_reset_time = float(
+                            r.headers.get("x-ratelimit-reset") or time.time() + 60
+                        )
+                        self.status_rl_remaining = int(
+                            r.headers.get("x-ratelimit-remaining") or 1
+                        )
+                        self.job_completed.emit(lj)
+                    else:
+                        self.log_error(lj.original,r)
+                        #Is this a good idea?
+                        # self.job_queue.put(lj.original)
                 except requests.RequestException as e:
                     LOGGER.error(e)
                 self.status_rl_reset = time.time()
