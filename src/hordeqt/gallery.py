@@ -1,4 +1,3 @@
-import logging
 from typing import List
 
 import coloredlogs
@@ -9,10 +8,7 @@ from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QLayout,
                                QSizePolicy, QVBoxLayout, QWidget)
 
 from hordeqt.classes import LocalJob
-
-LOGGER = logging.getLogger("HordeQT")
-coloredlogs.install("DEBUG", milliseconds=True)
-
+from hordeqt.consts import LOGGER
 
 class ImageWidget(QLabel):
     imageClicked = Signal(QPixmap)

@@ -72,3 +72,4 @@
 - [ ] Add errored jobs to a signal on API thread, then connect to a warning on the app
 - [ ] Allow toggle for slow/extra slow workers
 - [ ] Upscale combobox
+- [ ] Cancel button on in-progress images
