@@ -16,8 +16,9 @@ class JobManagerThread(QThread):
     job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
     updated = Signal()
     kudos_cost_updated = Signal(type(Optional[float]))
-    request_kudo_cost_update=Signal(Job)
-    job_count=1
+    request_kudo_cost_update = Signal(Job)
+    job_count = 1
+
     def __init__(self, api_key: str, max_requests: int, parent=None):
         super().__init__(parent)
         self.api_key = api_key
@@ -242,7 +243,7 @@ class JobManagerThread(QThread):
                         continue
                     r.raise_for_status()
                     rj = r.json()
-                    if len(rj["generations"])>0:
+                    if len(rj["generations"]) > 0:
                         gen = rj["generations"][0]
                         lj.downloadURL = gen["img"]
                         lj.worker_id = gen["worker_id"]
@@ -256,8 +257,8 @@ class JobManagerThread(QThread):
                         )
                         self.job_completed.emit(lj)
                     else:
-                        self.log_error(lj.original,r)
-                        #Is this a good idea?
+                        self.log_error(lj.original, r)
+                        # Is this a good idea?
                         # self.job_queue.put(lj.original)
                 except requests.RequestException as e:
                     LOGGER.error(e)

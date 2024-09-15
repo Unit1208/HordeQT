@@ -1,11 +1,10 @@
 import os
+import platform
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 from typing import List
-import platform
-import shutil
 
 
 def find_executable(exe_name: str, prefix: os.PathLike | str = sys.exec_prefix) -> Path:
@@ -52,7 +51,7 @@ def convert_uic_files(prefix: Path):
         Path(__file__).parent / "src" / "hordeqt" / x for x in ui_fns
     ]
     uic = find_executable("pyside6-uic", prefix)
-    
+
     for file in ui_files:
         new_py_fpath = (
             Path(__file__).parent
@@ -79,7 +78,7 @@ def detect_platform():
 def install_sys_reqs():
     curr_platform, is_windows, is_linux, is_macos = detect_platform()
     if is_linux:
-        # one will probably work, I guess.        
+        # one will probably work, I guess.
         os.system(
             "sudo apt install git build-essential pkg-config python3-dev python3-venv libgirepository1.0-dev libcairo2-dev gir1.2-gtk-3.0 libcanberra-gtk3-module elfutils flatpak flatpak-builder -y"
         )
@@ -125,23 +124,23 @@ def main():
             "pip",
             "setuptools",
             "wheel",
-            "pyside6"
+            "pyside6",
         ]
     )
 
     formats = ["app"]
-    additional_args=[]
+    additional_args = []
     briefcase_platform = ""
     if is_linux:
         briefcase_platform = "linux"
-        formats=["flatpak"]
+        formats = ["flatpak"]
     if is_windows:
         briefcase_platform = "windows"
         additional_args.append("--adhoc-sign")
     if is_macos:
         briefcase_platform = "macOS"
         additional_args.append("--adhoc-sign")
-        
+
     briefcase_exec = find_executable("briefcase", venv_path)
 
     subprocess.run([str(new_python), briefcase_exec, "create"])
@@ -179,8 +178,7 @@ def main():
                 briefcase_platform,
                 f,
                 "--no-input",
-                *additional_args   
-                
+                *additional_args,
             ]
         )
 

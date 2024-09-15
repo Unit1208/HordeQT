@@ -1,6 +1,5 @@
 from typing import List
 
-import coloredlogs
 from PySide6.QtCore import QRect, QSize, Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QLayout,
@@ -9,6 +8,7 @@ from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QLayout,
 
 from hordeqt.classes import LocalJob
 from hordeqt.consts import LOGGER
+
 
 class ImageWidget(QLabel):
     imageClicked = Signal(QPixmap)

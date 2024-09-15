@@ -62,7 +62,7 @@ class Job:
         self.model = model
         self.allow_nsfw = allow_nsfw
         self.share_image = share_image
-        self.dry_run=False
+        self.dry_run = False
 
         # Status-related attributes
         self.job_id = create_uuid()
@@ -100,7 +100,7 @@ class Job:
             "shared": self.share_image,
             # This should never need to be turned off.
             "replacement_filter": True,
-            "dry_run":self.dry_run
+            "dry_run": self.dry_run,
         }
 
     def __str__(self) -> str:
