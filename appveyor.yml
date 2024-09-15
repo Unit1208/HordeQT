@@ -8,7 +8,7 @@ environment:
   FORCE_COLOR: "1"
 build_script:
   # Checkout
-  - cmd: git clone https://github.com/Unit1208/HordeQT.git .
+  - cmd: git clone https://github.com/Unit1208/HordeQT.git
 
   # Setup environment depending on platform
   - ps: |
@@ -26,9 +26,15 @@ build_script:
 
   # Build App
   - ps: python build.py
+  - sh: |
+    if [ "$(uname)" = "Linux" ]; then
+      sudo chmod -R 777 build/
+      sudo chmod -R 777 dist/
+    fi
+
 
 artifacts:
-  - path: dist/*.flatpak
+  - path: dist/HordeQT-*.flatpak
     name: HordeQT-Linux
   - path: dist/*.exe
     name: HordeQT-Windows
