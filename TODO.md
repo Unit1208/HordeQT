@@ -65,8 +65,10 @@
 - [ ] Fix Flux
   - [x] Allow for custom models that aren't in the official list
   - [x] Don't freak out when a model has parenthesis in the name.
-  - [ ] Hires-fix toggle
+  - [x] Hires-fix toggle
+  - [x] Karras toggle
 - [ ] Save unknown models to saved data, don't remind again.
 - [ ] Autosave every ~60s  
 - [ ] Add errored jobs to a signal on API thread, then connect to a warning on the app
 - [ ] Allow toggle for slow/extra slow workers
+- [ ] Upscale combobox

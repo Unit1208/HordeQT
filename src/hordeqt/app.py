@@ -132,6 +132,8 @@ class HordeQt(QMainWindow):
         self.ui.stepsSpinBox.valueChanged.connect(self.update_kudos_preview)
         self.ui.guidenceDoubleSpinBox.valueChanged.connect(self.update_kudos_preview)
         self.ui.imagesSpinBox.valueChanged.connect(self.update_images_created)
+        self.ui.karrasCheckBox.checkStateChanged.connect(self.update_kudos_preview)
+        self.ui.highResFixCheckBox.checkStateChanged.connect(self.update_kudos_preview)
         self.ui.progressBar.setValue(0)
 
         self.preset_being_updated = False
@@ -265,6 +267,7 @@ class HordeQt(QMainWindow):
                 self.ui.widthSpinBox.setValue(1024)
                 self.ui.heightSpinBox.setValue(448)
             case 6:
+                # SQUARE (1:1)
                 if current_model_needs_1024:
                     self.ui.widthSpinBox.setValue(1024)
                     self.ui.heightSpinBox.setValue(1024)
