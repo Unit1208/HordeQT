@@ -77,3 +77,7 @@
 - [x] Add "open in native viewer" to image popup
 - [x] Horde stats page
 - [ ] Local stats page
+- [ ] Proper horde batching
+- [ ] img2img
+- [ ] Shared key creation
+- [ ] Kudos transfer

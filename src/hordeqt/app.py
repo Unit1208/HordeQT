@@ -11,9 +11,15 @@ import requests
 from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QDesktopServices, QFont
-from PySide6.QtWidgets import (QApplication, QLineEdit, QMainWindow,
-                               QScrollArea, QSizePolicy, QTableWidgetItem,
-                               QVBoxLayout)
+from PySide6.QtWidgets import (
+    QApplication,
+    QLineEdit,
+    QMainWindow,
+    QScrollArea,
+    QSizePolicy,
+    QTableWidgetItem,
+    QVBoxLayout,
+)
 
 from hordeqt.classes import Job, LocalJob, Model
 from hordeqt.consts import ANON_API_KEY, BASE_URL, LOGGER
@@ -331,6 +337,7 @@ class HordeQt(QMainWindow):
             "images": self.ui.imagesSpinBox.value(),
             "hires_fix": self.ui.highResFixCheckBox.isChecked(),
             "karras": self.ui.karrasCheckBox.isChecked(),
+            "upscale": self.ui.upscaleComboBox.currentText(),
         }
 
     def restore_job_config(self, job_config: dict):
@@ -352,6 +359,7 @@ class HordeQt(QMainWindow):
         self.ui.imagesSpinBox.setValue(job_config.get("images", 1))
         self.ui.highResFixCheckBox.setChecked(job_config.get("hires_fix", True))
         self.ui.karrasCheckBox.setChecked(job_config.get("karras", True))
+        self.ui.upscaleComboBox.setCurrentText(job_config.get("upscale", "None"))
 
     def undo_reset_job_config(self):
         if self.last_job_config is not None:
@@ -566,6 +574,7 @@ class HordeQt(QMainWindow):
         hires_fix = self.ui.highResFixCheckBox.isChecked()
         allow_nsfw = self.ui.NSFWCheckBox.isChecked()
         share_image = self.ui.shareImagesCheckBox.isChecked()
+        upscale = self.ui.upscaleComboBox.currentText()
         prompts = prompt_matrix(prompt)
         prompts *= self.ui.imagesSpinBox.value()
         jobs = []
@@ -590,6 +599,7 @@ class HordeQt(QMainWindow):
                 hires_fix=hires_fix,
                 allow_nsfw=allow_nsfw,
                 share_image=share_image,
+                upscale=upscale,
             )
             jobs.append(job)
         LOGGER.info(f"Created {len(jobs)} jobs")

@@ -5,6 +5,7 @@ from typing import Dict, Optional, Self
 
 from PIL import ExifTags, Image
 
+from hordeqt.consts import UPSCALE_MAP
 from hordeqt.util import create_uuid
 
 
@@ -48,6 +49,7 @@ class Job:
         faulted: bool = False,
         kudos: float = 0,
         share_image: bool = True,
+        upscale: Optional[str] = None,
     ):
         self.prompt = prompt
         self.sampler_name = sampler_name
@@ -63,8 +65,7 @@ class Job:
         self.allow_nsfw = allow_nsfw
         self.share_image = share_image
         self.dry_run = False
-
-        # Status-related attributes
+        self.upscale = upscale
         self.job_id = create_uuid()
         self.horde_job_id = horde_job_id
         self.wait_time = wait_time
@@ -97,6 +98,7 @@ class Job:
             "images": 1,
             "hires_fix": self.hires_fix,
             "karras": self.karras,
+            "upscale":self.upscale or "None"
         }
 
     def to_json(self) -> Dict:
@@ -108,7 +110,9 @@ class Job:
                 "seed": str(self.seed),
                 "height": self.height,
                 "width": self.width,
-                "post_processing": [],
+                "post_processing": (
+                    [] if (k := UPSCALE_MAP[self.upscale]) == None else [k]
+                ),
                 "karras": self.karras,
                 "hires_fix": self.hires_fix,
                 "clip_skip": self.clip_skip,
@@ -148,6 +152,7 @@ class Job:
             steps=params.get("steps"),
             model=data.get("models", ["INVALID_MODEL_NAME_HERE"])[0],
             allow_nsfw=data.get("nsfw", False),
+            upscale=params.get("upscaler")
         )
 
     def serialize(self):
