@@ -8,7 +8,8 @@ import requests
 from PIL import Image
 from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
 
-from hordeqt.classes import LocalJob, apply_metadata_to_image
+from hordeqt.classes.LocalJob import LocalJob
+from hordeqt.classes.LocalJob import apply_metadata_to_image
 from hordeqt.consts import LOGGER
 from hordeqt.util import SAVED_IMAGE_DIR_PATH
 

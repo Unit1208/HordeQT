@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QLayout,
                                QLayoutItem, QPlainTextEdit, QPushButton,
                                QSizePolicy, QVBoxLayout, QWidget)
 
-from hordeqt.classes import LocalJob
+from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.consts import LOGGER
 
 
