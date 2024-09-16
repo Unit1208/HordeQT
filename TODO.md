@@ -49,8 +49,9 @@
 - [ ] Use retry-after header
 - [x] Disable table editing
 - [ ] Double click table entry to jump to location in gallery and open popup
+  - [See this](https://stackoverflow.com/questions/4324005/how-to-detect-doubleclick-in-qtableview)
 - [ ] Allow sorting queued table by creation time or filter by a certain metric
-  - [See pythonguis.com](https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/)
+  - [See pythonguis.com](https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/) 
 - [ ] Sort options on gallery.
 - [ ] Move loading images to load_thread
 - [x] Resize images to fit screen on popup
@@ -72,7 +73,7 @@
 - [x] Autosave every ~60s  
 - [ ] Add errored jobs to a signal on API thread, then connect to a warning on the app
 - [ ] Allow toggle for slow/extra slow workers
-- [ ] Upscale combobox
+- [x] Upscale combobox
 - [ ] Cancel button on in-progress images
 - [x] Add "open in native viewer" to image popup
 - [x] Horde stats page
