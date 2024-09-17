@@ -24,8 +24,8 @@ from PySide6.QtWidgets import (
 from hordeqt.classes.Job import Job
 from hordeqt.classes.Model import Model
 from hordeqt.classes.LocalJob import LocalJob
-from hordeqt.consts import ANON_API_KEY, BASE_URL, LOGGER
-from hordeqt.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
+from hordeqt.other.consts import ANON_API_KEY, BASE_URL, LOGGER
+from hordeqt.components.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.classes.SavedData import SavedData
@@ -33,7 +33,7 @@ from hordeqt.threads.download_thread import DownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
 from hordeqt.threads.load_thread import LoadThread
 from hordeqt.threads.save_thread import SaveThread
-from hordeqt.util import get_dynamic_constants, prompt_matrix
+from hordeqt.other.util import get_dynamic_constants, prompt_matrix
 
 
 class HordeQt(QMainWindow):

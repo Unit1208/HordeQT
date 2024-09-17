@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QLayout,
                                QSizePolicy, QVBoxLayout, QWidget)
 
 from hordeqt.classes.LocalJob import LocalJob
-from hordeqt.consts import LOGGER
+from hordeqt.other.consts import LOGGER
 
 
 class ImageWidget(QLabel):

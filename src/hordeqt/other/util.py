@@ -8,7 +8,7 @@ from typing import List
 from PySide6.QtCore import QStandardPaths
 from PySide6.QtWidgets import QApplication
 
-from hordeqt.consts import LOGGER
+from hordeqt.other.consts import LOGGER
 
 
 def get_metadata():

@@ -4,7 +4,7 @@ from typing import Dict, List
 
 from hordeqt.threads.download_thread import DownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
-from hordeqt.util import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
+from hordeqt.other.util import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
 
 
 class SavedData:

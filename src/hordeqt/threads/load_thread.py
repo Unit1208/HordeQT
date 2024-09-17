@@ -7,8 +7,8 @@ from typing import Optional, Tuple
 import requests
 from PySide6.QtCore import QObject, QStandardPaths, QThread, Signal
 
-from hordeqt.consts import BASE_URL, LOGGER
-from hordeqt.util import get_headers
+from hordeqt.other.consts import BASE_URL, LOGGER
+from hordeqt.other.util import get_headers
 
 
 class LoadThread(QThread):

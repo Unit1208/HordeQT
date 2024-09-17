@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
 from PySide6.QtCore import QMutex, QThread, QWaitCondition
 
-from hordeqt.consts import LOGGER
+from hordeqt.other.consts import LOGGER
 
 
 class SaveThread(QThread):

@@ -1,5 +1,5 @@
-from hordeqt.consts import UPSCALE_MAP
-from hordeqt.util import create_uuid
+from hordeqt.other.consts import UPSCALE_MAP
+from hordeqt.other.util import create_uuid
 
 
 import json

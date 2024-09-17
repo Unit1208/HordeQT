@@ -10,8 +10,8 @@ from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
 
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.classes.LocalJob import apply_metadata_to_image
-from hordeqt.consts import LOGGER
-from hordeqt.util import SAVED_IMAGE_DIR_PATH
+from hordeqt.other.consts import LOGGER
+from hordeqt.other.util import SAVED_IMAGE_DIR_PATH
 
 
 class DownloadThread(QThread):
