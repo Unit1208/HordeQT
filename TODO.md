@@ -82,3 +82,4 @@
 - [ ] img2img
 - [ ] Shared key creation
 - [ ] Kudos transfer
+- [ ] More caching, esp. when using Civit API
