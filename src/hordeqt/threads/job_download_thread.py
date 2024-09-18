@@ -14,7 +14,7 @@ from hordeqt.other.consts import LOGGER
 from hordeqt.other.util import SAVED_IMAGE_DIR_PATH
 
 
-class DownloadThread(QThread):
+class JobDownloadThread(QThread):
     completed_downloads: List[LocalJob]
     queued_downloads: List[LocalJob]
     queued_deletes: List[LocalJob]

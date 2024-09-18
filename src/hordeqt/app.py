@@ -29,7 +29,7 @@ from hordeqt.components.gallery import ImageGalleryWidget, ImagePopup, ImageWidg
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.classes.SavedData import SavedData
-from hordeqt.threads.download_thread import DownloadThread
+from hordeqt.threads.job_download_thread import JobDownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
 from hordeqt.threads.load_thread import LoadThread
 from hordeqt.threads.save_thread import SaveThread
@@ -95,7 +95,7 @@ class HordeQt(QMainWindow):
         self.ui.GenerateButton.setEnabled(False)
         self.ui.modelComboBox.setEnabled(False)
 
-        self.download_thread: DownloadThread = DownloadThread.deserialize(
+        self.download_thread: JobDownloadThread = JobDownloadThread.deserialize(
             {
                 "completed_downloads": self.savedData.current_images,
                 "queued_downloads": self.savedData.queued_downloads,

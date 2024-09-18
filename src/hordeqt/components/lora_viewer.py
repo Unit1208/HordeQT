@@ -36,8 +36,15 @@ def _format_tags(tags: List[str]) -> str:
 
 class LoraViewer(QDockWidget):
     version_mapping:Dict[str,ModelVersion]
+    images:List[QPixmap]
+    def update_on_version_change(self,version_str:str):
+        version=self.version_mapping[version_str]
+        for vi in version.images:
+            url=vi.url
+            
+            # im=QPixmap
     def __init__(self, model: CivitModel, parent: HordeQt):
-        super().__init__("Lora viewer", parent)
+        super().__init__("LoRA viewer", parent)
         self._parent = parent
         self.setAllowedAreas(
             Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
@@ -52,8 +59,6 @@ class LoraViewer(QDockWidget):
         creator_layout.addWidget(creator_username)
 
         nsfw_layout = QHBoxLayout()
-        # creator_image=QLabel(model.creator.username) #TODO
-
         nsfw_label = QLabel("NSFW:")
         nsfw_value = QLabel("Yes" if model.nsfw else "No")
 
@@ -76,7 +81,9 @@ class LoraViewer(QDockWidget):
         LoRA_version_layout=QHBoxLayout()
         LoRA_version_layout.addWidget(LoRA_version_label)
         LoRA_version_layout.addWidget(self.LoRA_version_combobox)
-        
+        self.images=[]
+        self.LoRA_version_combobox.currentTextChanged.connect(self.update_on_version_change)    
+
         # Create a main vertical layout and add widgets
         
         layout = QVBoxLayout()

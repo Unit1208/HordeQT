@@ -2,8 +2,10 @@ import json
 import os
 from typing import Dict, List
 
-from hordeqt.threads.download_thread import DownloadThread
+from hordeqt.threads.job_download_thread import JobDownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
+from hordeqt.threads.etc_download_thread import DownloadThread
+
 from hordeqt.other.util import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
 
 
@@ -29,7 +31,7 @@ class SavedData:
         nsfw: bool,
         max_jobs: int,
         save_metadata: bool,
-        dlthread: DownloadThread,
+        dlthread: JobDownloadThread,
         job_config: dict,
         share_images: bool,
         current_open_tab: int,
