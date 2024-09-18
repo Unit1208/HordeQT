@@ -1,17 +1,11 @@
 import os
 from pathlib import Path
 from typing import List
-from PySide6.QtWidgets import (
-    QApplication,
-    QWidget,
-    QLayout,
-    QSizePolicy,
-    QLabel,
-    QVBoxLayout,
-    QScrollArea,
-)
+
 from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import (QApplication, QLabel, QLayout, QScrollArea,
+                               QSizePolicy, QVBoxLayout, QWidget)
 
 
 class ImageWidget(QLabel):

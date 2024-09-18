@@ -11,29 +11,24 @@ import requests
 from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QDesktopServices, QFont
-from PySide6.QtWidgets import (
-    QApplication,
-    QLineEdit,
-    QMainWindow,
-    QScrollArea,
-    QSizePolicy,
-    QTableWidgetItem,
-    QVBoxLayout,
-)
+from PySide6.QtWidgets import (QApplication, QLineEdit, QMainWindow,
+                               QScrollArea, QSizePolicy, QTableWidgetItem,
+                               QVBoxLayout)
 
 from hordeqt.classes.Job import Job
-from hordeqt.classes.Model import Model
 from hordeqt.classes.LocalJob import LocalJob
-from hordeqt.other.consts import ANON_API_KEY, BASE_URL, LOGGER
-from hordeqt.components.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
-from hordeqt.gen.ui_form import Ui_MainWindow
-from hordeqt.components.model_dialog import ModelPopup
+from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
+from hordeqt.components.gallery import (ImageGalleryWidget, ImagePopup,
+                                        ImageWidget)
+from hordeqt.components.model_dialog import ModelPopup
+from hordeqt.gen.ui_form import Ui_MainWindow
+from hordeqt.other.consts import ANON_API_KEY, BASE_URL, LOGGER
+from hordeqt.other.util import get_dynamic_constants, prompt_matrix
 from hordeqt.threads.job_download_thread import JobDownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
 from hordeqt.threads.load_thread import LoadThread
 from hordeqt.threads.save_thread import SaveThread
-from hordeqt.other.util import get_dynamic_constants, prompt_matrix
 
 
 class HordeQt(QMainWindow):

@@ -1,11 +1,11 @@
 import json
-from typing import Self
-from PIL import ExifTags, Image
-from hordeqt.classes.Job import Job
-
-
 import time
 from pathlib import Path
+from typing import Self
+
+from PIL import ExifTags, Image
+
+from hordeqt.classes.Job import Job
 
 
 class LocalJob:

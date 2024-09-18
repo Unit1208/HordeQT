@@ -1,6 +1,7 @@
-from enum import StrEnum
 import json
+from enum import StrEnum
 from typing import Dict, List, Optional
+
 import requests
 
 
@@ -73,9 +74,9 @@ class ModelVersionStats:
     @staticmethod
     def deserialize(data: dict):
         return ModelVersionStats(
-            downloadCount=data.get("downloadCount",None),
-            ratingCount=data.get("ratingCount",None),
-            rating=data.get("rating",None),
+            downloadCount=data.get("downloadCount", None),
+            ratingCount=data.get("ratingCount", None),
+            rating=data.get("rating", None),
         )
 
 
@@ -91,9 +92,17 @@ class ModelVersionFileMetadata:
     def deserialize(data: dict):
 
         return ModelVersionFileMetadata(
-            fp=FP(data.get("fp")) if data.get("fp",None) is not None else None,
-            size=ModelSize(data.get("size")) if data.get("size",None) is not None else None,
-            format=ModelFormat(data.get("format")) if data.get("format",None) is not None else None,
+            fp=FP(data.get("fp")) if data.get("fp", None) is not None else None,
+            size=(
+                ModelSize(data.get("size"))
+                if data.get("size", None) is not None
+                else None
+            ),
+            format=(
+                ModelFormat(data.get("format"))
+                if data.get("format", None) is not None
+                else None
+            ),
         )
 
 
@@ -127,16 +136,16 @@ class ModelVersionFile:
     @staticmethod
     def deserialize(data: dict):
         return ModelVersionFile(
-            id=data.get("id",-1),
-            sizeKb=data.get("sizeKb",1),
-            name=data.get("name",""),
+            id=data.get("id", -1),
+            sizeKb=data.get("sizeKb", 1),
+            name=data.get("name", ""),
             type=ModelType(data.get("type")),
             pickleScanResult=ScanResult(data.get("pickleScanResult", None)),
             virusScanResult=ScanResult(data.get("virusScanResult", None)),
             scannedAt=data.get("scannedAt"),
             primary=data.get("primary"),
-            metadata=ModelVersionFileMetadata.deserialize(data.get("metadata",{})),
-            downloadURL=data.get("downloadURL",""),
+            metadata=ModelVersionFileMetadata.deserialize(data.get("metadata", {})),
+            downloadURL=data.get("downloadURL", ""),
             hashes=data.get("hashes", {}),
         )
 
@@ -163,13 +172,13 @@ class ModelVersionImage:
     @staticmethod
     def deserialize(data: dict):
         return ModelVersionImage(
-            id=data.get("id",-1),
-            url=data.get("url",""),
-            nsfw=data.get("nsfw",True),
-            width=data.get("width",1024),
-            height=data.get("height",1024),
-            hash=data.get("hash",""),
-            type=data.get("type","image"),
+            id=data.get("id", -1),
+            url=data.get("url", ""),
+            nsfw=data.get("nsfw", True),
+            width=data.get("width", 1024),
+            height=data.get("height", 1024),
+            hash=data.get("hash", ""),
+            type=data.get("type", "image"),
         )
 
 
@@ -199,17 +208,19 @@ class ModelVersion:
     @staticmethod
     def deserialize(data: dict):
         return ModelVersion(
-            id=data.get("id",int),
-            name=data.get("name",""),
-            status=data.get("status",""),
+            id=data.get("id", int),
+            name=data.get("name", ""),
+            status=data.get("status", ""),
             baseModel=BaseModel(data.get("baseModel")),
             description=data.get("description", None),
-            stats=ModelVersionStats.deserialize(data.get("stats",{})),
-            files=[ModelVersionFile.deserialize(file) for file in data.get("files",{})],
-            images=[
-                ModelVersionImage.deserialize(image) for image in data.get("images",{})
+            stats=ModelVersionStats.deserialize(data.get("stats", {})),
+            files=[
+                ModelVersionFile.deserialize(file) for file in data.get("files", {})
             ],
-            downloadURL=data.get("downloadURL",""),
+            images=[
+                ModelVersionImage.deserialize(image) for image in data.get("images", {})
+            ],
+            downloadURL=data.get("downloadURL", ""),
         )
 
 
@@ -261,17 +272,17 @@ class CivitModel:
     def deserialize(data: dict):
 
         return CivitModel(
-            id=data.get("id",-1),
-            name=data.get("name",""),
-            description=data.get("description",""),
-            poi=data.get("poi",False),
+            id=data.get("id", -1),
+            name=data.get("name", ""),
+            description=data.get("description", ""),
+            poi=data.get("poi", False),
             type=ModelType(data.get("type")),
-            nsfw=data.get("nsfw",True),
-            tags=data.get("tags",[]),
-            creator=Creator.deserialize(data.get("creator",{"username":"Unknown"})),
+            nsfw=data.get("nsfw", True),
+            tags=data.get("tags", []),
+            creator=Creator.deserialize(data.get("creator", {"username": "Unknown"})),
             modelVersions=[
                 ModelVersion.deserialize(version)
-                for version in data.get("modelVersions",[])
+                for version in data.get("modelVersions", [])
             ],
         )
 
@@ -294,14 +305,15 @@ class CivitApi:
         if len(options.baseModels) > 0:
             base_model_string = "&baseModels=" + "&baseModels=".join(options.baseModels)
         else:
-            base_model_string=""
+            base_model_string = ""
         types_string = "&".join([f"types={x}" for x in options.types])
         nsfw_string = "true" if options.nsfw else "false"
-        
+
         url = f"https://civitai.com/api/v1/models?{types_string}&sort=Highest%20Rated&limit=20&page={options.page}&nsfw={nsfw_string}&query={options.query.lower()}{base_model_string}"
         r = requests.get(url)
         j = r.json()["items"]
-        return [ CivitModel.deserialize(b) for b in j]
+        return [CivitModel.deserialize(b) for b in j]
+
 
 search_options = SearchOptions()
 search_options.query = "Artist"
@@ -309,4 +321,4 @@ search_options.page = 1
 search_options.nsfw = True
 search_options.baseModels = BaseModel.Pony
 search_options.types = [ModelType.LORA]
-b=CivitApi().search_models(search_options)
+b = CivitApi().search_models(search_options)

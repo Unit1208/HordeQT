@@ -94,13 +94,13 @@ def install_sys_reqs():
 
 
 def main():
-    ISDEBUG=False
+    ISDEBUG = False
     curr_dir = Path.cwd()
     curr_platform, is_windows, is_linux, is_macos = detect_platform()
 
     venv_path = (curr_dir / "venv").resolve()
-    gitignore_path=(curr_dir/"src"/"hordeqt"/".gitignore").resolve()
-    gitignore_tmp_path=(curr_dir/"src"/"hordeqt`"/"not.gitignore")
+    gitignore_path = (curr_dir / "src" / "hordeqt" / ".gitignore").resolve()
+    gitignore_tmp_path = curr_dir / "src" / "hordeqt`" / "not.gitignore"
     # install_sys_reqs()
     if is_windows:
         subprocess.run(["C:\\Python312-x64\\python", "-m", "venv", str(venv_path)])
@@ -144,13 +144,13 @@ def main():
     if is_macos:
         briefcase_platform = "macOS"
         additional_args.append("--adhoc-sign")
-    
+
     # This is *really*, *really* dumb, but I don't know how else to fix the issue with briefcase.
     # In short, Briefcase *silently* doesn't copy files that are .gitignore'd, but only on windows.
     # So, the best "fix", apart from just removing gen from the .gitignore, which would just add more data that doesn't need to be included,
     # Is to move .gitignore back and forth. It's not the most elegant, but it technically works.
     if ISDEBUG or is_windows:
-        shutil.move(gitignore_path,gitignore_tmp_path)
+        shutil.move(gitignore_path, gitignore_tmp_path)
     briefcase_exec = find_executable("briefcase", venv_path)
     for f in formats:
         subprocess.run(
@@ -195,8 +195,8 @@ def main():
             ]
         )
     if ISDEBUG or is_windows:
-        shutil.move(gitignore_tmp_path,gitignore_path)
-        
+        shutil.move(gitignore_tmp_path, gitignore_path)
+
 
 if __name__ == "__main__":
     main()

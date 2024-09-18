@@ -1,7 +1,7 @@
 import base64
-from collections.abc import Callable
 import io
 import pickle
+from collections.abc import Callable
 from typing import Dict, List, Optional, Self, Tuple
 
 import requests
@@ -39,7 +39,9 @@ class DownloadThread(QThread):
         self.queued_downloads.append((dl_id, request, cb))
         return dl_id
 
-    def prepare_dl(self, url: str, method: str, data: dict, cb: Optional[dl_callback]) -> str:
+    def prepare_dl(
+        self, url: str, method: str, data: dict, cb: Optional[dl_callback]
+    ) -> str:
         req = requests.Request(method, url, data=data)
         dl_id = create_uuid()
 
@@ -73,27 +75,30 @@ class DownloadThread(QThread):
         callback_list = {dl_id: cb for dl_id, _, cb in self.queued_downloads}
         pickled_cb_list = pickle.dumps(callback_list)
         cb_str = base64.b64encode(pickled_cb_list).decode("utf-8")
-        new_queued_download_list = [(dl_id, req)
-                                    for dl_id, req, _ in self.queued_downloads]
+        new_queued_download_list = [
+            (dl_id, req) for dl_id, req, _ in self.queued_downloads
+        ]
         return {
             "callbacks": cb_str,
             "queued_downloads": new_queued_download_list,
-            "completed_downloads": self.completed_downloads}
+            "completed_downloads": self.completed_downloads,
+        }
 
     @classmethod
     def deserialize(cls, data: Dict[str, str | list[requests.Response]]):
         cb_str: str = data.get("callbacks", "")  # type: ignore
         queued_downloads: list[Tuple[str, requests.Request]] = data.get(
-            "queued_downloads")  # type: ignore
+            "queued_downloads"
+        )  # type: ignore
         completed_downloads: Dict[str, requests.Response] = data.get(
-            "completed_downloads")  # type: ignore
+            "completed_downloads"
+        )  # type: ignore
 
         pickled_cb_list = base64.b64decode(cb_str.encode("utf-8"))
         callback_list = pickle.loads(pickled_cb_list)
         s = cls()
         s.queued_downloads = [
-            (dl_id, req, callback_list[dl_id])
-            for dl_id, req in queued_downloads
+            (dl_id, req, callback_list[dl_id]) for dl_id, req in queued_downloads
         ]
 
         s.completed_downloads = completed_downloads

@@ -1,7 +1,8 @@
 import random
 from typing import List, Tuple
-import matplotlib.pyplot as plt
+
 import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 
 
 def arrange_images(

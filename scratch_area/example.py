@@ -1,6 +1,7 @@
-from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
-import requests
 import queue
+
+import requests
+from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
 
 class ApiWorker(QObject):

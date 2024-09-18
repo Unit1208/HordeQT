@@ -1,10 +1,9 @@
-from hordeqt.other.consts import UPSCALE_MAP
-from hordeqt.other.util import create_uuid
-
-
 import json
 import time
 from typing import Dict, Optional, Self
+
+from hordeqt.other.consts import UPSCALE_MAP
+from hordeqt.other.util import create_uuid
 
 
 class Job:
@@ -78,7 +77,7 @@ class Job:
             "images": 1,
             "hires_fix": self.hires_fix,
             "karras": self.karras,
-            "upscale":self.upscale or "None"
+            "upscale": self.upscale or "None",
         }
 
     def to_json(self) -> Dict:
@@ -132,7 +131,7 @@ class Job:
             steps=params.get("steps"),
             model=data.get("models", ["INVALID_MODEL_NAME_HERE"])[0],
             allow_nsfw=data.get("nsfw", False),
-            upscale=params.get("upscaler")
+            upscale=params.get("upscaler"),
         )
 
     def serialize(self):

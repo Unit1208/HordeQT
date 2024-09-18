@@ -1,51 +1,30 @@
 # This Python file uses the following encoding: utf-8
 import datetime as dt
-from PIL import Image, ExifTags
-import tempfile
-import re
-import uuid
-import human_readable as hr
-from pathlib import Path
 import json
+import logging
 import os
 import random
+import re
 import sys
+import tempfile
 import time
-from typing import List, Dict, Optional, Self, Type
-from PySide6.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QDialog,
-    QLineEdit,
-    QWidget,
-    QLayout,
-    QSizePolicy,
-    QLabel,
-    QDockWidget,
-    QScrollArea,
-    QTableWidgetItem,
-    QVBoxLayout,
-    QHBoxLayout,
-    QPushButton,
-    QLayoutItem,
-)
-from PySide6.QtCore import (
-    QObject,
-    QThread,
-    Signal,
-    QTimer,
-    QStandardPaths,
-    QRect,
-    Qt,
-    QUrl,
-    QSize,
-)
-from pyqttoast import Toast, ToastPreset, toast_enums
-from PySide6.QtGui import QPixmap, QDesktopServices, QFont, QClipboard
-
+import uuid
+from pathlib import Path
 from queue import Queue
-import logging
+from typing import Dict, List, Optional, Self, Type
+
 import coloredlogs
+import human_readable as hr
+from PIL import ExifTags, Image
+from pyqttoast import Toast, ToastPreset, toast_enums
+from PySide6.QtCore import (QObject, QRect, QSize, QStandardPaths, Qt, QThread,
+                            QTimer, QUrl, Signal)
+from PySide6.QtGui import QClipboard, QDesktopServices, QFont, QPixmap
+from PySide6.QtWidgets import (QApplication, QDialog, QDockWidget, QHBoxLayout,
+                               QLabel, QLayout, QLayoutItem, QLineEdit,
+                               QMainWindow, QPushButton, QScrollArea,
+                               QSizePolicy, QTableWidgetItem, QVBoxLayout,
+                               QWidget)
 
 
 class ImageWidget(QLabel):

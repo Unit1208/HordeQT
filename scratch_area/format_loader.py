@@ -16,6 +16,7 @@
 import enum
 import json
 import re
+
 from PIL import Image
 from PIL.ExifTags import Base
 
