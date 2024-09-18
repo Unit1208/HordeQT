@@ -73,4 +73,6 @@ CMakeLists.txt.user*
 *.dll
 *.exe
 
+#BEGIN-DO-NOT-TAMPER-ZONE-ac699f9a-f545-47d5-8c91-c38887a05e79
 gen
+#END-DO-NOT-TAMPER-ZONE-01fe0b2b-dbc0-4bcb-b247-b8e5035e105d
