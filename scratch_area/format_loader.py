@@ -22,7 +22,7 @@ from PIL.ExifTags import Base
 
 
 # from PIL import
-### WILL WORK:
+# WILL WORK:
 # ARTBOT pngs jpegs
 # HORDENG jpegs
 def _artbot(img: Image.Image):

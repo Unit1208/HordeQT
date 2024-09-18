@@ -5,7 +5,7 @@ from typing import Dict, List, Optional
 import requests
 
 
-## TRANSLATED FROM HORDENG's implementation
+# TRANSLATED FROM HORDENG's implementation
 class BaseModel(StrEnum):
     StableDiffusion1_4 = "SD 1.4"
     StableDiffusion1_5 = "SD 1.5"

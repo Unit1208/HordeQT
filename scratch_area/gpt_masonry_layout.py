@@ -4,8 +4,15 @@ from typing import List
 
 from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (QApplication, QLabel, QLayout, QScrollArea,
-                               QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QApplication,
+    QLabel,
+    QLayout,
+    QScrollArea,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 
 class ImageWidget(QLabel):
