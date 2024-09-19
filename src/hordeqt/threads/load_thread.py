@@ -8,7 +8,7 @@ import requests
 from PySide6.QtCore import QObject, QStandardPaths, QThread, Signal
 
 from hordeqt.other.consts import BASE_URL, LOGGER
-from hordeqt.other.util import get_headers
+from hordeqt.other.util import CACHE_PATH, get_headers
 
 
 class LoadThread(QThread):
@@ -55,19 +55,15 @@ class LoadThread(QThread):
             self.progress.emit((n + 1) * 100 / (len(t)))
 
     def load_model_cache(self):
-        p = Path(
-            QStandardPaths.writableLocation(
-                QStandardPaths.StandardLocation.CacheLocation
-            )
-        )
-        model_cache_path = p / "model_ref.json"
+
+        model_cache_path = CACHE_PATH / "model_ref.json"
 
         if (
             not model_cache_path.exists()
             or time.time() - model_cache_path.stat().st_mtime > 60 * 60 * 24
         ):
             LOGGER.debug(f"Refreshing model cache at {model_cache_path}")
-            os.makedirs(p, exist_ok=True)
+            os.makedirs(model_cache_path.parent, exist_ok=True)
             r = requests.get(
                 "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/main/stable_diffusion.json"
             )

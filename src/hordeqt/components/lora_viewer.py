@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List
 
+import requests
+
 from hordeqt.civit.civit_api import CivitModel, ModelVersion
+from hordeqt.components.gallery import ImageGalleryWidget
+from hordeqt.other.util import CACHE_PATH, get_bucketized_cache_path
 
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
@@ -42,8 +47,27 @@ class LoraViewer(QDockWidget):
         version = self.version_mapping[version_str]
         for vi in version.images:
             url = vi.url
+            
+            path=get_bucketized_cache_path(url)
+            if path.exists():
+                self.add_image(path)
+            def _set_pixmap_closure(resp:requests.Response):
+                with open(path,"wb") as f:
+                    f.write(resp.content)
+                self.add_image(path)
+                    
+            self._parent.download_thread.prepare_dl(url,"GET",{},_set_pixmap_closure)
 
-            # im=QPixmap
+    def add_image(self, path:Path):
+        im=QPixmap(path)
+        l=QLabel()
+        l.setPixmap(im
+                .scaled(
+                self.size(),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            ))
+        self.imageGallery.m_layout.addWidget(l)
 
     def __init__(self, model: CivitModel, parent: HordeQt):
         super().__init__("LoRA viewer", parent)
@@ -56,7 +80,20 @@ class LoraViewer(QDockWidget):
 
         name_label = QLabel(model.name)
         creator_layout = QHBoxLayout()
-        # creator_image=QLabel(model.creator.username) #TODO
+        creator_image_url = model.creator.image
+        creator_image=QLabel("Loading")
+        
+        if creator_image_url is not None:
+            
+            path=get_bucketized_cache_path(creator_image_url)
+            if path.exists():
+                self._set_creator_image(creator_image, path)
+            def _set_pixmap_closure(resp:requests.Response):
+                with open(path,"wb") as f:
+                    f.write(resp.content)
+                self._set_creator_image(creator_image, path)
+            self._parent.download_thread.prepare_dl(creator_image_url,"GET",{},_set_pixmap_closure)
+
         creator_username = QLabel(model.creator.username)
         creator_layout.addWidget(creator_username)
 
@@ -86,6 +123,8 @@ class LoraViewer(QDockWidget):
         LoRA_version_layout.addWidget(LoRA_version_label)
         LoRA_version_layout.addWidget(self.LoRA_version_combobox)
         self.images = []
+        self.imageGallery=ImageGalleryWidget()
+        
         self.LoRA_version_combobox.currentTextChanged.connect(
             self.update_on_version_change
         )
@@ -97,6 +136,7 @@ class LoraViewer(QDockWidget):
         layout.addLayout(creator_layout)
         layout.addLayout(nsfw_layout)
         layout.addLayout(LoRA_version_layout)
+        layout.addWidget(self.imageGallery)
 
         # Create a central widget to set the layout
         widget = QWidget()
@@ -106,4 +146,14 @@ class LoraViewer(QDockWidget):
         self.setWidget(widget)
 
         self.setFloating(True)
-        self.resize(400, 400)  # Adjust the size of the popup window
+        self.resize(400, 400) 
+
+    def _set_creator_image(self, creator_image, path):
+        im=QPixmap(path)
+        creator_image.setPixmap(im
+                        .scaled(
+                        self.size(),
+                        Qt.AspectRatioMode.KeepAspectRatio,
+                        Qt.TransformationMode.SmoothTransformation,
+                    ))
+        creator_image.setText("") # Adjust the size of the popup window

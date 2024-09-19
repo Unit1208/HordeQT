@@ -244,7 +244,8 @@ class MasonryLayout(QLayout):
             i * (self.column_width + self.m_spacing) for i in range(self.num_columns)
         ]
         for item in self.items:
-            widget: ImageWidget = item.widget()  # type: ignore
+            
+            widget: QLabel = item.widget()  # type: ignore
             pixmap = widget.pixmap()
             aspect_ratio = (
                 pixmap.width() / pixmap.height()

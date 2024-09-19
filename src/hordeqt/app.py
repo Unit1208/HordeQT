@@ -837,9 +837,9 @@ class HordeQt(QMainWindow):
 
 
 def main():
-    global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH
+    global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH,CACHE_PATH
     # I don't care.
-    (app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH) = (
+    (app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH,CACHE_PATH) = (
         get_dynamic_constants()
     )
 

@@ -1,5 +1,6 @@
 import base64
 import io
+from pathlib import Path
 import pickle
 from collections.abc import Callable
 from typing import Dict, List, Optional, Self, Tuple
@@ -9,7 +10,7 @@ from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
 
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.other.consts import LOGGER
-from hordeqt.other.util import SAVED_DATA_DIR_PATH, create_uuid
+from hordeqt.other.util import SAVED_DATA_DIR_PATH, create_uuid, get_hash
 
 dl_callback = Callable[[requests.Response], None]
 queued_dl = Tuple[str, requests.Request, Optional[dl_callback]]
@@ -19,11 +20,13 @@ class DownloadThread(QThread):
     completed_downloads: Dict[str, requests.Response]
     queued_downloads: List[queued_dl]
     completed = Signal(LocalJob)
+    cached_downloads:Dict[str,Path]
 
     def __init__(
         self,
         queued_downloads=[],
         completed_downloads=[],
+        cached_downloads={},
         parent=None,
     ) -> None:
         super().__init__(parent)
@@ -33,14 +36,14 @@ class DownloadThread(QThread):
         self.wait_condition = QWaitCondition()
         self.mutex = QMutex()
         self.save_dir_path = SAVED_DATA_DIR_PATH
-
+        self.cached_downloads=cached_downloads
     def add_dl(self, request: requests.Request, cb: Optional[dl_callback]) -> str:
         dl_id = create_uuid()
         self.queued_downloads.append((dl_id, request, cb))
         return dl_id
 
     def prepare_dl(
-        self, url: str, method: str, data: dict, cb: Optional[dl_callback]
+        self, url: str, method: str="GET", data: dict={}, cb: Optional[dl_callback]=None
     ) -> str:
         req = requests.Request(method, url, data=data)
         dl_id = create_uuid()
@@ -82,6 +85,7 @@ class DownloadThread(QThread):
             "callbacks": cb_str,
             "queued_downloads": new_queued_download_list,
             "completed_downloads": self.completed_downloads,
+            "cached_downloads":self.cached_downloads
         }
 
     @classmethod

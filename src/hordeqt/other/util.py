@@ -1,3 +1,4 @@
+import hashlib
 import importlib.metadata
 import re
 import sys
@@ -22,7 +23,7 @@ def get_metadata():
 
 # This whole function just feels... wrong.
 def get_dynamic_constants():
-    global SAVED_IMAGE_DIR_PATH, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, app
+    global SAVED_IMAGE_DIR_PATH, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, app, CACHE_PATH
     metadata = get_metadata()
 
     if "app" not in globals():
@@ -34,14 +35,19 @@ def get_dynamic_constants():
     SAVED_DATA_DIR_PATH = Path(
         QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
     )
+    
     SAVED_IMAGE_DIR_PATH = SAVED_DATA_DIR_PATH / "images"
     SAVED_DATA_PATH = SAVED_DATA_DIR_PATH / "saved_data.json"
-
+    CACHE_PATH = Path(
+            QStandardPaths.writableLocation(
+                QStandardPaths.StandardLocation.CacheLocation
+            )
+        )
     LOGGER.debug(f"Saved data path: {SAVED_DATA_PATH}")
     LOGGER.debug(f"Saved data dir: {SAVED_DATA_DIR_PATH}")
     LOGGER.debug(f"Saved images dir: {SAVED_IMAGE_DIR_PATH}")
 
-    return app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH  # type: ignore
+    return app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH,CACHE_PATH  # type: ignore
 
 
 # Ensure these are really loaded
@@ -50,7 +56,19 @@ get_dynamic_constants()
 
 def create_uuid():
     return str(uuid.uuid4())
-
+def get_hash(b:bytes|str)->str:
+    if type(b) is bytes:
+        return hashlib.sha256(b).hexdigest()
+    else:
+        return get_hash(str(b).encode("utf-8"))
+def get_bucketized_cache_path(s:str):
+    h=get_hash(s)
+    pdir=h[0:2]
+    cfile=h[2:]
+    bdir=CACHE_PATH/"buck"
+    npdir=bdir/pdir
+    npdir.mkdir(parents=True,exist_ok=True)
+    return npdir/cfile
 
 def get_headers(api_key: str, include_api_key: bool = True):
     version = get_metadata()["Version"]
