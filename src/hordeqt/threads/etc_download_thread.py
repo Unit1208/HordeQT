@@ -1,18 +1,15 @@
-import base64
-import io
-import marshal
-from pathlib import Path
-import pickle
+
 from collections.abc import Callable
-import types
-from typing import Dict, List, Optional, Self, Tuple
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
 
 import requests
 from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
 
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.other.consts import LOGGER
-from hordeqt.other.util import SAVED_DATA_DIR_PATH, create_uuid, get_bucketized_cache_path, get_hash
+from hordeqt.other.util import (SAVED_DATA_DIR_PATH,
+                                get_bucketized_cache_path, get_hash)
 
 dl_callback = Callable[[requests.Response], None]
 queued_dl = Tuple[str, requests.Request, Optional[dl_callback]]
@@ -22,7 +19,7 @@ class DownloadThread(QThread):
     completed_downloads: Dict[str, requests.Response]
     queued_downloads: List[queued_dl]
     completed = Signal(LocalJob)
-    cached_downloads:Dict[str,Path]
+    cached_downloads: Dict[str, Path]
 
     def __init__(
         self,
@@ -38,29 +35,37 @@ class DownloadThread(QThread):
         self.wait_condition = QWaitCondition()
         self.mutex = QMutex()
         self.save_dir_path = SAVED_DATA_DIR_PATH
-        self.cached_downloads=cached_downloads
+        self.cached_downloads = cached_downloads
+
     def add_dl(self, request: requests.Request, cb: Optional[dl_callback]) -> str:
         dl_id = get_hash(request.url)
         self.queued_downloads.append((dl_id, request, cb))
         return dl_id
 
     def prepare_dl(
-        self, url: str, method: str="GET", data: dict={}, cb: Optional[dl_callback]=None
+        self,
+        url: str,
+        method: str = "GET",
+        data: dict = {},
+        cb: Optional[dl_callback] = None,
     ) -> str:
         req = requests.Request(method, url, data=data)
         dl_id = get_hash(url)
 
         self.queued_downloads.append((dl_id, req, cb))
         return dl_id
-    def download_to_cache(self,url:str,cb:Optional[Callable[[Path]]]):
-        p=get_bucketized_cache_path(url)
-        def _callback(req:requests.Response):
-            with open(p,"wb") as f:
+
+    def download_to_cache(self, url: str, cb: Optional[Callable[[Path]]]):
+        p = get_bucketized_cache_path(url)
+
+        def _callback(req: requests.Response):
+            with open(p, "wb") as f:
                 f.write(req.content)
             if cb is not None:
                 cb(p)
-        return (self.prepare_dl(url,"GET",cb=_callback),p)
-        
+
+        return (self.prepare_dl(url, "GET", cb=_callback), p)
+
     def run(self):
         while self.running:
             self.mutex.lock()
@@ -90,28 +95,27 @@ class DownloadThread(QThread):
         ]
         return {
             "queued_downloads": new_queued_download_list,
-            "completed_downloads": { k:v for k,v in self.completed_downloads},
-            "cached_downloads":self.cached_downloads
+            "completed_downloads": {k: v for k, v in self.completed_downloads},
+            "cached_downloads": self.cached_downloads,
         }
 
     @classmethod
     def deserialize(cls, data: Dict[str, dict | list[requests.Response]]):
 
         queued_downloads: list[Tuple[str, requests.Request]] = data.get(
-            "queued_downloads",[]
+            "queued_downloads", []
         )  # type: ignore
         completed_downloads: Dict[str, requests.Response] = data.get(
-            "completed_downloads",{}
+            "completed_downloads", {}
         )  # type: ignore
         s = cls()
-        
-        s.queued_downloads = [
-            (dl_id, req, None) for dl_id, req in queued_downloads
-        ]
+
+        s.queued_downloads = [(dl_id, req, None) for dl_id, req in queued_downloads]
 
         s.completed_downloads = completed_downloads
-        s.cached_downloads=data.get("cached_downloads",{}) # type: ignore
+        s.cached_downloads = data.get("cached_downloads", {})  # type: ignore
         return s
+
     def stop(self):
         self.mutex.lock()
         self.running = False

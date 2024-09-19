@@ -17,35 +17,14 @@ import coloredlogs
 import human_readable as hr
 from PIL import ExifTags, Image
 from pyqttoast import Toast, ToastPreset, toast_enums
-from PySide6.QtCore import (
-    QObject,
-    QRect,
-    QSize,
-    QStandardPaths,
-    Qt,
-    QThread,
-    QTimer,
-    QUrl,
-    Signal,
-)
+from PySide6.QtCore import (QObject, QRect, QSize, QStandardPaths, Qt, QThread,
+                            QTimer, QUrl, Signal)
 from PySide6.QtGui import QClipboard, QDesktopServices, QFont, QPixmap
-from PySide6.QtWidgets import (
-    QApplication,
-    QDialog,
-    QDockWidget,
-    QHBoxLayout,
-    QLabel,
-    QLayout,
-    QLayoutItem,
-    QLineEdit,
-    QMainWindow,
-    QPushButton,
-    QScrollArea,
-    QSizePolicy,
-    QTableWidgetItem,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import (QApplication, QDialog, QDockWidget, QHBoxLayout,
+                               QLabel, QLayout, QLayoutItem, QLineEdit,
+                               QMainWindow, QPushButton, QScrollArea,
+                               QSizePolicy, QTableWidgetItem, QVBoxLayout,
+                               QWidget)
 
 
 class ImageWidget(QLabel):

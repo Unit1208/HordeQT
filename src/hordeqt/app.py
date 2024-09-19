@@ -11,21 +11,16 @@ import requests
 from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QDesktopServices, QFont
-from PySide6.QtWidgets import (
-    QApplication,
-    QLineEdit,
-    QMainWindow,
-    QScrollArea,
-    QSizePolicy,
-    QTableWidgetItem,
-    QVBoxLayout,
-)
+from PySide6.QtWidgets import (QApplication, QLineEdit, QMainWindow,
+                               QScrollArea, QSizePolicy, QTableWidgetItem,
+                               QVBoxLayout)
 
 from hordeqt.classes.Job import Job
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
-from hordeqt.components.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
+from hordeqt.components.gallery import (ImageGalleryWidget, ImagePopup,
+                                        ImageWidget)
 from hordeqt.components.lora_viewer import LoraBrowser, LoraViewer
 from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.gen.ui_form import Ui_MainWindow
@@ -104,7 +99,9 @@ class HordeQt(QMainWindow):
             },
         )
         self.save_thread = SaveThread(self)
-        self.download_thread:DownloadThread = DownloadThread.deserialize(self.savedData.download_state)
+        self.download_thread: DownloadThread = DownloadThread.deserialize(
+            self.savedData.download_state
+        )
         LOGGER.debug("Connecting DL signals")
         self.job_download_thread.completed.connect(self.on_image_fully_downloaded)
         self.job_download_thread.use_metadata = self.savedData.save_metadata
@@ -123,7 +120,7 @@ class HordeQt(QMainWindow):
         self.ui.saveMetadataCheckBox.checkStateChanged.connect(
             self.update_metadata_save
         )
-        self.ui.LoRASelector.clicked.connect(lambda:LoraBrowser(self))
+        self.ui.LoRASelector.clicked.connect(lambda: LoraBrowser(self))
         self.ui.apiKeyEntry.editingFinished.connect(self.save_api_key)
         self.ui.saveAPIkey.clicked.connect(self.save_api_key)
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
@@ -839,9 +836,9 @@ class HordeQt(QMainWindow):
 
 
 def main():
-    global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH,CACHE_PATH
+    global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH, CACHE_PATH
     # I don't care.
-    (app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH,CACHE_PATH) = (
+    (app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH, CACHE_PATH) = (
         get_dynamic_constants()
     )
 

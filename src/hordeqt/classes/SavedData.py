@@ -10,7 +10,7 @@ from hordeqt.threads.job_manager_thread import JobManagerThread
 
 class SavedData:
     api_state: Dict
-    download_state:Dict
+    download_state: Dict
     current_open_tab: int
     current_images: List[Dict]
     finished_jobs: List[Dict]
@@ -32,7 +32,7 @@ class SavedData:
         max_jobs: int,
         save_metadata: bool,
         dlthread: JobDownloadThread,
-        downloads:DownloadThread,
+        downloads: DownloadThread,
         job_config: dict,
         share_images: bool,
         current_open_tab: int,
@@ -44,7 +44,7 @@ class SavedData:
             ("completed_downloads"), []
         )
         self.queued_downloads = dlv.get(("queued_downloads"), [])
-        self.download_state=downloads.serialize()
+        self.download_state = downloads.serialize()
         self.max_jobs = max_jobs
         self.nsfw_allowed = nsfw
         self.share_images = share_images
@@ -67,7 +67,7 @@ class SavedData:
             "current_open_tab": self.current_open_tab,
             "prefered_format": self.prefered_format,
             "warned_models": self.warned_models,
-            "download_state":self.download_state
+            "download_state": self.download_state,
         }
         jsondata = json.dumps(d)
         with open(SAVED_DATA_PATH, "wt") as f:
@@ -90,4 +90,4 @@ class SavedData:
         self.current_open_tab = j.get("current_open_tab", 0)
         self.prefered_format = j.get("prefered_format", "webp")
         self.warned_models = j.get("warned_models", [])
-        self.download_state=j.get("download_state",{})
+        self.download_state = j.get("download_state", {})

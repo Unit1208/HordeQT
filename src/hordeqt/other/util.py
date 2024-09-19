@@ -37,19 +37,17 @@ def get_dynamic_constants():
     SAVED_DATA_DIR_PATH = Path(
         QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
     )
-    
+
     SAVED_IMAGE_DIR_PATH = SAVED_DATA_DIR_PATH / "images"
     SAVED_DATA_PATH = SAVED_DATA_DIR_PATH / "saved_data.json"
     CACHE_PATH = Path(
-            QStandardPaths.writableLocation(
-                QStandardPaths.StandardLocation.CacheLocation
-            )
-        )
+        QStandardPaths.writableLocation(QStandardPaths.StandardLocation.CacheLocation)
+    )
     LOGGER.debug(f"Saved data path: {SAVED_DATA_PATH}")
     LOGGER.debug(f"Saved data dir: {SAVED_DATA_DIR_PATH}")
     LOGGER.debug(f"Saved images dir: {SAVED_IMAGE_DIR_PATH}")
 
-    return app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH,CACHE_PATH  # type: ignore
+    return app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH, CACHE_PATH  # type: ignore
 
 
 # Ensure these are really loaded
@@ -58,40 +56,47 @@ get_dynamic_constants()
 
 def create_uuid():
     return str(uuid.uuid4())
-def get_hash(b:bytes|str)->str:
+
+
+def get_hash(b: bytes | str) -> str:
     if type(b) is bytes:
         return hashlib.sha256(b).hexdigest()
     else:
         return get_hash(str(b).encode("utf-8"))
-def get_bucketized_cache_path(s:str):
-    h=get_hash(s)
-    pdir=h[0:2]
-    cfile=h[2:]
-    bdir=CACHE_PATH/"buck"
-    npdir=bdir/pdir
-    npdir.mkdir(parents=True,exist_ok=True)
-    return npdir/cfile
 
-def horde_model_to_civit_baseline(model:Model)->BaseModel:
+
+def get_bucketized_cache_path(s: str):
+    h = get_hash(s)
+    pdir = h[0:2]
+    cfile = h[2:]
+    bdir = CACHE_PATH / "buck"
+    npdir = bdir / pdir
+    npdir.mkdir(parents=True, exist_ok=True)
+    return npdir / cfile
+
+
+def horde_model_to_civit_baseline(model: Model) -> BaseModel:
     bl = model.details.get("baseline")
-    if bl=="stable diffusion 2":
+    if bl == "stable diffusion 2":
         return BaseModel.StableDiffusion2_1
-    elif bl=="stable diffusion 1":
+    elif bl == "stable diffusion 1":
         return BaseModel.StableDiffusion1_5
-    elif bl=="stable_diffusion_xl":
+    elif bl == "stable_diffusion_xl":
         # Hack fix, but it should work.
         if "pony" in model.name.lower():
             return BaseModel.Pony
         else:
             return BaseModel.SDXL_1_0
-    elif bl=="stable_cascade":
+    elif bl == "stable_cascade":
         return BaseModel.StableCascade
     else:
         return BaseModel.Other
     pass
     # current_model_needs_1024 = model_dict[
-            # self.ui.modelComboBox.currentText()
-        # ].details.get("baseline", None) in ["stable_diffusion_xl", "stable_cascade"]
+    # self.ui.modelComboBox.currentText()
+    # ].details.get("baseline", None) in ["stable_diffusion_xl", "stable_cascade"]
+
+
 def get_headers(api_key: str, include_api_key: bool = True):
     version = get_metadata()["Version"]
     t = {

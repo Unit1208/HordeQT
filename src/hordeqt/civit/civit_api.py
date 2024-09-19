@@ -139,7 +139,7 @@ class ModelVersionFile:
             id=data.get("id", -1),
             sizeKb=data.get("sizeKb", 1),
             name=data.get("name", ""),
-            type=data.get("type","Model"),
+            type=data.get("type", "Model"),
             pickleScanResult=ScanResult(data.get("pickleScanResult", None)),
             virusScanResult=ScanResult(data.get("virusScanResult", None)),
             scannedAt=data.get("scannedAt"),
@@ -313,5 +313,3 @@ class CivitApi:
         r = requests.get(url)
         j = r.json()["items"]
         return [CivitModel.deserialize(b) for b in j]
-
-
