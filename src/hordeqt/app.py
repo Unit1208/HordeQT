@@ -30,6 +30,7 @@ from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.other.consts import ANON_API_KEY, BASE_URL, LOGGER
 from hordeqt.other.util import get_dynamic_constants, prompt_matrix
+from hordeqt.threads.etc_download_thread import DownloadThread
 from hordeqt.threads.job_download_thread import JobDownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
 from hordeqt.threads.load_thread import LoadThread
@@ -95,16 +96,17 @@ class HordeQt(QMainWindow):
         self.ui.GenerateButton.setEnabled(False)
         self.ui.modelComboBox.setEnabled(False)
 
-        self.download_thread: JobDownloadThread = JobDownloadThread.deserialize(
+        self.job_download_thread: JobDownloadThread = JobDownloadThread.deserialize(
             {
                 "completed_downloads": self.savedData.current_images,
                 "queued_downloads": self.savedData.queued_downloads,
             },
         )
         self.save_thread = SaveThread(self)
+        self.download_thread:DownloadThread = DownloadThread.deserialize(self.savedData.download_state)
         LOGGER.debug("Connecting DL signals")
-        self.download_thread.completed.connect(self.on_image_fully_downloaded)
-        self.download_thread.use_metadata = self.savedData.save_metadata
+        self.job_download_thread.completed.connect(self.on_image_fully_downloaded)
+        self.job_download_thread.use_metadata = self.savedData.save_metadata
         LOGGER.debug("Connecting API signals")
         self.api_thread.job_completed.connect(self.on_job_completed)
         self.api_thread.updated.connect(self.update_inprogess_table)
@@ -157,7 +159,7 @@ class HordeQt(QMainWindow):
         scroll_area.setSizePolicy(sizePolicy)
         scroll_area.setWidgetResizable(True)
         self.gallery_container = ImageGalleryWidget()
-        for lj in self.download_thread.completed_downloads:
+        for lj in self.job_download_thread.completed_downloads:
             lj.update_path()
             LOGGER.info(f"Image found, adding to gallery: {lj.id}")
             self.add_image_to_gallery(lj)
@@ -172,7 +174,7 @@ class HordeQt(QMainWindow):
         Toast.setPositionRelativeToWidget(self)
         LOGGER.debug("Starting threads")
         self.loading_thread.start()
-        self.download_thread.start()
+        self.job_download_thread.start()
         self.api_thread.start()
         self.save_thread.start()
 
@@ -182,14 +184,16 @@ class HordeQt(QMainWindow):
         self.api_thread.stop()
         self.save_thread.stop()
         LOGGER.debug("Stopping DL thread")
-        self.download_thread.stop()
+        self.job_download_thread.stop()
         LOGGER.debug("DL thread stopped")
+        self.download_thread.stop()
         LOGGER.debug("Updating saved data")
         self.savedData.update(
             self.api_thread,
             self.ui.NSFWCheckBox.isChecked(),
             self.ui.maxJobsSpinBox.value(),
             self.ui.saveMetadataCheckBox.isChecked(),
+            self.job_download_thread,
             self.download_thread,
             self.save_job_config(),
             self.ui.shareImagesCheckBox.isChecked(),
@@ -203,7 +207,7 @@ class HordeQt(QMainWindow):
         QMainWindow.closeEvent(self, event)
 
     def update_metadata_save(self):
-        self.download_thread.use_metadata = self.ui.saveMetadataCheckBox.isChecked()
+        self.job_download_thread.use_metadata = self.ui.saveMetadataCheckBox.isChecked()
 
     def update_kudos_preview(self):
         jobs = self.create_jobs()
@@ -311,7 +315,7 @@ class HordeQt(QMainWindow):
             )
         self.gallery_container.m_layout.delete_image(lj.id)
         self.gallery_container.m_layout.updateGeometry()
-        self.download_thread.delete_image(lj)
+        self.job_download_thread.delete_image(lj)
 
     def on_fully_loaded(self):
         LOGGER.info("Fully loaded")
@@ -379,7 +383,7 @@ class HordeQt(QMainWindow):
         LOGGER.info(f"Job {job.id} completed.")
         job.file_type = self.ui.saveFormatComboBox.currentText()
         job.update_path()
-        self.download_thread.add_dl(job)
+        self.job_download_thread.add_dl(job)
 
     def update_progress(self, value):
         self.ui.progressBar.setValue(value)
@@ -820,7 +824,7 @@ class HordeQt(QMainWindow):
         )
         update_table_with_jobs(self.api_thread.current_requests, "In Progress")
 
-        for lj in self.download_thread.completed_downloads:
+        for lj in self.job_download_thread.completed_downloads:
             row = find_or_insert_row(lj.id)
             self.update_row(
                 row,

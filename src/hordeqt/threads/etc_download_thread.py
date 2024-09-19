@@ -86,23 +86,25 @@ class DownloadThread(QThread):
 
     @classmethod
     def deserialize(cls, data: Dict[str, str | list[requests.Response]]):
+        
         cb_str: str = data.get("callbacks", "")  # type: ignore
         queued_downloads: list[Tuple[str, requests.Request]] = data.get(
-            "queued_downloads"
+            "queued_downloads",[]
         )  # type: ignore
         completed_downloads: Dict[str, requests.Response] = data.get(
-            "completed_downloads"
+            "completed_downloads",{}
         )  # type: ignore
-
-        pickled_cb_list = base64.b64decode(cb_str.encode("utf-8"))
-        callback_list = pickle.loads(pickled_cb_list)
         s = cls()
-        s.queued_downloads = [
-            (dl_id, req, callback_list[dl_id]) for dl_id, req in queued_downloads
-        ]
+        if cb_str!="":
+                
+            pickled_cb_list = base64.b64decode(cb_str.encode("utf-8"))
+            callback_list = pickle.loads(pickled_cb_list)
+            s.queued_downloads = [
+                (dl_id, req, callback_list[dl_id]) for dl_id, req in queued_downloads
+            ]
 
-        s.completed_downloads = completed_downloads
-
+            s.completed_downloads = completed_downloads
+        return s
     def stop(self):
         self.mutex.lock()
         self.running = False

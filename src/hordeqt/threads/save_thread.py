@@ -25,6 +25,7 @@ class SaveThread(QThread):
             self.app.ui.NSFWCheckBox.isChecked(),
             self.app.ui.maxJobsSpinBox.value(),
             self.app.ui.saveMetadataCheckBox.isChecked(),
+            self.app.job_download_thread,
             self.app.download_thread,
             self.app.save_job_config(),
             self.app.ui.shareImagesCheckBox.isChecked(),
