@@ -100,8 +100,8 @@ def main():
 
     venv_path = (curr_dir / "venv").resolve()
     gitignore_path = (curr_dir / "src" / "hordeqt" / ".gitignore").resolve()
-    gitignore_tmp_path = curr_dir / "src" / "hordeqt`" / "not.gitignore"
-    # install_sys_reqs()
+    gitignore_tmp_path = curr_dir / "src" / "hordeqt" / "not.gitignore"
+    install_sys_reqs()
     if is_windows:
         subprocess.run(["C:\\Python312-x64\\python", "-m", "venv", str(venv_path)])
     else:
