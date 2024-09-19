@@ -626,7 +626,14 @@
                </item>
               </widget>
              </item>
-             <item row="30" column="0">
+             <item row="1" column="0">
+              <widget class="QPushButton" name="LoRASelector">
+               <property name="text">
+                <string>LoRA selector</string>
+               </property>
+              </widget>
+             </item>
+             <item row="31" column="0">
               <widget class="QLabel" name="label">
                <property name="text">
                 <string>Upscaler</string>

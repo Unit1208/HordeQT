@@ -26,6 +26,7 @@ from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
 from hordeqt.components.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
+from hordeqt.components.lora_viewer import LoraBrowser, LoraViewer
 from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.other.consts import ANON_API_KEY, BASE_URL, LOGGER
@@ -122,8 +123,8 @@ class HordeQt(QMainWindow):
         self.ui.saveMetadataCheckBox.checkStateChanged.connect(
             self.update_metadata_save
         )
-
-        self.ui.apiKeyEntry.returnPressed.connect(self.save_api_key)
+        self.ui.LoRASelector.clicked.connect(lambda:LoraBrowser(self))
+        self.ui.apiKeyEntry.editingFinished.connect(self.save_api_key)
         self.ui.saveAPIkey.clicked.connect(self.save_api_key)
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
@@ -175,6 +176,7 @@ class HordeQt(QMainWindow):
         LOGGER.debug("Starting threads")
         self.loading_thread.start()
         self.job_download_thread.start()
+        self.download_thread.start()
         self.api_thread.start()
         self.save_thread.start()
 

@@ -112,7 +112,7 @@ class ModelVersionFile:
         id: int,
         sizeKb: float,
         name: str,
-        type: ModelType,
+        type: str,
         pickleScanResult: ScanResult,
         virusScanResult: ScanResult,
         scannedAt: Optional[str],
@@ -139,7 +139,7 @@ class ModelVersionFile:
             id=data.get("id", -1),
             sizeKb=data.get("sizeKb", 1),
             name=data.get("name", ""),
-            type=ModelType(data.get("type")),
+            type=data.get("type","Model"),
             pickleScanResult=ScanResult(data.get("pickleScanResult", None)),
             virusScanResult=ScanResult(data.get("virusScanResult", None)),
             scannedAt=data.get("scannedAt"),
@@ -291,7 +291,7 @@ class SearchOptions:
     query: Optional[str]
     page: Optional[int]
     nsfw: bool = False
-    baseModels: Optional[BaseModel]
+    baseModel: Optional[BaseModel]
     types: List[ModelType]
 
 
@@ -301,9 +301,9 @@ class CivitApi:
         options.query = options.query or ""
         options.page = options.page or 1
         options.nsfw = options.nsfw or False
-        options.baseModels = options.baseModels or BaseModel.StableDiffusion2_1
-        if len(options.baseModels) > 0:
-            base_model_string = "&baseModels=" + "&baseModels=".join(options.baseModels)
+        options.baseModel = options.baseModel or BaseModel.StableDiffusion2_1
+        if len(options.baseModel) > 0:
+            base_model_string = "&baseModels=" + options.baseModel
         else:
             base_model_string = ""
         types_string = "&".join([f"types={x}" for x in options.types])
@@ -315,10 +315,3 @@ class CivitApi:
         return [CivitModel.deserialize(b) for b in j]
 
 
-search_options = SearchOptions()
-search_options.query = "Artist"
-search_options.page = 1
-search_options.nsfw = True
-search_options.baseModels = BaseModel.Pony
-search_options.types = [ModelType.LORA]
-b = CivitApi().search_models(search_options)

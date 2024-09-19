@@ -1,8 +1,10 @@
 import base64
 import io
+import marshal
 from pathlib import Path
 import pickle
 from collections.abc import Callable
+import types
 from typing import Dict, List, Optional, Self, Tuple
 
 import requests
@@ -10,7 +12,7 @@ from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
 
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.other.consts import LOGGER
-from hordeqt.other.util import SAVED_DATA_DIR_PATH, create_uuid, get_hash
+from hordeqt.other.util import SAVED_DATA_DIR_PATH, create_uuid, get_bucketized_cache_path, get_hash
 
 dl_callback = Callable[[requests.Response], None]
 queued_dl = Tuple[str, requests.Request, Optional[dl_callback]]
@@ -38,7 +40,7 @@ class DownloadThread(QThread):
         self.save_dir_path = SAVED_DATA_DIR_PATH
         self.cached_downloads=cached_downloads
     def add_dl(self, request: requests.Request, cb: Optional[dl_callback]) -> str:
-        dl_id = create_uuid()
+        dl_id = get_hash(request.url)
         self.queued_downloads.append((dl_id, request, cb))
         return dl_id
 
@@ -46,11 +48,19 @@ class DownloadThread(QThread):
         self, url: str, method: str="GET", data: dict={}, cb: Optional[dl_callback]=None
     ) -> str:
         req = requests.Request(method, url, data=data)
-        dl_id = create_uuid()
+        dl_id = get_hash(url)
 
         self.queued_downloads.append((dl_id, req, cb))
         return dl_id
-
+    def download_to_cache(self,url:str,cb:Optional[Callable[[Path]]]):
+        p=get_bucketized_cache_path(url)
+        def _callback(req:requests.Response):
+            with open(p,"wb") as f:
+                f.write(req.content)
+            if cb is not None:
+                cb(p)
+        return (self.prepare_dl(url,"GET",cb=_callback),p)
+        
     def run(self):
         while self.running:
             self.mutex.lock()
@@ -75,23 +85,18 @@ class DownloadThread(QThread):
                 cb(response)
 
     def serialize(self):
-        callback_list = {dl_id: cb for dl_id, _, cb in self.queued_downloads}
-        pickled_cb_list = pickle.dumps(callback_list)
-        cb_str = base64.b64encode(pickled_cb_list).decode("utf-8")
         new_queued_download_list = [
             (dl_id, req) for dl_id, req, _ in self.queued_downloads
         ]
         return {
-            "callbacks": cb_str,
             "queued_downloads": new_queued_download_list,
-            "completed_downloads": self.completed_downloads,
+            "completed_downloads": { k:v for k,v in self.completed_downloads},
             "cached_downloads":self.cached_downloads
         }
 
     @classmethod
-    def deserialize(cls, data: Dict[str, str | list[requests.Response]]):
-        
-        cb_str: str = data.get("callbacks", "")  # type: ignore
+    def deserialize(cls, data: Dict[str, dict | list[requests.Response]]):
+
         queued_downloads: list[Tuple[str, requests.Request]] = data.get(
             "queued_downloads",[]
         )  # type: ignore
@@ -99,15 +104,13 @@ class DownloadThread(QThread):
             "completed_downloads",{}
         )  # type: ignore
         s = cls()
-        if cb_str!="":
-                
-            pickled_cb_list = base64.b64decode(cb_str.encode("utf-8"))
-            callback_list = pickle.loads(pickled_cb_list)
-            s.queued_downloads = [
-                (dl_id, req, callback_list[dl_id]) for dl_id, req in queued_downloads
-            ]
+        
+        s.queued_downloads = [
+            (dl_id, req, None) for dl_id, req in queued_downloads
+        ]
 
-            s.completed_downloads = completed_downloads
+        s.completed_downloads = completed_downloads
+        s.cached_downloads=data.get("cached_downloads",{}) # type: ignore
         return s
     def stop(self):
         self.mutex.lock()
