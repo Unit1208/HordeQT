@@ -6,6 +6,7 @@ from typing import Self
 from PIL import ExifTags, Image
 
 from hordeqt.classes.Job import Job
+from hordeqt.other.util import SAVED_IMAGE_DIR_PATH
 
 
 class LocalJob:
@@ -17,7 +18,6 @@ class LocalJob:
     completed_at: float
     worker_id: str
     worker_name: str
-    base: Path
 
     def convert_to_metadata(self) -> dict:
         return {
@@ -27,11 +27,10 @@ class LocalJob:
             "worker": f"{self.worker_name} ({self.worker_id})",
         }
 
-    def __init__(self, job: Job, base: Path, file_type: str = "webp") -> None:
+    def __init__(self, job: Job, file_type: str = "webp") -> None:
         self.id = job.job_id
         self.original = job
         self.file_type = file_type
-        self.base = base
         self.update_path()
 
     def pretty_format(self) -> str:
@@ -62,7 +61,7 @@ class LocalJob:
 
     def update_path(self):
 
-        self.path = (self.base / self.id).with_suffix("." + self.file_type)
+        self.path = (SAVED_IMAGE_DIR_PATH/ self.id).with_suffix("." + self.file_type)
 
     def serialize(self) -> dict:
         return {
@@ -76,9 +75,9 @@ class LocalJob:
         }
 
     @classmethod
-    def deserialize(cls, value: dict, base: Path) -> Self:
+    def deserialize(cls, value: dict) -> Self:
         job = value.get("original", {})
-        lj = cls(Job.deserialize(job), base)
+        lj = cls(Job.deserialize(job))
         lj.completed_at = value.get("completed_at", time.time())
         lj.worker_name = value.get("worker_name", "Unknown")
         lj.worker_id = value.get("worker_id", "00000000-0000-0000-0000-000000000000")

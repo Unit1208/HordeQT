@@ -1,7 +1,7 @@
 
 from collections.abc import Callable
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
@@ -55,7 +55,7 @@ class DownloadThread(QThread):
         self.queued_downloads.append((dl_id, req, cb))
         return dl_id
 
-    def download_to_cache(self, url: str, cb: Optional[Callable[[Path]]]):
+    def download_to_cache(self, url: str, cb: Optional[Callable[[Path],Any]]):
         p = get_bucketized_cache_path(url)
 
         def _callback(req: requests.Response):
@@ -95,7 +95,7 @@ class DownloadThread(QThread):
         ]
         return {
             "queued_downloads": new_queued_download_list,
-            "completed_downloads": {k: v for k, v in self.completed_downloads},
+            "completed_downloads": {k: v for k, v in self.completed_downloads.items()},
             "cached_downloads": self.cached_downloads,
         }
 

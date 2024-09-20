@@ -28,7 +28,8 @@ requires = [
     "pyqt-toast-notification~=1.3.2",
     "pillow~=10.4.0",
     "coloredlogs~=15.0.1",
-    "colorama~=0.4.6"
+    "colorama~=0.4.6",
+    "jsonpickle~=3.3.0"
 ]
 [tool.briefcase.app.hordeqt.macOS]
 universal_build = true

@@ -83,4 +83,5 @@
 - [ ] Shared key creation
 - [ ] Kudos transfer
 - [ ] More caching, esp. when using Civit API
-- [ ] Briefcase (silently) doesn't include folders in .gitignore, *but only on windows*. Remove gen from .gitignore, then add it back when building?
+- [x] Briefcase (silently) doesn't include folders in .gitignore, *but only on windows*. Remove gen from .gitignore, then add it back when building?
+- [ ] "Clear cache" button

@@ -10,4 +10,4 @@ HordeQT is written in [Python](https://python.org), using the [PySide6](https://
 The only requirements to build are: python>=3.10, pip, and venv. `build.py` will install all other dependencies automatically if it can.
 
 > [!IMPORTANT]
-> When using the pre-build Windows versions, you may encounter a "unverified publisher" warning. This app is safe, I just don't want to go through the whole process of obtaining a code signing certificate.
+> When using the pre-built Windows versions, you may encounter a "unverified publisher" warning. This app is safe, I just don't want to go through the whole process of obtaining a code signing certificate.

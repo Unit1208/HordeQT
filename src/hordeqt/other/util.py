@@ -69,7 +69,7 @@ def get_bucketized_cache_path(s: str):
     h = get_hash(s)
     pdir = h[0:2]
     cfile = h[2:]
-    bdir = CACHE_PATH / "buck"
+    bdir = CACHE_PATH / "bucketized"
     npdir = bdir / pdir
     npdir.mkdir(parents=True, exist_ok=True)
     return npdir / cfile

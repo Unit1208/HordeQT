@@ -1,4 +1,4 @@
-import json
+import jsonpickle
 import os
 from typing import Dict, List
 
@@ -69,14 +69,14 @@ class SavedData:
             "warned_models": self.warned_models,
             "download_state": self.download_state,
         }
-        jsondata = json.dumps(d)
+        jsondata:str = jsonpickle.encode(d) # type: ignore
         with open(SAVED_DATA_PATH, "wt") as f:
             f.write(jsondata)
 
     def read(self):
         if SAVED_DATA_PATH.exists():
             with open(SAVED_DATA_PATH, "rt") as f:
-                j: dict = json.loads(f.read())
+                j: dict = jsonpickle.decode(f.read()) # type: ignore
         else:
             j = dict()
         self.api_state = j.get("api_state", {})

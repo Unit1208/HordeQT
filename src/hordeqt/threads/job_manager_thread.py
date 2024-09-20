@@ -70,7 +70,7 @@ class JobManagerThread(QThread):
         valid_error: dict = response.json()
         rc = valid_error.get("rc")
         message = valid_error.get("message")
-        errors = ", ".join(valid_error.get("errors", {}).keys())
+        errors = ", ".join(valid_error.get("errors", {}).items())
         LOGGER.error(f'Job {job.job_id} failed validation: "{rc}" {message}. {errors}')
 
     def get_kudos_cost(self, job: Job):
@@ -245,7 +245,7 @@ class JobManagerThread(QThread):
                 time.time() - self.status_rl_reset
             ) > 0 and self.status_rl_remaining > 0:
 
-                lj = LocalJob(job, SAVED_IMAGE_DIR_PATH)
+                lj = LocalJob(job)
                 try:
                     r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")
                     if r.status_code == 429:
