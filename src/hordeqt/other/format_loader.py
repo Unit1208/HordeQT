@@ -206,20 +206,50 @@ def get_data(img: Image.Image):
 def get_job_config(img: Image.Image) -> Optional[dict]:
     d = get_data(img)
     if d is not None:
-        return {
-            "prompt": d.get("prompt"),
-            "negative_prompt": d.get("negative_prompt", ""),
-            "sampler_name": d.get("sampler_name", "k_euler"),
-            "cfg_scale": d.get("cfg_scale", 5),
-            "seed": int(d.get("seed", 0)),
-            "width": d.get("width", 1024),
-            "height": d.get("height", 1024),
-            "clip_skip": d.get("clip_skip", 1),
-            "steps": d.get("steps", 20),
-            "model": d.get("Model"),
-            "images": 1,
-            "hires_fix": d.get("hires_fix", True),
-            "karras": d.get("karras", True),
-            "upscale": "None",
-        }
+        try:
+        
+            return {
+                "prompt": d.get("prompt"),
+                "negative_prompt": d.get("negative_prompt", ""),
+                "sampler_name": d.get("sampler_name", "k_euler"),
+                "cfg_scale": d.get("cfg_scale", 5),
+                "seed": int(d.get("seed", 0)),
+                "width": d.get("width", 1024),
+                "height": d.get("height", 1024),
+                "clip_skip": d.get("clip_skip", 1),
+                "steps": d.get("steps", 20),
+                "model": d.get("Model"),
+                "images": 1,
+                "hires_fix": d.get("hires_fix", True),
+                "karras": d.get("karras", True),
+                "upscale": "None",
+            }
+        except:
+            return None
     return None
+def get_job(img: Image.Image)->Optional[Job]:
+    j=get_job_config(img)
+    if j is not None:
+        try:
+            return Job(
+            str(j.get("prompt","")) +("###"+str(j.get("negative_prompt",""))),
+            str(j.get("sampler_name","k_euler")),
+            int(j.get("cfg_scale",5)),
+            str(j.get("seed",0)),
+                    j.get("width", 1024),
+            j.get("height", 1024),
+            j.get("clip_skip",1),
+            j.get("steps",20),
+            j.get("model","")
+        )
+        except:
+            return None
+    return None
+def get_local_job(img: Image.Image)->Optional[LocalJob]:
+    j=get_job(img)
+    if j is not None:
+        try:
+            return LocalJob(j)
+        except:
+            return None
+    return None    
