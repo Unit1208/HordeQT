@@ -51,7 +51,7 @@
 - [ ] Double click table entry to jump to location in gallery and open popup
   - [See this](https://stackoverflow.com/questions/4324005/how-to-detect-doubleclick-in-qtableview)
 - [ ] Allow sorting queued table by creation time or filter by a certain metric
-  - [See pythonguis.com](https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/) 
+  - [See pythonguis.com](https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/)  
 - [ ] Sort options on gallery.
 - [ ] Move loading images to load_thread
 - [x] Resize images to fit screen on popup
@@ -85,3 +85,4 @@
 - [ ] More caching, esp. when using Civit API
 - [x] Briefcase (silently) doesn't include folders in .gitignore, *but only on windows*. Remove gen from .gitignore, then add it back when building?
 - [x] "Clear cache" button
+- [ ] Implement and use a "find good popup size" function, based on the screen size?

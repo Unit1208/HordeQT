@@ -27,7 +27,7 @@ from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
 from hordeqt.components.gallery import ImageGalleryWidget, ImagePopup, ImageWidget
-from hordeqt.components.lora_viewer import LoraBrowser, LoraViewer
+from hordeqt.components.lora_viewer import LoraBrowser
 from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.other.consts import ANON_API_KEY, BASE_URL, LOGGER
@@ -850,8 +850,7 @@ class HordeQt(QMainWindow):
                 self.show_error_toast("Cache not cleared",f"While clearing cache, HordeQT ran into an issue: \"{e}\"")
                         
         else:
-            self.show_info_toast("Cache not cleared","Cache directory did not exist (i.e. no cache to clear)")
-
+            self.show_info_toast("Cache not cleared","Cache directory does not exist (i.e. no cache to clear)")
 
 def main():
     global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH, CACHE_PATH

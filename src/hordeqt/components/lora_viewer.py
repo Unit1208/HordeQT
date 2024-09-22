@@ -6,14 +6,12 @@ from typing import TYPE_CHECKING, Dict, List
 import requests
 
 from hordeqt.civit.civit_api import (
-    BaseModel,
     CivitApi,
     CivitModel,
     ModelType,
     ModelVersion,
     SearchOptions,
 )
-from hordeqt.components.gallery import ImageGalleryWidget
 from hordeqt.other.util import (
     CACHE_PATH,
     get_bucketized_cache_path,
@@ -23,8 +21,8 @@ from hordeqt.other.util import (
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
 
-from PySide6.QtCore import QRect, QSize, Qt, QUrl, Signal
-from PySide6.QtGui import QDesktopServices, QPixmap
+from PySide6.QtCore import QRect, QSize, Qt
+from PySide6.QtGui import  QPixmap
 from PySide6.QtWidgets import (
     QAbstractScrollArea,
     QComboBox,
@@ -32,10 +30,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QHBoxLayout,
     QLabel,
-    QLayout,
-    QLayoutItem,
     QLineEdit,
-    QPlainTextEdit,
     QPushButton,
     QScrollArea,
     QSizePolicy,
@@ -136,7 +131,6 @@ class LoraBrowser(QDockWidget):
 class LoraViewer(QDockWidget):
     version_mapping: Dict[str, ModelVersion]
     images: List[QPixmap]
-
     def update_on_version_change(self, version_str: str):
         version = self.version_mapping[version_str]
         for vi in version.images:
@@ -146,26 +140,16 @@ class LoraViewer(QDockWidget):
 
             l = QLabel()
 
-            self.imageGallery.m_layout.addWidget(l)
-
-            def _set_pixmap_closure(path: Path):
-                im = QPixmap(path)
-                self.set_pixmap(l, im, QSize(256, 256))
-                self.update_gallery()
 
             if path.exists():
-                im = QPixmap(path)
-                self.set_pixmap(l, im, QSize(256, 256))
-                self.update_gallery()
+                self.load_pixmap(path, l)
             else:
-                self._parent.download_thread.download_to_cache(url, _set_pixmap_closure)
-            self.imageGallery.m_layout.addWidget(l)
+                self._parent.download_thread.download_to_cache(url, lambda p:self.load_pixmap(p, l))
 
-    def update_gallery(self):
-        try:
-            self.imageGallery.m_layout.updateGeometry()
-        except IndexError:
-            LOGGER.debug("LoRA gallery failed to update")
+    def load_pixmap(self, path: Path, label: QLabel):
+        im = QPixmap(path)
+        label.setPixmap(im)
+        self.image_gallery_layout.addWidget(label)
 
     def set_pixmap(self, label: QLabel, image: QPixmap, size: QSize):
         label.setPixmap(
@@ -191,14 +175,14 @@ class LoraViewer(QDockWidget):
         creator_layout = QHBoxLayout()
         creator_image_url = model.creator.image
         creator_image = QLabel("Loading")
-        self.imageGallery = ImageGalleryWidget()
-        gallery_scroll_area = QScrollArea()
+        self.image_gallery_layout = QVBoxLayout()
 
-        gallery_scroll_area.setSizePolicy(
-            QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        )
+        gallery_widget = QWidget()
+        gallery_widget.setLayout(self.image_gallery_layout)
+
+        gallery_scroll_area = QScrollArea()
         gallery_scroll_area.setWidgetResizable(True)
-        gallery_scroll_area.setWidget(self.imageGallery)
+        gallery_scroll_area.setWidget(gallery_widget)
 
         if creator_image_url is not None:
 
