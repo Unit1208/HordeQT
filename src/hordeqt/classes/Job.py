@@ -115,7 +115,7 @@ class Job:
 
     @classmethod
     def from_json(cls, data: Dict) -> Self:
-        prompt = data.get("prompt", "")
+        prompt: str = data.get("prompt", "")
 
         params = data.get("params", {})
         return cls(

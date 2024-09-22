@@ -1,33 +1,18 @@
-"""
-{
-            "prompt": "Foo"
-            "negative_prompt": "Bar",
-            "sampler_name": "k_euler",
-            "cfg_scale": 5.0,
-            "seed": 3735928559,
-            "width": 1024,
-            "height": 1024,
-            "clip_skip": 1,
-            "steps": 20,
-            "model": "AlbedoBase XL (SDXL)",
-        }
-"""
-
-import enum
+from enum import IntEnum, auto
 import json
 import re
+from typing import Optional
 
 from PIL import Image
 from PIL.ExifTags import Base
 
+from hordeqt.classes.Job import Job
+from hordeqt.classes.LocalJob import LocalJob
 
-# from PIL import
-# WILL WORK:
-# ARTBOT pngs jpegs
-# HORDENG jpegs
+
 def _artbot(img: Image.Image):
 
-    lines = img.info.get("Comment").strip().splitlines()
+    lines = str(img.info.get("Comment", "")).strip().splitlines()
     print(lines)
 
     prompt = lines[0].strip()
@@ -57,25 +42,29 @@ def _artbot(img: Image.Image):
     return output_dict
 
 
-def _hordeng_jpeg(img: Image.Image):
+def _hordeng(img: Image.Image):
     e = img.getexif()
     desc = e.get(Base.ImageDescription.value, None)
     if desc is not None:
         try:
             j: dict = json.loads(desc)
             return {
-                "prompt": j.get("prompt"),
-                "negative_prompt": j.get("negative_prompt"),
-                "sampler_name": j.get("sampler"),
-                "cfg_scale": j.get("cfgScale"),
-                "seed": j.get("seed"),
+                "prompt": j.get("prompt", ""),
+                "negative_prompt": j.get("negative_prompt", ""),
+                "sampler_name": j.get("sampler", "k_euler"),
+                "cfg_scale": j.get("cfgScale", 5),
+                "seed": int(j.get("seed", 0)),
                 "model": j.get("model"),
-                "steps": j.get("steps"),
-                "width": j.get("width"),
-                "height": j.get("height"),
+                "steps": j.get("steps", 20),
+                "width": j.get("width", 1024),
+                "height": j.get("height", 1024),
+                "karras": j.get("karras", True),
+                "hires_fix": j.get("highresFix", False),
             }
+
         except json.JSONDecodeError:
-            raise ValueError("Invalid hordeNG jpeg")
+            # Canary
+            raise ValueError("Invalid HordeNG jpeg")
         except KeyError:
             raise ValueError("Invalid HordeNG jpg")
 
@@ -128,29 +117,56 @@ def _from_nai_prompt(prompt: str):
 
 def _nai_png(img: Image.Image):
 
-    line = img.info.get("Comment").strip()
+    line = str(img.info.get("Comment", "")).strip()
     j: dict = json.loads(line)
     return {
-        "prompt": _from_nai_prompt(j.get("prompt")),
-        "negative_prompt": _from_nai_prompt(j.get("uc")),
-        "sampler_name": j.get("sampler"),
-        "cfg_scale": j.get("scale"),
-        "seed": 0,
-        "model": "AMPonyXL",
-        "clip_skip": 2,
-        "steps": j.get("steps"),
-        "width": j.get("width"),
-        "height": j.get("height"),
+        "prompt": _from_nai_prompt(j.get("prompt", "")),
+        "negative_prompt": _from_nai_prompt(j.get("uc", "")),
+        "sampler_name": j.get("sampler", "k_euler"),
+        "cfg_scale": j.get("scale", 5),
+        "steps": j.get("steps", 20),
+        "width": j.get("width", 1024),
+        "height": j.get("height", 1024),
     }
 
 
-class ImageType(enum.IntEnum):
-    HORDENG_JPG = 0
-    ARTBOT = 1
-    NAI_PNG = 2
+def _hordeqt_image(img: Image.Image):
+    exif = img.getexif()
+    d = json.loads(exif[Base.ImageDescription])["job"]
+    k = d.get("prompt").split("###")
+    params = d.get("params", {})
+    prompt = "Error while formatting prompt"
+    neg_prompt = "No negative prompt"
+    if len(k) == 2:
+        prompt = k[0]
+        neg_prompt = k[1]
+    else:
+        prompt = k[0]
+        neg_prompt = False
+    return {
+        "prompt": prompt,
+        "negative_prompt": f"{neg_prompt}\n" if neg_prompt else "\n",
+        "sampler_name": params.get("sampler_name", "k_euler"),
+        "cfg_scale": params.get("cfg_scale", 5),
+        "seed": int(params.get("seed", 0)),
+        "model": d.get("Model")[0],
+        "clip_skip": int(params.get("clip_skip", 1)),
+        "steps": params.get("steps", 20),
+        "width": params.get("width", 1024),
+        "height": params.get("height", 1024),
+        "karras": params.get("karras", True),
+        "hires_fix": params.get("hires_fix", False),
+    }
 
 
-def _detect_format(img: Image.Image):
+class ImageType(IntEnum):
+    HORDENG_JPG = auto()
+    ARTBOT = auto()
+    NAI_PNG = auto()
+    HORDEQT = auto()
+
+
+def detect_format(img: Image.Image):
     e = img.getexif()
     desc = e.get(Base.ImageDescription.value, None)
     if desc is not None:
@@ -159,11 +175,13 @@ def _detect_format(img: Image.Image):
             return ImageType.HORDENG_JPG
         except:
             pass
+    sw = e[Base.Software]
+    if "hordeqt" in sw:
+        return ImageType.HORDEQT
     i = img.info
     if (sw := i.get("Software", None)) is not None:
-        if "ArtBot" in sw:
+        if "artbot" in str(sw).lower():
             return ImageType.ARTBOT
-
     if (comm := i.get("Comment", None)) is not None:
         try:
             json.loads(comm)
@@ -172,12 +190,36 @@ def _detect_format(img: Image.Image):
             pass
 
 
-def get_prompt(img: Image.Image):
-    img_format = _detect_format(img)
+def get_data(img: Image.Image):
+    img_format = detect_format(img)
     match img_format:
         case ImageType.HORDENG_JPG:
-            return _hordeng_jpeg(img)
+            return _hordeng(img)
         case ImageType.ARTBOT:
             return _artbot(img)
         case ImageType.NAI_PNG:
             return _nai_png(img)
+        case ImageType.HORDEQT:
+            return _hordeqt_image(img)
+
+
+def get_job_config(img: Image.Image) -> Optional[dict]:
+    d = get_data(img)
+    if d is not None:
+        return {
+            "prompt": d.get("prompt"),
+            "negative_prompt": d.get("negative_prompt", ""),
+            "sampler_name": d.get("sampler_name", "k_euler"),
+            "cfg_scale": d.get("cfg_scale", 5),
+            "seed": int(d.get("seed", 0)),
+            "width": d.get("width", 1024),
+            "height": d.get("height", 1024),
+            "clip_skip": d.get("clip_skip", 1),
+            "steps": d.get("steps", 20),
+            "model": d.get("Model"),
+            "images": 1,
+            "hires_fix": d.get("hires_fix", True),
+            "karras": d.get("karras", True),
+            "upscale": "None",
+        }
+    return None

@@ -1,7 +1,7 @@
 import json
 import time
 from pathlib import Path
-from typing import Self
+from typing import Optional, Self
 
 from PIL import ExifTags, Image
 
@@ -16,16 +16,18 @@ class LocalJob:
     file_type: str
     downloadURL: str
     completed_at: float
-    worker_id: str
-    worker_name: str
+    worker_id: Optional[str]
+    worker_name: Optional[str]
+
     @classmethod
-    def load_from_metadata(cls,val:dict[str,str|dict],file_type:str="webp")->Self:
+    def load_from_metadata(
+        cls, val: dict[str, str | dict], file_type: str = "webp"
+    ) -> Self:
         return cls(
-            val.get("job",{}), # type: ignore
-            file_type
-                        
+            Job.deserialize(val.get("job", {})),  # type: ignore
+            file_type,
         )
-        pass
+
     def convert_to_metadata(self) -> dict:
         return {
             "Application": "HordeQT",
@@ -53,11 +55,8 @@ class LocalJob:
             neg_prompt = False
         b = [
             f"Prompt: {prompt}",
-            (
-                f"Negative Prompt: {neg_prompt}"
-                if neg_prompt
-                else "" f"Model: {self.original.model}"
-            ),
+            f"Negative Prompt: {neg_prompt}\n" if neg_prompt else "\n",
+            f"Model: {self.original.model}",
             f"Steps: {self.original.steps}",
             f"Sampler: {self.original.sampler_name}",
             f"Guidence: {self.original.cfg_scale}",
@@ -68,7 +67,7 @@ class LocalJob:
 
     def update_path(self):
 
-        self.path = (SAVED_IMAGE_DIR_PATH/ self.id).with_suffix("." + self.file_type)
+        self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix("." + self.file_type)
 
     def serialize(self) -> dict:
         return {
@@ -102,3 +101,8 @@ def apply_metadata_to_image(path: Path, lj: LocalJob) -> Path:
     exif[ExifTags.Base.UserComment] = lj.pretty_format()
     im.save(lj.path, exif=exif)
     return lj.path
+
+
+def read_metadata_from_image(path: Path):
+
+    pass
