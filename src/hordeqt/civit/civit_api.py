@@ -311,5 +311,6 @@ class CivitApi:
 
         url = f"https://civitai.com/api/v1/models?{types_string}&sort=Highest%20Rated&limit=20&page={options.page}&nsfw={nsfw_string}&query={options.query.lower()}{base_model_string}"
         r = requests.get(url)
+        r.raise_for_status()
         j = r.json()["items"]
         return [CivitModel.deserialize(b) for b in j]

@@ -206,9 +206,12 @@ class MasonryLayout(QLayout):
     def updateGeometry(self):
         if not self.items:
             return
+        if len(self.items)==0:
+            return False
         width = self.geometry().width()
         self.calculateColumnLayout(width)
         self.arrangeItems()
+        return True
 
     def calculateColumnLayout(self, width):
         self.num_columns = max(1, width // (200 + self.m_spacing))
@@ -226,7 +229,7 @@ class MasonryLayout(QLayout):
                 index = i
                 break
         if index == -1:
-            LOGGER.warn(f"Image couldn't be found in gallery.")
+            LOGGER.warning(f"Image couldn't be found in gallery.")
             return
         del self.items[index]
 
@@ -245,6 +248,7 @@ class MasonryLayout(QLayout):
             )
             height = self.column_width / aspect_ratio
             min_col = self.column_heights.index(min(self.column_heights))
+            
             x = x_offsets[min_col]
             y = self.column_heights[min_col]
             widget.setGeometry(QRect(x, y, self.column_width, height))

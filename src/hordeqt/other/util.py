@@ -26,13 +26,12 @@ def get_metadata():
 # This whole function just feels... wrong.
 def get_dynamic_constants():
     global SAVED_IMAGE_DIR_PATH, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, app, CACHE_PATH
-    metadata = get_metadata()
 
     if "app" not in globals():
         app = QApplication(sys.argv)
-        app.setApplicationDisplayName(metadata["Formal-Name"])
-        app.setApplicationName(metadata["Name"])
-        app.setOrganizationName(metadata["Author"])
+        app.setApplicationDisplayName("Horde QT")
+        app.setApplicationName("hordeqt")
+        app.setOrganizationName("Unit1208")
 
     SAVED_DATA_DIR_PATH = Path(
         QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)

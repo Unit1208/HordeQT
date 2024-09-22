@@ -693,7 +693,7 @@ class HordeQt(QMainWindow):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
         self.clipboard.setText(self.api_key)
 
-    def show_success_toast(self, title, message, duration=5000):
+    def show_success_toast(self, title:str, message:str, duration=5000):
         success_toast = Toast(self)
         success_toast.setDuration(duration)
         success_toast.setTitle(title)
@@ -705,7 +705,7 @@ class HordeQt(QMainWindow):
         )
         success_toast.show()
 
-    def show_info_toast(self, title, message, duration=5000):
+    def show_info_toast(self, title:str, message:str, duration=5000):
         info_toast = Toast(self)
         info_toast.setDuration(duration)
         info_toast.setTitle(title)
@@ -718,7 +718,7 @@ class HordeQt(QMainWindow):
         info_toast.show()
         LOGGER.info(f"{title}: {message}")
 
-    def show_error_toast(self, title, message, duration=5000):
+    def show_error_toast(self, title:str, message:str, duration=5000):
         error_toast = Toast(self)
         error_toast.setDuration(duration)
         error_toast.setTitle(title)
@@ -731,7 +731,7 @@ class HordeQt(QMainWindow):
         error_toast.show()
         LOGGER.error(f"{title}: {message}")
 
-    def show_warn_toast(self, title, message, duration=5000):
+    def show_warn_toast(self, title:str, message:str, duration=5000):
         warn_toast = Toast(self)
         warn_toast.setDuration(duration)
         warn_toast.setTitle(title)
@@ -840,7 +840,7 @@ def main():
     # I don't care.
     (app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH, CACHE_PATH) = (
         get_dynamic_constants()
-    )
+    ) # type: ignore
 
     os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
     os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)

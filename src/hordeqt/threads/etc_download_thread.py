@@ -1,15 +1,12 @@
-
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
-from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
+from PySide6.QtCore import QMutex, QThread, QWaitCondition
 
-from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.other.consts import LOGGER
-from hordeqt.other.util import (SAVED_DATA_DIR_PATH,
-                                get_bucketized_cache_path, get_hash)
+from hordeqt.other.util import SAVED_DATA_DIR_PATH, get_bucketized_cache_path, get_hash
 
 dl_callback = Callable[[requests.Response], None]
 queued_dl = Tuple[str, requests.Request, Optional[dl_callback]]
@@ -18,7 +15,7 @@ queued_dl = Tuple[str, requests.Request, Optional[dl_callback]]
 class DownloadThread(QThread):
     completed_downloads: Dict[str, requests.Response]
     queued_downloads: List[queued_dl]
-    completed = Signal(LocalJob)
+
     cached_downloads: Dict[str, Path]
 
     def __init__(
@@ -55,7 +52,7 @@ class DownloadThread(QThread):
         self.queued_downloads.append((dl_id, req, cb))
         return dl_id
 
-    def download_to_cache(self, url: str, cb: Optional[Callable[[Path],Any]]):
+    def download_to_cache(self, url: str, cb: Optional[Callable[[Path], Any]]):
         p = get_bucketized_cache_path(url)
 
         def _callback(req: requests.Response):
@@ -64,7 +61,11 @@ class DownloadThread(QThread):
             if cb is not None:
                 cb(p)
 
-        return (self.prepare_dl(url, "GET", cb=_callback), p)
+        if p.exists():
+            if cb is not None:
+                cb(p)
+        else:
+            return (self.prepare_dl(url, "GET", cb=_callback), p)
 
     def run(self):
         while self.running:

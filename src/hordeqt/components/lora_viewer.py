@@ -5,22 +5,43 @@ from typing import TYPE_CHECKING, Dict, List
 
 import requests
 
-from hordeqt.civit.civit_api import (BaseModel, CivitApi, CivitModel,
-                                     ModelType, ModelVersion, SearchOptions)
+from hordeqt.civit.civit_api import (
+    BaseModel,
+    CivitApi,
+    CivitModel,
+    ModelType,
+    ModelVersion,
+    SearchOptions,
+)
 from hordeqt.components.gallery import ImageGalleryWidget
-from hordeqt.other.util import (CACHE_PATH, get_bucketized_cache_path,
-                                horde_model_to_civit_baseline)
+from hordeqt.other.util import (
+    CACHE_PATH,
+    get_bucketized_cache_path,
+    horde_model_to_civit_baseline,
+)
 
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
 
 from PySide6.QtCore import QRect, QSize, Qt, QUrl, Signal
 from PySide6.QtGui import QDesktopServices, QPixmap
-from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
-                               QFrame, QHBoxLayout, QLabel, QLayout,
-                               QLayoutItem, QLineEdit, QPlainTextEdit,
-                               QPushButton, QScrollArea, QSizePolicy,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QAbstractScrollArea,
+    QComboBox,
+    QDockWidget,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QLayout,
+    QLayoutItem,
+    QLineEdit,
+    QPlainTextEdit,
+    QPushButton,
+    QScrollArea,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 from hordeqt.other.consts import LOGGER
 
@@ -28,7 +49,7 @@ from hordeqt.other.consts import LOGGER
 def _format_tags(tags: List[str]) -> str:
     b = ""
     if len(tags) > 0:
-        b = ",".join([f'"{tag}"' for tag in tags])
+        b = ", ".join([f'"{tag}"' for tag in tags])
 
     return b
 
@@ -87,15 +108,19 @@ class LoraBrowser(QDockWidget):
             self._parent.model_dict[self._parent.ui.modelComboBox.currentText()]
         )
         search_options.types = [ModelType.LORA]
-        civitResponse = CivitApi().search_models(search_options)
-        for curr_widget in self.curr_widgets:
-            self.loraListLayout.removeWidget(curr_widget)
-        self.curr_widgets = []
-        for lora in civitResponse:
-            self.loraListLayout.addWidget(self.create_widget_from_response(lora))
+        try:
+            civitResponse = CivitApi().search_models(search_options)
+            for curr_widget in self.curr_widgets:
+                self.loraListLayout.removeWidget(curr_widget)
+            self.curr_widgets = []
+            for lora in civitResponse:
+                self.loraListLayout.addWidget(self.create_widget_from_response(lora))
+        except requests.HTTPError as e:
+            self._parent.show_error_toast(
+                "CivitAI error", f'An error occured with the CivitAI API: "{e}"'
+            )
 
     def create_widget_from_response(self, resp: CivitModel):
-
         loraWidget = QWidget()
         loraWidgetLayout = QHBoxLayout()
         name_label = QLabel(resp.name)
@@ -118,30 +143,45 @@ class LoraViewer(QDockWidget):
             url = vi.url
 
             path = get_bucketized_cache_path(url)
+
+            l = QLabel()
+
+            self.imageGallery.m_layout.addWidget(l)
+
+            def _set_pixmap_closure(path: Path):
+                im = QPixmap(path)
+                self.set_pixmap(l, im, QSize(256, 256))
+                self.update_gallery()
+
             if path.exists():
-                self.add_image(path)
+                im = QPixmap(path)
+                self.set_pixmap(l, im, QSize(256, 256))
+                self.update_gallery()
+            else:
+                self._parent.download_thread.download_to_cache(
+                    url, _set_pixmap_closure
+                )
+            self.imageGallery.m_layout.addWidget(l)
 
-            def _set_pixmap_closure(resp: requests.Response):
-                with open(path, "wb") as f:
-                    f.write(resp.content)
-                self.add_image(path)
+    def update_gallery(self):
+        try:
+            self.imageGallery.m_layout.updateGeometry()
+        except IndexError:
+            LOGGER.debug("LoRA gallery failed to update")
 
-            self._parent.download_thread.prepare_dl(url, "GET", {}, _set_pixmap_closure)
-
-    def add_image(self, path: Path):
-        im = QPixmap(path)
-        l = QLabel()
-        l.setPixmap(
-            im.scaled(
-                self.size(),
+    def set_pixmap(self, label: QLabel, image: QPixmap, size: QSize):
+        label.setPixmap(
+            image.scaled(
+                size,
                 Qt.AspectRatioMode.KeepAspectRatio,
                 Qt.TransformationMode.SmoothTransformation,
             )
         )
-        self.imageGallery.m_layout.addWidget(l)
 
     def __init__(self, model: CivitModel, parent: HordeQt):
         super().__init__("LoRA viewer", parent)
+        LOGGER.debug(f"Opened LoRA viewer from model: {model.name}")
+
         self._parent = parent
         self.setAllowedAreas(
             Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
@@ -153,25 +193,33 @@ class LoraViewer(QDockWidget):
         creator_layout = QHBoxLayout()
         creator_image_url = model.creator.image
         creator_image = QLabel("Loading")
+        self.imageGallery = ImageGalleryWidget()
+        gallery_scroll_area = QScrollArea()
+
+        gallery_scroll_area.setSizePolicy(
+            QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        )
+        gallery_scroll_area.setWidgetResizable(True)
+        gallery_scroll_area.setWidget(self.imageGallery)
 
         if creator_image_url is not None:
 
             path = get_bucketized_cache_path(creator_image_url)
+
+            def _set_pixmap_closure(path: Path):
+                self._set_creator_image(creator_image, path)
+
             if path.exists():
                 self._set_creator_image(creator_image, path)
+            else:
 
-            def _set_pixmap_closure(resp: requests.Response):
-                with open(path, "wb") as f:
-                    f.write(resp.content)
-                self._set_creator_image(creator_image, path)
-
-            self._parent.download_thread.prepare_dl(
-                creator_image_url, "GET", {}, _set_pixmap_closure
-            )
+                self._parent.download_thread.download_to_cache(
+                    creator_image_url, _set_pixmap_closure
+                )
 
         creator_username = QLabel(model.creator.username)
         creator_layout.addWidget(creator_username)
-
+        creator_layout.addWidget(creator_image)
         nsfw_layout = QHBoxLayout()
         nsfw_label = QLabel("NSFW:")
         nsfw_value = QLabel("Yes" if model.nsfw else "No")
@@ -195,11 +243,12 @@ class LoraViewer(QDockWidget):
                 k := f"{version.name} ({version.baseModel})"
             )
             self.version_mapping[k] = version
+        if len(model.modelVersions) > 0:
+            self.update_on_version_change(self.LoRA_version_combobox.currentText())
         LoRA_version_layout = QHBoxLayout()
         LoRA_version_layout.addWidget(LoRA_version_label)
         LoRA_version_layout.addWidget(self.LoRA_version_combobox)
         self.images = []
-        self.imageGallery = ImageGalleryWidget()
 
         self.LoRA_version_combobox.currentTextChanged.connect(
             self.update_on_version_change
@@ -210,9 +259,10 @@ class LoraViewer(QDockWidget):
         layout = QVBoxLayout()
         layout.addWidget(name_label)
         layout.addLayout(creator_layout)
+        layout.addLayout(tags_list_layout)
         layout.addLayout(nsfw_layout)
         layout.addLayout(LoRA_version_layout)
-        layout.addWidget(self.imageGallery)
+        layout.addWidget(gallery_scroll_area)
 
         # Create a central widget to set the layout
         widget = QWidget()
@@ -220,17 +270,12 @@ class LoraViewer(QDockWidget):
 
         # Set the widget for the QDockWidget
         self.setWidget(widget)
-
         self.setFloating(True)
         self.resize(400, 400)
+        self.show()
 
-    def _set_creator_image(self, creator_image, path):
+    def _set_creator_image(self, creator_image: QLabel, path: Path):
         im = QPixmap(path)
-        creator_image.setPixmap(
-            im.scaled(
-                self.size(),
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation,
-            )
-        )
-        creator_image.setText("")  # Adjust the size of the popup window
+        self.set_pixmap(creator_image, im, QSize(64, 64))
+
+        creator_image.setText("")
