@@ -626,7 +626,7 @@
                </item>
               </widget>
              </item>
-             <item row="1" column="0">
+             <item row="32" column="1">
               <widget class="QPushButton" name="LoRASelector">
                <property name="text">
                 <string>LoRA selector</string>

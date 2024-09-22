@@ -22,13 +22,9 @@ from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
 
 from hordeqt.other.consts import LOGGER
 
+import human_readable as hr
 
-def _format_tags(tags: List[str]) -> str:
-    b = ""
-    if len(tags) > 0:
-        b = ", ".join([f'"{tag}"' for tag in tags])
 
-    return b
 
 
 class LoraBrowser(QDockWidget):
@@ -196,7 +192,7 @@ class LoraViewer(QDockWidget):
         tags_list_layout = QHBoxLayout()
 
         tags_list_label = QLabel("Tags:")
-        tags_list_value = QLabel(_format_tags(model.tags))
+        tags_list_value = QLabel(hr.listing(model.tags,","))
 
         tags_list_layout.addWidget(tags_list_label)
         tags_list_layout.addWidget(tags_list_value)

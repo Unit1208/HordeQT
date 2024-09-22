@@ -411,12 +411,12 @@ class HordeQt(QMainWindow):
         self.ui.customizerCheckBox.setChecked(j["customizer"])
         self.ui.specialCheckBox.setChecked(j["special"])
         self.ui.pseudonymousCheckBox.setChecked(j["pseudonymous"])
-        self.ui.accountAgeLineEdit.setText(str(j["account_age"]) + " seconds")
-        self.ui.accountCreatedLineEdit.setText(
+        self.ui.accountAgeLineEdit.setText(str(j["account_age"]))
+        self.ui.accountCreatedLineEdit.setText(hr.date_time(
             (
                 dt.datetime.fromtimestamp(time.time())
                 - dt.timedelta(seconds=j["account_age"])
-            ).isoformat()
+            ))
         )
         records = j["records"]
         usage = records["usage"]
