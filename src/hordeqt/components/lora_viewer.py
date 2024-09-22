@@ -5,38 +5,20 @@ from typing import TYPE_CHECKING, Dict, List
 
 import requests
 
-from hordeqt.civit.civit_api import (
-    CivitApi,
-    CivitModel,
-    ModelType,
-    ModelVersion,
-    SearchOptions,
-)
-from hordeqt.other.util import (
-    CACHE_PATH,
-    get_bucketized_cache_path,
-    horde_model_to_civit_baseline,
-)
+from hordeqt.civit.civit_api import (CivitApi, CivitModel, ModelType,
+                                     ModelVersion, SearchOptions)
+from hordeqt.other.util import (CACHE_PATH, get_bucketized_cache_path,
+                                horde_model_to_civit_baseline)
 
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
 
 from PySide6.QtCore import QRect, QSize, Qt
-from PySide6.QtGui import  QPixmap
-from PySide6.QtWidgets import (
-    QAbstractScrollArea,
-    QComboBox,
-    QDockWidget,
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QScrollArea,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
+                               QFrame, QHBoxLayout, QLabel, QLineEdit,
+                               QPushButton, QScrollArea, QSizePolicy,
+                               QVBoxLayout, QWidget)
 
 from hordeqt.other.consts import LOGGER
 
@@ -131,6 +113,7 @@ class LoraBrowser(QDockWidget):
 class LoraViewer(QDockWidget):
     version_mapping: Dict[str, ModelVersion]
     images: List[QPixmap]
+
     def update_on_version_change(self, version_str: str):
         version = self.version_mapping[version_str]
         for vi in version.images:
@@ -140,11 +123,12 @@ class LoraViewer(QDockWidget):
 
             l = QLabel()
 
-
             if path.exists():
                 self.load_pixmap(path, l)
             else:
-                self._parent.download_thread.download_to_cache(url, lambda p:self.load_pixmap(p, l))
+                self._parent.download_thread.download_to_cache(
+                    url, lambda p: self.load_pixmap(p, l)
+                )
 
     def load_pixmap(self, path: Path, label: QLabel):
         im = QPixmap(path)
