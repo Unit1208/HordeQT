@@ -1,6 +1,7 @@
-import jsonpickle
 import os
 from typing import Dict, List
+
+import jsonpickle
 
 from hordeqt.other.util import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
 from hordeqt.threads.etc_download_thread import DownloadThread
@@ -69,14 +70,14 @@ class SavedData:
             "warned_models": self.warned_models,
             "download_state": self.download_state,
         }
-        jsondata:str = jsonpickle.encode(d) # type: ignore
+        jsondata: str = jsonpickle.encode(d)  # type: ignore
         with open(SAVED_DATA_PATH, "wt") as f:
             f.write(jsondata)
 
     def read(self):
         if SAVED_DATA_PATH.exists():
             with open(SAVED_DATA_PATH, "rt") as f:
-                j: dict = jsonpickle.decode(f.read()) # type: ignore
+                j: dict = jsonpickle.decode(f.read())  # type: ignore
         else:
             j = dict()
         self.api_state = j.get("api_state", {})

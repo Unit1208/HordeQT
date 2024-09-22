@@ -1,6 +1,6 @@
-from enum import IntEnum, auto
 import json
 import re
+from enum import IntEnum, auto
 from typing import Optional
 
 from PIL import Image
@@ -207,7 +207,7 @@ def get_job_config(img: Image.Image) -> Optional[dict]:
     d = get_data(img)
     if d is not None:
         try:
-        
+
             return {
                 "prompt": d.get("prompt"),
                 "negative_prompt": d.get("negative_prompt", ""),
@@ -227,29 +227,33 @@ def get_job_config(img: Image.Image) -> Optional[dict]:
         except:
             return None
     return None
-def get_job(img: Image.Image)->Optional[Job]:
-    j=get_job_config(img)
+
+
+def get_job(img: Image.Image) -> Optional[Job]:
+    j = get_job_config(img)
     if j is not None:
         try:
             return Job(
-            str(j.get("prompt","")) +("###"+str(j.get("negative_prompt",""))),
-            str(j.get("sampler_name","k_euler")),
-            int(j.get("cfg_scale",5)),
-            str(j.get("seed",0)),
-                    j.get("width", 1024),
-            j.get("height", 1024),
-            j.get("clip_skip",1),
-            j.get("steps",20),
-            j.get("model","")
-        )
+                str(j.get("prompt", "")) + ("###" + str(j.get("negative_prompt", ""))),
+                str(j.get("sampler_name", "k_euler")),
+                int(j.get("cfg_scale", 5)),
+                str(j.get("seed", 0)),
+                j.get("width", 1024),
+                j.get("height", 1024),
+                j.get("clip_skip", 1),
+                j.get("steps", 20),
+                j.get("model", ""),
+            )
         except:
             return None
     return None
-def get_local_job(img: Image.Image)->Optional[LocalJob]:
-    j=get_job(img)
+
+
+def get_local_job(img: Image.Image) -> Optional[LocalJob]:
+    j = get_job(img)
     if j is not None:
         try:
             return LocalJob(j)
         except:
             return None
-    return None    
+    return None

@@ -7,9 +7,18 @@ if TYPE_CHECKING:
 
 from PySide6.QtCore import QRect, QSize, Qt, QUrl, Signal
 from PySide6.QtGui import QDesktopServices, QPixmap
-from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QLayout,
-                               QLayoutItem, QPlainTextEdit, QPushButton,
-                               QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QDockWidget,
+    QHBoxLayout,
+    QLabel,
+    QLayout,
+    QLayoutItem,
+    QPlainTextEdit,
+    QPushButton,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.other.consts import LOGGER
@@ -206,7 +215,7 @@ class MasonryLayout(QLayout):
     def updateGeometry(self):
         if not self.items:
             return
-        if len(self.items)==0:
+        if len(self.items) == 0:
             return False
         width = self.geometry().width()
         self.calculateColumnLayout(width)
@@ -248,7 +257,7 @@ class MasonryLayout(QLayout):
             )
             height = self.column_width / aspect_ratio
             min_col = self.column_heights.index(min(self.column_heights))
-            
+
             x = x_offsets[min_col]
             y = self.column_heights[min_col]
             widget.setGeometry(QRect(x, y, self.column_width, height))

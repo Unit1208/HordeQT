@@ -158,9 +158,7 @@ class LoraViewer(QDockWidget):
                 self.set_pixmap(l, im, QSize(256, 256))
                 self.update_gallery()
             else:
-                self._parent.download_thread.download_to_cache(
-                    url, _set_pixmap_closure
-                )
+                self._parent.download_thread.download_to_cache(url, _set_pixmap_closure)
             self.imageGallery.m_layout.addWidget(l)
 
     def update_gallery(self):
