@@ -39,7 +39,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>5</number>
+       <number>3</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -108,7 +108,7 @@
               <x>0</x>
               <y>0</y>
               <width>935</width>
-              <height>979</height>
+              <height>1003</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -788,7 +788,7 @@
           <x>0</x>
           <y>10</y>
           <width>971</width>
-          <height>231</height>
+          <height>361</height>
          </rect>
         </property>
         <layout class="QFormLayout" name="formLayout_3">
@@ -922,20 +922,10 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+         <item row="9" column="0">
           <widget class="QLabel" name="openSavedDataLabel">
            <property name="text">
             <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="7" column="1">
-          <widget class="QPushButton" name="openSavedImages">
-           <property name="text">
-            <string>Open Saved Images</string>
-           </property>
-           <property name="icon">
-            <iconset theme="QIcon::ThemeIcon::InsertImage"/>
            </property>
           </widget>
          </item>
@@ -979,6 +969,26 @@
            </property>
            <property name="checked">
             <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1">
+          <widget class="QPushButton" name="clearCacheButton">
+           <property name="text">
+            <string>Clear Cache</string>
+           </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::EditClear"/>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QPushButton" name="openSavedImages">
+           <property name="text">
+            <string>Open Saved Images</string>
+           </property>
+           <property name="icon">
+            <iconset theme="QIcon::ThemeIcon::InsertImage"/>
            </property>
           </widget>
          </item>

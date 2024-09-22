@@ -1,6 +1,7 @@
 import datetime as dt
 import os
 import random
+import shutil
 import sys
 import time
 from typing import Dict, List, Optional, Tuple
@@ -130,12 +131,14 @@ class HordeQt(QMainWindow):
         self.ui.saveAPIkey.clicked.connect(self.save_api_key)
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
         self.ui.showAPIKey.clicked.connect(self.toggle_api_key_visibility)
+    
         self.ui.openSavedData.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_DATA_DIR_PATH))
         )
         self.ui.openSavedImages.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(SAVED_IMAGE_DIR_PATH))
         )
+        self.ui.clearCacheButton.clicked.connect(self.clear_cache)
         self.ui.presetComboBox.currentTextChanged.connect(self.on_preset_change)
         self.ui.widthSpinBox.valueChanged.connect(self.on_width_change)
         self.ui.heightSpinBox.valueChanged.connect(self.on_height_change)
@@ -838,6 +841,16 @@ class HordeQt(QMainWindow):
                 lj.original.model,
                 lj.completed_at - time.time(),
             )
+    def clear_cache(self):
+        if CACHE_PATH.exists():
+            try:
+                shutil.rmtree(CACHE_PATH)
+                self.show_success_toast("Cache cleared","Cache was cleared successfully.")
+            except Exception as e:
+                self.show_error_toast("Cache not cleared",f"While clearing cache, HordeQT ran into an issue: \"{e}\"")
+                        
+        else:
+            self.show_info_toast("Cache not cleared","Cache directory did not exist (i.e. no cache to clear)")
 
 
 def main():
