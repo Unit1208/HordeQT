@@ -18,7 +18,14 @@ class LocalJob:
     completed_at: float
     worker_id: str
     worker_name: str
-
+    @classmethod
+    def load_from_metadata(cls,val:dict[str,str|dict],file_type:str="webp")->Self:
+        return cls(
+            val.get("job",{}), # type: ignore
+            file_type
+                        
+        )
+        pass
     def convert_to_metadata(self) -> dict:
         return {
             "Application": "HordeQT",
