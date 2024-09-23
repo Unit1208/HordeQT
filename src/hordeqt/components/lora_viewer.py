@@ -1,14 +1,23 @@
 from __future__ import annotations
 
 from pathlib import Path
+import time
 from typing import TYPE_CHECKING, Dict, List
 
 import requests
 
-from hordeqt.civit.civit_api import (CivitApi, CivitModel, ModelType,
-                                     ModelVersion, SearchOptions)
-from hordeqt.other.util import (CACHE_PATH, get_bucketized_cache_path,
-                                horde_model_to_civit_baseline)
+from hordeqt.civit.civit_api import (
+    CivitApi,
+    CivitModel,
+    ModelType,
+    ModelVersion,
+    SearchOptions,
+)
+from hordeqt.other.util import (
+    CACHE_PATH,
+    get_bucketized_cache_path,
+    horde_model_to_civit_baseline,
+)
 
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
@@ -16,10 +25,20 @@ if TYPE_CHECKING:
 import human_readable as hr
 from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
-                               QFrame, QHBoxLayout, QLabel, QLineEdit,
-                               QPushButton, QScrollArea, QSizePolicy,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QAbstractScrollArea,
+    QComboBox,
+    QDockWidget,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QScrollArea,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 from hordeqt.other.consts import LOGGER
 
@@ -113,6 +132,8 @@ class LoraBrowser(QDockWidget):
 class LoraViewer(QDockWidget):
     version_mapping: Dict[str, ModelVersion]
     images: List[QLabel] = []
+    finished = 0
+    needs = 0
 
     def update_on_version_change(self, version_str: str):
         version = self.version_mapping[version_str]
@@ -120,6 +141,8 @@ class LoraViewer(QDockWidget):
             self.image_gallery_layout.removeWidget(child)
             child.deleteLater()
         self.images = []
+        self.needs = len(version.images)
+        self.finished = 0
         for vi in version.images:
             url = vi.url
 
@@ -127,21 +150,25 @@ class LoraViewer(QDockWidget):
 
             l = QLabel()
 
-            if path.exists():
-                self.load_pixmap(path, l)
-            else:
-                self._parent.download_thread.download_to_cache(
-                    url, lambda p: self.load_pixmap(path, l)
-                )
 
-    def load_pixmap(self, path: Path, label: QLabel):
-        LOGGER.debug(f"Before pixmap created {path.resolve()}")
+            def inc_finished(_):
+                self.finished += 1
+            self._parent.download_thread.download_to_cache(url, inc_finished)
+        #TODO: Popup loading... bar. Fairly easy with how this is set up.
+        while self.finished < self.needs:
+            # TODO: convert to proper wait condition with mutex, etc.
+            time.sleep(0.25)
+        for vi in version.images:
+            url = vi.url
+
+            path = get_bucketized_cache_path(url)
+
+            l = QLabel()
+            self.load_version_pixmap(path,l)
+    def load_version_pixmap(self, path: Path, label: QLabel):
         im = QPixmap(path)
-        LOGGER.debug("Before setting Pixmap")
         label.setPixmap(im)
-        LOGGER.debug("Before Adding Widget")
         self.image_gallery_layout.addWidget(label)
-        LOGGER.debug("Before appending label")
         self.images.append(label)
 
     def set_pixmap(self, label: QLabel, image: QPixmap, size: QSize):
