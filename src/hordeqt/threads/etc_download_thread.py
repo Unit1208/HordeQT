@@ -16,7 +16,6 @@ queued_dl = Tuple[str, requests.Request, Optional[dl_callback]]
 class DownloadThread(QThread):
     queued_downloads: List[queued_dl]
 
-
     def __init__(
         self,
         queued_downloads=[],

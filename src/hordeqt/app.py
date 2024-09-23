@@ -412,11 +412,13 @@ class HordeQt(QMainWindow):
         self.ui.specialCheckBox.setChecked(j["special"])
         self.ui.pseudonymousCheckBox.setChecked(j["pseudonymous"])
         self.ui.accountAgeLineEdit.setText(str(j["account_age"]))
-        self.ui.accountCreatedLineEdit.setText(hr.date_time(
-            (
-                dt.datetime.fromtimestamp(time.time())
-                - dt.timedelta(seconds=j["account_age"])
-            ))
+        self.ui.accountCreatedLineEdit.setText(
+            hr.date_time(
+                (
+                    dt.datetime.fromtimestamp(time.time())
+                    - dt.timedelta(seconds=j["account_age"])
+                )
+            )
         )
         records = j["records"]
         usage = records["usage"]
@@ -840,13 +842,14 @@ class HordeQt(QMainWindow):
     def clear_cache(self):
         if CACHE_PATH.exists():
             try:
-                pre_size=shutil.disk_usage(CACHE_PATH.parent)
+                pre_size = shutil.disk_usage(CACHE_PATH.parent)
                 shutil.rmtree(CACHE_PATH)
-                post_size=shutil.disk_usage(CACHE_PATH.parent)
-                diff=post_size.free-pre_size.free
-                
+                post_size = shutil.disk_usage(CACHE_PATH.parent)
+                diff = post_size.free - pre_size.free
+
                 self.show_success_toast(
-                    "Cache cleared", f"Cache was cleared successfully. {hr.file_size(diff)} Freed"
+                    "Cache cleared",
+                    f"Cache was cleared successfully. {hr.file_size(diff)} Freed",
                 )
             except Exception as e:
                 self.show_error_toast(
