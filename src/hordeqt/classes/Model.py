@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+
+
+@dataclass
 class Model:
     performance: float
     queued: int
@@ -7,10 +11,3 @@ class Model:
     name: str
     count: int
     details: dict
-
-    def get(self, name, default=None):
-        if hasattr(self, name):
-            return self.__getattribute__(name)
-        elif default != None:
-            return default
-        raise KeyError(self, name)

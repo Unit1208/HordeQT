@@ -67,15 +67,16 @@ class LoraBrowser(QDockWidget):
             self.setWindowTitle(f"LoRA Browser ({query})")
         else:
             self.setWindowTitle("LoRA Browser")
-        search_options = SearchOptions()
-        search_options.query = query
-        search_options.page = 1
-        search_options.nsfw = self._parent.ui.NSFWCheckBox.isChecked()
-        # Make sure it's not null.
-        search_options.baseModel = horde_model_to_civit_baseline(
-            self._parent.model_dict[self._parent.ui.modelComboBox.currentText()]
+        search_options = SearchOptions(
+            query,
+            1,
+            horde_model_to_civit_baseline(
+                self._parent.model_dict[self._parent.ui.modelComboBox.currentText()]
+            ),
+            [ModelType.LORA],
+            self._parent.ui.NSFWCheckBox.isChecked(),
         )
-        search_options.types = [ModelType.LORA]
+
         try:
             civitResponse = CivitApi().search_models(search_options)
             for curr_widget in self.curr_widgets:

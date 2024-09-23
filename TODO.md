@@ -57,6 +57,7 @@
 - [ ] Move loading images to load_thread
 - [x] Resize images to fit screen on popup
 - [ ] LoRAs/TIs
+  - [ ] Search result pages
 - [ ] Warning when trying to use a Pony model incorrectly.
   - [ ] "" for Flux
 - [ ] Paginate images (25-50-100)?

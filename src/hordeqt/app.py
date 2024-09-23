@@ -20,8 +20,9 @@ from hordeqt.classes.Job import Job
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
-from hordeqt.components.gallery import (ImageGalleryWidget, ImagePopup,
-                                        ImageWidget)
+from hordeqt.components.gallery.ImageGalleryWidget import ImageGalleryWidget
+from hordeqt.components.gallery.ImagePopup import ImagePopup
+from hordeqt.components.gallery.ImageWidget import ImageWidget
 from hordeqt.components.loras.lora_browser import LoraBrowser
 from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.gen.ui_form import Ui_MainWindow
@@ -617,21 +618,22 @@ class HordeQt(QMainWindow):
     def construct_model_dict(self, mod):
         self.ui.modelComboBox.clear()
 
-        models: List[Model] = self.get_available_models()
-        models.sort(key=lambda k: k.get("count"), reverse=True)
+        models: List[dict] = self.get_available_models()
+        models.sort(key=lambda k: k.get("count", 0), reverse=True)
         model_dict: Dict[str, Model] = {}
         for n in models:
-            name = n.get("name", "Unknown")
-            count = n.get("count", 0)
+            name = n.get("name") or "Unknown"
             self.ui.modelComboBox.addItem(name)
-            m = Model()
-            m.count = count
-            m.eta = n.get("eta", 0)
-            m.jobs = n.get("jobs", 0)
-            m.name = name
-            m.performance = n.get("performance", 0)
-            m.queued = n.get("queued", 0)
-            m.type = "image"
+            m = Model(
+                n.get("performance", 0),
+                n.get("queued", 0),
+                n.get("jobs", 0),
+                n.get("eta", 0),
+                "image",
+                name,
+                n.get("count", 1),
+                n.get("details", {}),
+            )
             try:
                 m.details = mod[m.name]
             except KeyError:
@@ -651,7 +653,7 @@ class HordeQt(QMainWindow):
         self.ui.modelComboBox.setCurrentIndex(0)
         self.model_dict = model_dict
 
-    def get_available_models(self) -> List[Model]:
+    def get_available_models(self) -> List[dict]:
         # TODO: move to separate thread
         r = requests.get(
             BASE_URL + "status/models",
@@ -659,10 +661,6 @@ class HordeQt(QMainWindow):
         )
         r.raise_for_status()
         return r.json()
-
-    def get_model_details(self, available_models: Optional[List[Model]]):
-        if available_models == None:
-            available_models = self.get_available_models()
 
     def on_model_open_click(self):
         curr_model = self.model_dict[self.ui.modelComboBox.currentText()]

@@ -1,5 +1,6 @@
 import json
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Self
 
@@ -9,6 +10,7 @@ from hordeqt.classes.Job import Job
 from hordeqt.other.util import SAVED_IMAGE_DIR_PATH
 
 
+@dataclass
 class LocalJob:
     id: str
     path: Path
