@@ -67,12 +67,16 @@ class LoraBrowser(QDockWidget):
         self.setFloating(True)
         self.show()
         self.resize(400, 400)
-        self.curr_widgets = []
+        self.curr_widgets:List[QWidget] = []
         self.search_for_loras()
 
     def search_for_loras(self):
 
-        query = self.query_box.text()
+        query = self.query_box.text().strip()
+        if len(query)>0:
+            self.setWindowTitle(f"LoRA Browser ({query})")
+        else:
+            self.setWindowTitle("LoRA Browser")
         search_options = SearchOptions()
         search_options.query = query
         search_options.page = 1
@@ -85,6 +89,8 @@ class LoraBrowser(QDockWidget):
             civitResponse = CivitApi().search_models(search_options)
             for curr_widget in self.curr_widgets:
                 self.loraListLayout.removeWidget(curr_widget)
+                curr_widget.deleteLater()
+            
             self.curr_widgets = []
             for lora in civitResponse:
                 self.loraListLayout.addWidget(self.create_widget_from_response(lora))
@@ -123,10 +129,11 @@ class LoraViewer(QDockWidget):
                 self.load_pixmap(path, l)
             else:
                 self._parent.download_thread.download_to_cache(
-                    url, lambda p: self.load_pixmap(p, l)
+                    url, lambda p: self.load_pixmap(path, l)
                 )
 
     def load_pixmap(self, path: Path, label: QLabel):
+        print(f"Possibly before crash for {path.resolve()}")
         im = QPixmap(path)
         label.setPixmap(im)
         self.image_gallery_layout.addWidget(label)
@@ -141,7 +148,7 @@ class LoraViewer(QDockWidget):
         )
 
     def __init__(self, model: CivitModel, parent: HordeQt):
-        super().__init__("LoRA viewer", parent)
+        super().__init__(f"LoRA viewer ({model.name})", parent)
         LOGGER.debug(f"Opened LoRA viewer from model: {model.name}")
 
         self._parent = parent

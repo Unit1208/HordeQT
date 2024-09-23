@@ -61,3 +61,6 @@ var/
 
 # Briefcase log files
 logs/
+.vscode/settings.json
+
+dbg/
