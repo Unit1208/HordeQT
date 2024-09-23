@@ -5,26 +5,42 @@ from typing import TYPE_CHECKING, Dict, List
 
 import requests
 
-from hordeqt.civit.civit_api import (CivitApi, CivitModel, ModelType,
-                                     ModelVersion, SearchOptions)
-from hordeqt.other.util import (CACHE_PATH, get_bucketized_cache_path,
-                                horde_model_to_civit_baseline)
+from hordeqt.civit.civit_api import (
+    CivitApi,
+    CivitModel,
+    ModelType,
+    ModelVersion,
+    SearchOptions,
+)
+from hordeqt.other.util import (
+    CACHE_PATH,
+    get_bucketized_cache_path,
+    horde_model_to_civit_baseline,
+)
 
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
 
 from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
-                               QFrame, QHBoxLayout, QLabel, QLineEdit,
-                               QPushButton, QScrollArea, QSizePolicy,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QAbstractScrollArea,
+    QComboBox,
+    QDockWidget,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QScrollArea,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 from hordeqt.other.consts import LOGGER
 
 import human_readable as hr
-
-
 
 
 class LoraBrowser(QDockWidget):
@@ -67,13 +83,13 @@ class LoraBrowser(QDockWidget):
         self.setFloating(True)
         self.show()
         self.resize(400, 400)
-        self.curr_widgets:List[QWidget] = []
+        self.curr_widgets: List[QWidget] = []
         self.search_for_loras()
 
     def search_for_loras(self):
 
         query = self.query_box.text().strip()
-        if len(query)>0:
+        if len(query) > 0:
             self.setWindowTitle(f"LoRA Browser ({query})")
         else:
             self.setWindowTitle("LoRA Browser")
@@ -81,6 +97,7 @@ class LoraBrowser(QDockWidget):
         search_options.query = query
         search_options.page = 1
         search_options.nsfw = self._parent.ui.NSFWCheckBox.isChecked()
+        # Make sure it's not null.
         search_options.baseModel = horde_model_to_civit_baseline(
             self._parent.model_dict[self._parent.ui.modelComboBox.currentText()]
         )
@@ -90,7 +107,7 @@ class LoraBrowser(QDockWidget):
             for curr_widget in self.curr_widgets:
                 self.loraListLayout.removeWidget(curr_widget)
                 curr_widget.deleteLater()
-            
+
             self.curr_widgets = []
             for lora in civitResponse:
                 self.loraListLayout.addWidget(self.create_widget_from_response(lora))
@@ -114,10 +131,14 @@ class LoraBrowser(QDockWidget):
 
 class LoraViewer(QDockWidget):
     version_mapping: Dict[str, ModelVersion]
-    images: List[QPixmap]
+    images: List[QLabel] = []
 
     def update_on_version_change(self, version_str: str):
         version = self.version_mapping[version_str]
+        for child in self.images:
+            self.image_gallery_layout.removeWidget(child)
+            child.deleteLater()
+        self.images = []
         for vi in version.images:
             url = vi.url
 
@@ -133,10 +154,14 @@ class LoraViewer(QDockWidget):
                 )
 
     def load_pixmap(self, path: Path, label: QLabel):
-        print(f"Possibly before crash for {path.resolve()}")
+        LOGGER.debug(f"Before pixmap created {path.resolve()}")
         im = QPixmap(path)
+        LOGGER.debug("Before setting Pixmap")
         label.setPixmap(im)
+        LOGGER.debug("Before Adding Widget")
         self.image_gallery_layout.addWidget(label)
+        LOGGER.debug("Before appending label")
+        self.images.append(label)
 
     def set_pixmap(self, label: QLabel, image: QPixmap, size: QSize):
         label.setPixmap(
@@ -156,6 +181,8 @@ class LoraViewer(QDockWidget):
             Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
         )
         self.model = model
+        self.images = []
+
         # Create a label to display the image
 
         name_label = QLabel(model.name)
@@ -199,7 +226,7 @@ class LoraViewer(QDockWidget):
         tags_list_layout = QHBoxLayout()
 
         tags_list_label = QLabel("Tags:")
-        tags_list_value = QLabel(hr.listing(model.tags,","))
+        tags_list_value = QLabel(hr.listing(model.tags, ","))
 
         tags_list_layout.addWidget(tags_list_label)
         tags_list_layout.addWidget(tags_list_value)
@@ -217,7 +244,6 @@ class LoraViewer(QDockWidget):
         LoRA_version_layout = QHBoxLayout()
         LoRA_version_layout.addWidget(LoRA_version_label)
         LoRA_version_layout.addWidget(self.LoRA_version_combobox)
-        self.images = []
 
         self.LoRA_version_combobox.currentTextChanged.connect(
             self.update_on_version_change

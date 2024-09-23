@@ -87,8 +87,7 @@
 - [x] Briefcase (silently) doesn't include folders in .gitignore, *but only on windows*. Remove gen from .gitignore, then add it back when building?
 - [x] "Clear cache" button
 - [ ] Implement and use a "find good popup size" function, based on the screen size?
-- [ ] Intermittent segfaults?
-  - Something to do with mutex/saving?
+- [ ] **Intermittent segfaults?**
 - [ ] Test:
   - [ ] Fresh setup, no API key, no saved data
   - [ ] Setup with anon key
