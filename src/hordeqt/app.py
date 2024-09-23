@@ -22,7 +22,7 @@ from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
 from hordeqt.components.gallery import (ImageGalleryWidget, ImagePopup,
                                         ImageWidget)
-from hordeqt.components.lora_viewer import LoraBrowser
+from hordeqt.components.loras.lora_browser import LoraBrowser
 from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.other.consts import ANON_API_KEY, BASE_URL, LOGGER
