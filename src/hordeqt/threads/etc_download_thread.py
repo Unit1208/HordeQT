@@ -14,26 +14,20 @@ queued_dl = Tuple[str, requests.Request, Optional[dl_callback]]
 
 
 class DownloadThread(QThread):
-    completed_downloads: Dict[str, requests.Response]
     queued_downloads: List[queued_dl]
 
-    cached_downloads: Dict[str, Path]
 
     def __init__(
         self,
         queued_downloads=[],
-        completed_downloads=[],
-        cached_downloads={},
         parent=None,
     ) -> None:
         super().__init__(parent)
         self.queued_downloads = queued_downloads
-        self.completed_downloads = completed_downloads
         self.running = True
         self.wait_condition = QWaitCondition()
         self.mutex = QMutex()
         self.save_dir_path = SAVED_DATA_DIR_PATH
-        self.cached_downloads = cached_downloads
 
     def add_dl(self, request: requests.Request, cb: Optional[dl_callback]) -> str:
         dl_id = get_hash(request.url)
@@ -85,7 +79,6 @@ class DownloadThread(QThread):
             prep_req = req.prepare()
             s = requests.session()
             response = s.send(prep_req)
-            self.completed_downloads[dl_id] = response
 
             LOGGER.info(f"Downloaded {req.url} ({dl_id})")
             if cb is not None:
@@ -97,8 +90,6 @@ class DownloadThread(QThread):
         ]
         return {
             "queued_downloads": new_queued_download_list,
-            "completed_downloads": {k: v for k, v in self.completed_downloads.items()},
-            "cached_downloads": self.cached_downloads,
         }
 
     @classmethod
@@ -107,15 +98,11 @@ class DownloadThread(QThread):
         queued_downloads: list[Tuple[str, requests.Request]] = data.get(
             "queued_downloads", []
         )  # type: ignore
-        completed_downloads: Dict[str, requests.Response] = data.get(
-            "completed_downloads", {}
-        )  # type: ignore
+
         s = cls()
 
         s.queued_downloads = [(dl_id, req, None) for dl_id, req in queued_downloads]
 
-        s.completed_downloads = completed_downloads
-        s.cached_downloads = data.get("cached_downloads", {})  # type: ignore
         return s
 
     def stop(self):
