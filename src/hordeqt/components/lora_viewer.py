@@ -1,23 +1,15 @@
 from __future__ import annotations
 
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List
 
 import requests
 
-from hordeqt.civit.civit_api import (
-    CivitApi,
-    CivitModel,
-    ModelType,
-    ModelVersion,
-    SearchOptions,
-)
-from hordeqt.other.util import (
-    CACHE_PATH,
-    get_bucketized_cache_path,
-    horde_model_to_civit_baseline,
-)
+from hordeqt.civit.civit_api import (CivitApi, CivitModel, ModelType,
+                                     ModelVersion, SearchOptions)
+from hordeqt.other.util import (CACHE_PATH, get_bucketized_cache_path,
+                                horde_model_to_civit_baseline)
 
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
@@ -25,20 +17,10 @@ if TYPE_CHECKING:
 import human_readable as hr
 from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (
-    QAbstractScrollArea,
-    QComboBox,
-    QDockWidget,
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QScrollArea,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
+                               QFrame, QHBoxLayout, QLabel, QLineEdit,
+                               QPushButton, QScrollArea, QSizePolicy,
+                               QVBoxLayout, QWidget)
 
 from hordeqt.other.consts import LOGGER
 
@@ -150,11 +132,11 @@ class LoraViewer(QDockWidget):
 
             l = QLabel()
 
-
             def inc_finished(_):
                 self.finished += 1
+
             self._parent.download_thread.download_to_cache(url, inc_finished)
-        #TODO: Popup loading... bar. Fairly easy with how this is set up.
+        # TODO: Popup loading... bar. Fairly easy with how this is set up.
         while self.finished < self.needs:
             # TODO: convert to proper wait condition with mutex, etc.
             time.sleep(0.25)
@@ -164,7 +146,8 @@ class LoraViewer(QDockWidget):
             path = get_bucketized_cache_path(url)
 
             l = QLabel()
-            self.load_version_pixmap(path,l)
+            self.load_version_pixmap(path, l)
+
     def load_version_pixmap(self, path: Path, label: QLabel):
         im = QPixmap(path)
         label.setPixmap(im)
