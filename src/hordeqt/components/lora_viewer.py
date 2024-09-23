@@ -20,7 +20,7 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
                                QFrame, QHBoxLayout, QLabel, QLineEdit,
                                QPushButton, QScrollArea, QSizePolicy,
-                               QVBoxLayout, QWidget)
+                               QVBoxLayout, QWidget,QProgressDialog)
 
 from hordeqt.other.consts import LOGGER
 
@@ -118,6 +118,7 @@ class LoraViewer(QDockWidget):
     needs = 0
 
     def update_on_version_change(self, version_str: str):
+
         version = self.version_mapping[version_str]
         for child in self.images:
             self.image_gallery_layout.removeWidget(child)
@@ -125,6 +126,8 @@ class LoraViewer(QDockWidget):
         self.images = []
         self.needs = len(version.images)
         self.finished = 0
+        progress=QProgressDialog("Loading images...","Cancel",0,self.needs)
+        progress.forceShow()
         for vi in version.images:
             url = vi.url
 
@@ -136,10 +139,13 @@ class LoraViewer(QDockWidget):
                 self.finished += 1
 
             self._parent.download_thread.download_to_cache(url, inc_finished)
-        # TODO: Popup loading... bar. Fairly easy with how this is set up.
         while self.finished < self.needs:
+            progress.setValue(self.finished)
+            if progress.wasCanceled():
+                break
             # TODO: convert to proper wait condition with mutex, etc.
-            time.sleep(0.25)
+        progress.setValue(self.needs)
+        
         for vi in version.images:
             url = vi.url
 

@@ -156,7 +156,7 @@ def main():
         subprocess.run(
             [str(new_python), briefcase_exec, "create", briefcase_platform, f]
         )
-
+        convert_uic_files(venv_path)
         subprocess.run(
             [
                 str(new_python),
@@ -171,7 +171,7 @@ def main():
         )
 
     convert_uic_files(venv_path)
-
+    
     for f in formats:
         subprocess.run(
             [
