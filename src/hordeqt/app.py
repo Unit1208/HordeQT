@@ -147,7 +147,7 @@ class HordeQt(QMainWindow):
         self.ui.karrasCheckBox.checkStateChanged.connect(self.update_kudos_preview)
         self.ui.highResFixCheckBox.checkStateChanged.connect(self.update_kudos_preview)
         self.ui.progressBar.setValue(0)
-
+        # self.ui.loraListView
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None
         self.job_history: List[Dict] = []

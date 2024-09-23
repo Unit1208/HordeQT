@@ -8,6 +8,7 @@ import requests
 
 from hordeqt.civit.civit_api import (CivitApi, CivitModel, ModelType,
                                      ModelVersion, SearchOptions)
+from hordeqt.classes.LoRA import LoRA
 from hordeqt.other.util import (CACHE_PATH, get_bucketized_cache_path,
                                 horde_model_to_civit_baseline)
 
@@ -168,6 +169,14 @@ class LoraViewer(QDockWidget):
                 Qt.TransformationMode.SmoothTransformation,
             )
         )
+    def use_LoRA(self):
+        version_str=(self.LoRA_version_combobox.currentText())
+        
+        version = self.version_mapping[version_str]
+        
+        LOGGER.debug(f"Using LoRA version: {version.id}")
+        self._parent.ui.loraListView.addItem(LoRA.from_ModelVersion(self.model.name,version).to_ListWidgetItem())
+
 
     def __init__(self, model: CivitModel, parent: HordeQt):
         super().__init__(f"LoRA viewer ({model.name})", parent)
@@ -246,6 +255,8 @@ class LoraViewer(QDockWidget):
             self.update_on_version_change
         )
 
+        use_button=QPushButton("Use LoRA")
+        use_button.clicked.connect(self.use_LoRA)
         # Create a main vertical layout and add widgets
 
         layout = QVBoxLayout()
@@ -254,6 +265,7 @@ class LoraViewer(QDockWidget):
         layout.addLayout(tags_list_layout)
         layout.addLayout(nsfw_layout)
         layout.addLayout(LoRA_version_layout)
+        layout.addWidget(use_button)
         layout.addWidget(gallery_scroll_area)
 
         # Create a central widget to set the layout

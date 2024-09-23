@@ -79,6 +79,13 @@ class ModelVersionStats:
             rating=data.get("rating", None),
         )
 
+    def serialize(self):
+        return {
+            "downloadCount": self.downloadCount,
+            "ratingCount": self.ratingCount,
+            "rating": self.rating,
+        }
+
 
 class ModelVersionFileMetadata:
     def __init__(
@@ -104,6 +111,16 @@ class ModelVersionFileMetadata:
                 else None
             ),
         )
+
+    def serialize(self) -> dict:
+        d = {}
+        if self.fp is not None:
+            d["fp"] = self.fp
+        if self.size is not None:
+            d["size"] = self.size
+        if self.size is not None:
+            d["format"] = self.format
+        return d
 
 
 class ModelVersionFile:
@@ -149,6 +166,21 @@ class ModelVersionFile:
             hashes=data.get("hashes", {}),
         )
 
+    def serialize(self) -> dict:
+        return {
+            "id": self.id,
+            "sizeKb": self.sizeKb,
+            "name": self.name,
+            "type": self.type,
+            "pickleScanResult": self.pickleScanResult,
+            "virusScanResult": self.virusScanResult,
+            "scannedAt": self.scannedAt,
+            "primary": self.primary,
+            "metadata": self.metadata.serialize(),
+            "downloadURL": self.downloadURL,
+            "hashes": self.hashes,
+        }
+
 
 class ModelVersionImage:
     def __init__(
@@ -181,6 +213,17 @@ class ModelVersionImage:
             type=data.get("type", "image"),
         )
 
+    def serialize(self) -> dict:
+        return {
+            "id": self.id,
+            "url": self.url,
+            "nsfw": self.nsfw,
+            "width": self.width,
+            "height": self.height,
+            "hash": self.hash,
+            "type": self.type,
+        }
+
 
 class ModelVersion:
     def __init__(
@@ -204,6 +247,19 @@ class ModelVersion:
         self.files = files
         self.images = images
         self.downloadURL = downloadURL
+
+    def serialize(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "status": self.status,
+            "baseModel": self.baseModel,
+            "description": self.description,
+            "stats": self.stats.serialize(),
+            "files": [file.serialize() for file in self.files],
+            "images": [image.serialize() for image in self.images],
+            "downloadURL": self.downloadURL,
+        }
 
     @staticmethod
     def deserialize(data: dict):
