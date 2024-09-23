@@ -2,9 +2,9 @@ import json
 import time
 from typing import Dict, List, Optional, Self
 
+from hordeqt.classes.LoRA import LoRA
 from hordeqt.other.consts import UPSCALE_MAP
 from hordeqt.other.util import create_uuid
-from hordeqt.classes.LoRA import LoRA
 
 
 class Job:
@@ -30,7 +30,7 @@ class Job:
         kudos: float = 0,
         share_image: bool = True,
         upscale: Optional[str] = None,
-        loras:List[LoRA]=[]
+        loras: List[LoRA] = [],
     ):
         self.prompt = prompt
         self.sampler_name = sampler_name
@@ -47,8 +47,8 @@ class Job:
         self.share_image = share_image
         self.dry_run = False
         self.upscale = upscale
-        self.loras=loras
-        
+        self.loras = loras
+
         self.job_id = create_uuid()
         self.horde_job_id = horde_job_id
         self.wait_time = wait_time
@@ -101,9 +101,10 @@ class Job:
                 "clip_skip": self.clip_skip,
                 "steps": self.steps,
                 "n": 1,
-                "loras":[
-                    l.to_job_format() for l in (self.loras if self.loras is not None else [])
-                ]
+                "loras": [
+                    l.to_job_format()
+                    for l in (self.loras if self.loras is not None else [])
+                ],
             },
             "nsfw": self.allow_nsfw,
             "trusted_workers": False,
@@ -139,7 +140,7 @@ class Job:
             model=data.get("models", ["INVALID_MODEL_NAME_HERE"])[0],
             allow_nsfw=data.get("nsfw", False),
             upscale=params.get("upscaler"),
-            loras=params.get("loras")
+            loras=params.get("loras"),
         )
 
     def serialize(self):

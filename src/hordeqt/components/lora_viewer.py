@@ -20,8 +20,8 @@ from PySide6.QtCore import QRect, QSize, Qt
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
                                QFrame, QHBoxLayout, QLabel, QLineEdit,
-                               QPushButton, QScrollArea, QSizePolicy,
-                               QVBoxLayout, QWidget,QProgressDialog)
+                               QProgressDialog, QPushButton, QScrollArea,
+                               QSizePolicy, QVBoxLayout, QWidget)
 
 from hordeqt.other.consts import LOGGER
 
@@ -127,7 +127,7 @@ class LoraViewer(QDockWidget):
         self.images = []
         self.needs = len(version.images)
         self.finished = 0
-        progress=QProgressDialog("Loading images...","Cancel",0,self.needs)
+        progress = QProgressDialog("Loading images...", "Cancel", 0, self.needs)
         progress.forceShow()
         for vi in version.images:
             url = vi.url
@@ -146,7 +146,7 @@ class LoraViewer(QDockWidget):
                 break
             # TODO: convert to proper wait condition with mutex, etc.
         progress.setValue(self.needs)
-        
+
         for vi in version.images:
             url = vi.url
 
@@ -169,14 +169,16 @@ class LoraViewer(QDockWidget):
                 Qt.TransformationMode.SmoothTransformation,
             )
         )
-    def use_LoRA(self):
-        version_str=(self.LoRA_version_combobox.currentText())
-        
-        version = self.version_mapping[version_str]
-        
-        LOGGER.debug(f"Using LoRA version: {version.id}")
-        self._parent.ui.loraListView.addItem(LoRA.from_ModelVersion(self.model.name,version).to_ListWidgetItem())
 
+    def use_LoRA(self):
+        version_str = self.LoRA_version_combobox.currentText()
+
+        version = self.version_mapping[version_str]
+
+        LOGGER.debug(f"Using LoRA version: {version.id}")
+        self._parent.ui.loraListView.addItem(
+            LoRA.from_ModelVersion(self.model.name, version).to_ListWidgetItem()
+        )
 
     def __init__(self, model: CivitModel, parent: HordeQt):
         super().__init__(f"LoRA viewer ({model.name})", parent)
@@ -255,7 +257,7 @@ class LoraViewer(QDockWidget):
             self.update_on_version_change
         )
 
-        use_button=QPushButton("Use LoRA")
+        use_button = QPushButton("Use LoRA")
         use_button.clicked.connect(self.use_LoRA)
         # Create a main vertical layout and add widgets
 

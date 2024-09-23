@@ -1,29 +1,31 @@
 from typing import Optional, Self
-from PySide6.QtWidgets import QListWidgetItem
-from hordeqt.civit.civit_api import ModelVersion
+
 from PySide6.QtCore import QAbstractTableModel, Qt
+from PySide6.QtWidgets import QListWidgetItem
+
+from hordeqt.civit.civit_api import ModelVersion
 
 
 class LoRA:
-    name:str
+    name: str
     version_id: int
     strength: float
     clip_strength: float
     inject_trigger: Optional[str] = None
-    model_version:ModelVersion
+    model_version: ModelVersion
 
     @classmethod
     def from_ModelVersion(
         cls,
-        name:str,
+        name: str,
         modelVersion: ModelVersion,
         strength: float = 1,
         clip_strength: float = 1,
         inject_trigger: Optional[str] = None,
     ) -> Self:
-        c=cls()
-        c.name=name
-        c.model_version=modelVersion
+        c = cls()
+        c.name = name
+        c.model_version = modelVersion
         c.version_id = modelVersion.id
         c.strength = strength
         c.clip_strength = clip_strength
@@ -41,19 +43,20 @@ class LoRA:
             base["inject_trigger"] = self.inject_trigger
         return base
 
-    def to_ListWidgetItem(self)->QListWidgetItem:
-        b=QListWidgetItem()
+    def to_ListWidgetItem(self) -> QListWidgetItem:
+        b = QListWidgetItem()
         b.setText(f"{self.name} - {self.model_version.name} ({self.model_version.id})")
-        
+
         return b
+
     def serialize(self) -> dict:
         return {
-            "name":self.name,
+            "name": self.name,
             "id": self.version_id,
             "strength": self.strength,
             "clip_strength": self.clip_strength,
             "inject_trigger": self.inject_trigger,
-            "model_version":self.model_version.serialize()
+            "model_version": self.model_version.serialize(),
         }
 
     @classmethod
@@ -63,6 +66,6 @@ class LoRA:
         c.strength = val.get("strength", 1)
         c.clip_strength = val.get("clip_strength", 1)
         c.inject_trigger = val.get("inject_trigger", None)
-        c.model_version=ModelVersion.deserialize(val.get("model_version",{}))
-        c.name=val.get("name","")
+        c.model_version = ModelVersion.deserialize(val.get("model_version", {}))
+        c.name = val.get("name", "")
         return c

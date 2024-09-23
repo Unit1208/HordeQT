@@ -116,21 +116,22 @@ def main():
     else:
         print(f'Unsupported OS: "{curr_platform}"')
         exit(1)
-    if not ISDEBUG:
-        subprocess.run(
-            [
-                str(new_python),
-                "-m",
-                "pip",
-                "install",
-                "-U",
-                "briefcase",
-                "pip",
-                "setuptools",
-                "wheel",
-                "pyside6",
-            ]
-        )
+
+    subprocess.run(
+        [
+            str(new_python),
+            "-m",
+            "pip",
+            "install",
+            "-U",
+            "briefcase",
+            "pip",
+            "setuptools",
+            "wheel",
+            "pyside6",
+        ]
+    )
+    convert_uic_files(venv_path)
 
     formats = ["app"]
     additional_args = []
@@ -170,8 +171,6 @@ def main():
             ]
         )
 
-    convert_uic_files(venv_path)
-    
     for f in formats:
         subprocess.run(
             [
