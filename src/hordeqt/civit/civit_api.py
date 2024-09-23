@@ -99,26 +99,26 @@ class ModelVersionFileMetadata:
     def deserialize(data: dict):
 
         return ModelVersionFileMetadata(
-            fp=FP(data.get("fp")) if data.get("fp", None) is not None else None,
+            fp=FP(str(data.get("fp"))) if data.get("fp", None) is not None else None,
             size=(
-                ModelSize(data.get("size"))
+                ModelSize(str(data.get("size")))
                 if data.get("size", None) is not None
                 else None
             ),
             format=(
-                ModelFormat(data.get("format"))
+                ModelFormat(str(data.get("format")))
                 if data.get("format", None) is not None
                 else None
             ),
         )
 
     def serialize(self) -> dict:
-        d = {}
+        d: Dict[str, ModelFormat | ModelSize | FP] = {}
         if self.fp is not None:
             d["fp"] = self.fp
         if self.size is not None:
             d["size"] = self.size
-        if self.size is not None:
+        if self.format is not None:
             d["format"] = self.format
         return d
 

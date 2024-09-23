@@ -142,10 +142,10 @@ def _hordeqt_image(img: Image.Image):
         neg_prompt = k[1]
     else:
         prompt = k[0]
-        neg_prompt = False
+        neg_prompt = ""
     return {
         "prompt": prompt,
-        "negative_prompt": f"{neg_prompt}\n" if neg_prompt else "\n",
+        "negative_prompt": f"{neg_prompt}\n" if neg_prompt != "" else "\n",
         "sampler_name": params.get("sampler_name", "k_euler"),
         "cfg_scale": params.get("cfg_scale", 5),
         "seed": int(params.get("seed", 0)),

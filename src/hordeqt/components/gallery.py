@@ -171,7 +171,7 @@ class ImagePopup(QDockWidget):
 
 
 class MasonryLayout(QLayout):
-    def __init__(self, parent=None, margin=10, spacing=10):
+    def __init__(self, parent=None, margin=10, spacing=10) -> None:
         super(MasonryLayout, self).__init__(parent)
         self.margin = margin
         self.m_spacing = spacing

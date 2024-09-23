@@ -99,17 +99,14 @@ class JobDownloadThread(QThread):
         if (cd := value.get("completed_downloads", None)) is None:
             ncd = []
         else:
-            cd: List[dict] = cd
             ncd = [LocalJob.deserialize(x) for x in cd]
         if (qdl := value.get("queued_downloads", None)) is None:
             nqdl = []
         else:
-            qdl: List[dict] = qdl
             nqdl = [LocalJob.deserialize(x) for x in qdl]
         if (qd := value.get("queued_deletes", None)) is None:
             nqd = []
         else:
-            qd: List[dict] = qd
             nqd = [LocalJob.deserialize(x) for x in qd]
         return cls(
             completed_downloads=ncd,

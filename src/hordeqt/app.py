@@ -565,21 +565,20 @@ class HordeQt(QMainWindow):
             if (rsamplers := reqs.get("samplers", [])) != []:  # type: ignore
                 if type(rsamplers) == type(str):
                     rsamplers = [rsamplers]
-                if type(rsamplers) != type(int):
-                    rsamplers: list[str] = rsamplers
-                    if sampler_name not in rsamplers:
-                        samplertext = ""
-                        for n in rsamplers:
-                            samplertext += '"' + n + '",'
-                        samplertext = samplertext[:-1]
-                        self.show_warn_toast(
-                            "Wrong Sampler",
-                            "This mode requires the use of one of "
-                            + samplertext
-                            + " samplers",
-                        )
-                        self.ui.samplerComboBox.setCurrentText(rsamplers[0])
-                        return None
+                rsamplers: list[str] = rsamplers
+                if sampler_name not in rsamplers:
+                    samplertext = ""
+                    for n in rsamplers:
+                        samplertext += '"' + n + '",'
+                    samplertext = samplertext[:-1]
+                    self.show_warn_toast(
+                        "Wrong Sampler",
+                        "This mode requires the use of one of "
+                        + samplertext
+                        + " samplers",
+                    )
+                    self.ui.samplerComboBox.setCurrentText(rsamplers[0])
+                    return None
         karras = self.ui.karrasCheckBox.isChecked()
         hires_fix = self.ui.highResFixCheckBox.isChecked()
         allow_nsfw = self.ui.NSFWCheckBox.isChecked()
