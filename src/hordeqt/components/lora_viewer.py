@@ -1,22 +1,21 @@
 from __future__ import annotations
 
-import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 import requests
 
 from hordeqt.civit.civit_api import (CivitApi, CivitModel, ModelType,
                                      ModelVersion, SearchOptions)
 from hordeqt.classes.LoRA import LoRA
-from hordeqt.other.util import (CACHE_PATH, get_bucketized_cache_path,
+from hordeqt.other.util import (get_bucketized_cache_path,
                                 horde_model_to_civit_baseline)
 
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
 
 import human_readable as hr
-from PySide6.QtCore import QRect, QSize, Qt
+from PySide6.QtCore import QRect, QSize, Qt, Slot
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
                                QFrame, QHBoxLayout, QLabel, QLineEdit,
@@ -119,7 +118,6 @@ class LoraViewer(QDockWidget):
     needs = 0
 
     def update_on_version_change(self, version_str: str):
-
         version = self.version_mapping[version_str]
         for child in self.images:
             self.image_gallery_layout.removeWidget(child)
@@ -127,39 +125,43 @@ class LoraViewer(QDockWidget):
         self.images = []
         self.needs = len(version.images)
         self.finished = 0
-        progress = QProgressDialog("Loading images...", "Cancel", 0, self.needs)
-        progress.forceShow()
-        for vi in version.images:
-            url = vi.url
 
-            path = get_bucketized_cache_path(url)
-
-            l = QLabel()
-
-            def inc_finished(_):
-                self.finished += 1
-
-            self._parent.download_thread.download_to_cache(url, inc_finished)
-        while self.finished < self.needs:
-            progress.setValue(self.finished)
-            if progress.wasCanceled():
-                break
-            # TODO: convert to proper wait condition with mutex, etc.
-        progress.setValue(self.needs)
+        # Create progress dialog
+        self.progress = QProgressDialog(
+            "Loading images...", "Cancel", 0, self.needs, self
+        )
+        self.progress.setWindowModality(Qt.WindowModality.WindowModal)
 
         for vi in version.images:
             url = vi.url
-
             path = get_bucketized_cache_path(url)
 
-            l = QLabel()
-            self.load_version_pixmap(path, l)
+            label = QLabel()
+            self.images.append(label)
 
-    def load_version_pixmap(self, path: Path, label: QLabel):
-        im = QPixmap(path)
-        label.setPixmap(im)
+            # Signal-slot connection
+            self._parent.download_thread.download_to_cache(
+                url, lambda _: self.image_downloaded(label, path)
+            )
+
+    @Slot()
+    def image_downloaded(self, label, path):
+        self.finished += 1
+        self.load_version_pixmap(path, label)
         self.image_gallery_layout.addWidget(label)
-        self.images.append(label)
+
+        # Update progress bar
+        if self.progress is not None:
+            self.progress.setValue(self.finished)
+
+            if self.finished >= self.needs:
+                self.progress.setValue(self.needs)
+                self.progress.close()
+
+    def load_version_pixmap(self, path, label):
+        pixmap = QPixmap(path)
+        label.setPixmap(pixmap)
+        label.setScaledContents(True)
 
     def set_pixmap(self, label: QLabel, image: QPixmap, size: QSize):
         label.setPixmap(
@@ -185,6 +187,7 @@ class LoraViewer(QDockWidget):
         LOGGER.debug(f"Opened LoRA viewer from model: {model.name}")
 
         self._parent = parent
+        self.progress: Optional[QProgressDialog] = None
         self.setAllowedAreas(
             Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
         )
