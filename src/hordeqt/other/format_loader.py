@@ -13,7 +13,6 @@ from hordeqt.classes.LocalJob import LocalJob
 def _artbot(img: Image.Image):
 
     lines = str(img.info.get("Comment", "")).strip().splitlines()
-    print(lines)
 
     prompt = lines[0].strip()
     param_line = 1

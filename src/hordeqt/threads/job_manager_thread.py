@@ -301,4 +301,3 @@ class JobManagerThread(QThread):
 
     def add_job(self, job: Job):
         self.job_queue.put(job)
-        print("added job")
