@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Self
+
 from hordeqt.civit.civit_api import ModelVersion
 
 

@@ -243,11 +243,13 @@ class Creator:
     @staticmethod
     def deserialize(data: dict):
         return Creator(username=data["username"], image=data.get("image", None))
-    def serialize(self)->dict:
+
+    def serialize(self) -> dict:
         return {
-            "username":self.username,
-            "image":self.image,
+            "username": self.username,
+            "image": self.image,
         }
+
 
 class CivitModel:
     def __init__(
@@ -289,20 +291,20 @@ class CivitModel:
                 for version in data.get("modelVersions", [])
             ],
         )
-    def serialize(self)->dict:
+
+    def serialize(self) -> dict:
         return {
-            "id":self.id,
-            "name":self.name,
-            "description":self.description,
-            "poi":self.poi,
-            "type":self.type,
-            "nsfw":self.nsfw,
-            "tags":self.tags,
-            "creator":self.creator.serialize(),
-            "modelVersions":[v.serialize() for v in 
-                self.modelVersions
-            ]
+            "id": self.id,
+            "name": self.name,
+            "description": self.description,
+            "poi": self.poi,
+            "type": self.type,
+            "nsfw": self.nsfw,
+            "tags": self.tags,
+            "creator": self.creator.serialize(),
+            "modelVersions": [v.serialize() for v in self.modelVersions],
         }
+
 
 @dataclass
 class SearchOptions:

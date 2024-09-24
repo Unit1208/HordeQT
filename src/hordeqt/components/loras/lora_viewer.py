@@ -194,10 +194,8 @@ class LoraViewer(QDockWidget):
         version = self.version_mapping[version_str]
 
         LOGGER.debug(f"Using LoRA version: {version.id}")
-        
-        self._parent.selectedLoRAs.add_lora_widget(
-            self.model,version
-        )
+
+        self._parent.selectedLoRAs.add_lora_widget(self.model, version)
         # self._parent.ui.LoRAsFrame
         # .addItem(
         #     LoRA.from_ModelVersion(self.model.name, version).to_ListWidgetItem()

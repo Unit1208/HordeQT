@@ -7,16 +7,10 @@ from hordeqt.classes.LoRA import LoRA
 
 if TYPE_CHECKING:
     from hordeqt.components.loras.selected_loras import SelectedLoRAs
+
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import (
-    QDoubleSpinBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QVBoxLayout,
-    QFrame
-)
+from PySide6.QtWidgets import (QDoubleSpinBox, QFrame, QHBoxLayout, QLabel,
+                               QLineEdit, QPushButton, QVBoxLayout)
 
 from hordeqt.other.consts import LOGGER
 
@@ -80,10 +74,9 @@ class LoRAItem(QFrame):
         self.setLayout(self.lora_layout)
         self.setFrameShadow(QFrame.Shadow.Sunken)
 
-
     def remove_lora(self):
         self._parent.deleteLoRA(self)
-        
+
     def to_LoRA_obj(self) -> LoRA:
         return LoRA(
             self.loraModel.name,
@@ -92,17 +85,18 @@ class LoRAItem(QFrame):
             self.CLIPStrength.value(),
             self.loraVersion,
         )
-    def serialize(self)->dict:
+
+    def serialize(self) -> dict:
         return {
-            "loraModel":self.loraModel.serialize(),
-            "loraVersion":self.loraVersion.serialize(),
+            "loraModel": self.loraModel.serialize(),
+            "loraVersion": self.loraVersion.serialize(),
         }
+
     @classmethod
-    def deserialize(cls,val:dict,parent: SelectedLoRAs)->Self:
+    def deserialize(cls, val: dict, parent: SelectedLoRAs) -> Self:
 
         return cls(
             parent,
-            CivitModel.deserialize(val.get("loraModel",{})),
-            ModelVersion.deserialize(val.get("loraVersion",{}))
-            
+            CivitModel.deserialize(val.get("loraModel", {})),
+            ModelVersion.deserialize(val.get("loraVersion", {})),
         )

@@ -12,19 +12,13 @@ import requests
 from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QDesktopServices, QFont
-from PySide6.QtWidgets import (
-    QApplication,
-    QLineEdit,
-    QMainWindow,
-    QScrollArea,
-    QSizePolicy,
-    QTableWidgetItem,
-    QVBoxLayout,
-)
+from PySide6.QtWidgets import (QApplication, QLineEdit, QMainWindow,
+                               QScrollArea, QSizePolicy, QTableWidgetItem,
+                               QVBoxLayout)
 
 from hordeqt.classes.Job import Job
-from hordeqt.classes.LoRA import LoRA
 from hordeqt.classes.LocalJob import LocalJob
+from hordeqt.classes.LoRA import LoRA
 from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
 from hordeqt.components.gallery.ImageGalleryWidget import ImageGalleryWidget
