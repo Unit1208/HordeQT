@@ -10,7 +10,7 @@ from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
 from hordeqt.classes.Job import Job
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.other.consts import BASE_URL, LOGGER
-from hordeqt.other.util import SAVED_IMAGE_DIR_PATH, get_headers
+from hordeqt.other.util import get_headers
 
 
 class JobManagerThread(QThread):

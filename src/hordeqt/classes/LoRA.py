@@ -1,9 +1,5 @@
 from dataclasses import dataclass
 from typing import Optional, Self
-
-from PySide6.QtCore import QAbstractTableModel, Qt
-from PySide6.QtWidgets import QListWidgetItem
-
 from hordeqt.civit.civit_api import ModelVersion
 
 
@@ -37,14 +33,10 @@ class LoRA:
             "is_version": True,
         }
         if self.inject_trigger is not None:
-            base["inject_trigger"] = self.inject_trigger
+            self.inject_trigger = self.inject_trigger.strip()
+            if self.inject_trigger != "":
+                base["inject_trigger"] = self.inject_trigger
         return base
-
-    def to_ListWidgetItem(self) -> QListWidgetItem:
-        b = QListWidgetItem()
-        b.setText(f"{self.name} - {self.model_version.name} ({self.model_version.id})")
-
-        return b
 
     def serialize(self) -> dict:
         return {

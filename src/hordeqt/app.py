@@ -12,11 +12,18 @@ import requests
 from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QDesktopServices, QFont
-from PySide6.QtWidgets import (QApplication, QLineEdit, QMainWindow,
-                               QScrollArea, QSizePolicy, QTableWidgetItem,
-                               QVBoxLayout)
+from PySide6.QtWidgets import (
+    QApplication,
+    QLineEdit,
+    QMainWindow,
+    QScrollArea,
+    QSizePolicy,
+    QTableWidgetItem,
+    QVBoxLayout,
+)
 
 from hordeqt.classes.Job import Job
+from hordeqt.classes.LoRA import LoRA
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
@@ -24,6 +31,8 @@ from hordeqt.components.gallery.ImageGalleryWidget import ImageGalleryWidget
 from hordeqt.components.gallery.ImagePopup import ImagePopup
 from hordeqt.components.gallery.ImageWidget import ImageWidget
 from hordeqt.components.loras.lora_browser import LoraBrowser
+from hordeqt.components.loras.lora_item import LoRAItem
+from hordeqt.components.loras.selected_loras import SelectedLoRAs
 from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.other.consts import ANON_API_KEY, BASE_URL, LOGGER
@@ -49,6 +58,8 @@ class HordeQt(QMainWindow):
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
         LOGGER.debug("UI setup")
+        self.selectedLoRAs = SelectedLoRAs(self)
+        self.ui.LoraVBox.addWidget(self.selectedLoRAs)
         self.restore_job_config(self.savedData.job_config)
         if (
             k := keyring.get_password("HordeQT", "HordeQTUser")
@@ -153,6 +164,7 @@ class HordeQt(QMainWindow):
         self.last_job_config: Optional[Dict] = None
         self.job_history: List[Dict] = []
         self.current_kudos_preview_cost = 10.0
+
         LOGGER.debug("Initializing Masonry/Gallery layout")
         self.ui.galleryViewFrame.setSizePolicy(sizePolicy)
         container_layout = QVBoxLayout(self.ui.galleryViewFrame)
@@ -347,6 +359,7 @@ class HordeQt(QMainWindow):
             "hires_fix": self.ui.highResFixCheckBox.isChecked(),
             "karras": self.ui.karrasCheckBox.isChecked(),
             "upscale": self.ui.upscaleComboBox.currentText(),
+            "loras": [l.serialize() for l in self.selectedLoRAs.loras],
         }
 
     def restore_job_config(self, job_config: dict):
@@ -369,6 +382,12 @@ class HordeQt(QMainWindow):
         self.ui.highResFixCheckBox.setChecked(job_config.get("hires_fix", True))
         self.ui.karrasCheckBox.setChecked(job_config.get("karras", True))
         self.ui.upscaleComboBox.setCurrentText(job_config.get("upscale", "None"))
+        ser_loras = job_config.get("loras", [])
+        loras = [LoRAItem.deserialize(l, self.selectedLoRAs) for l in ser_loras]
+        for lora in self.selectedLoRAs.loras:
+            lora.remove_lora()
+        for lora in loras:
+            self.selectedLoRAs.add_lora_widget(lora.loraModel, lora.loraVersion)
 
     def undo_reset_job_config(self):
         if self.last_job_config is not None:
@@ -580,14 +599,17 @@ class HordeQt(QMainWindow):
                     )
                     self.ui.samplerComboBox.setCurrentText(rsamplers[0])
                     return None
+
         karras = self.ui.karrasCheckBox.isChecked()
         hires_fix = self.ui.highResFixCheckBox.isChecked()
         allow_nsfw = self.ui.NSFWCheckBox.isChecked()
         share_image = self.ui.shareImagesCheckBox.isChecked()
         upscale = self.ui.upscaleComboBox.currentText()
+        loras = self.selectedLoRAs.to_LoRA_list()
         prompts = prompt_matrix(prompt)
         prompts *= self.ui.imagesSpinBox.value()
         jobs = []
+
         for nprompt in prompts:
             # if the user hasn't provided a seed, pick one. It must be under 2**31 so that we can display it on a spinbox eventually.
             # something something C++.
@@ -610,6 +632,7 @@ class HordeQt(QMainWindow):
                 allow_nsfw=allow_nsfw,
                 share_image=share_image,
                 upscale=upscale,
+                loras=loras,
             )
             jobs.append(job)
         LOGGER.info(f"Created {len(jobs)} jobs")

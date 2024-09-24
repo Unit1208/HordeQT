@@ -58,6 +58,8 @@
 - [x] Resize images to fit screen on popup
 - [ ] LoRAs/TIs
   - [ ] Search result pages
+  - [ ] Persist selected LoRAs
+  - [ ] Don't allow duplicate LoRAs
 - [ ] Warning when trying to use a Pony model incorrectly.
   - [ ] "" for Flux
 - [ ] Paginate images (25-50-100)?
@@ -95,4 +97,3 @@
   - [ ] Setup with no key
 - [ ] Use CBOR instead of JSON?
   - How does this work with jsonpickle?
-- [ ] Persist selected LoRAs

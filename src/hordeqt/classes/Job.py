@@ -85,6 +85,7 @@ class Job:
         }
 
     def to_json(self) -> Dict:
+        print(self.loras)
         return {
             "prompt": self.prompt,
             "params": {
