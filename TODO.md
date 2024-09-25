@@ -42,6 +42,9 @@
 - [ ] Rescan directory in order to load images that weren't properly saved
 - [ ] Error handling
   - [ ] Errored/Censored job state + handling
+    - [ ] NSFW
+    - [ ] CSAM 
+    - [ ] LoRA/TI
 - [x] Add a toggle for metadata?
 - [ ] Why isn't the gallery working on certain machines?
 - [x] Delete button on images
