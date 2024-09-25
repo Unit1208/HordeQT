@@ -45,6 +45,11 @@
     - [ ] NSFW
     - [ ] CSAM 
     - [ ] LoRA/TI
+> ```lora, ti ---->  download_failed, baseline_mismatch
+censorship ----> csam, nsfw
+source_image, source_mask, extra_source_images ---->  parse_failed
+batch_index ----> see_ref
+```
 - [x] Add a toggle for metadata?
 - [ ] Why isn't the gallery working on certain machines?
 - [x] Delete button on images
