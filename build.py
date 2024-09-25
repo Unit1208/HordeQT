@@ -103,7 +103,19 @@ def main():
     gitignore_tmp_path = curr_dir / "src" / "hordeqt" / ".wasgitignore"
     install_sys_reqs()
     if is_windows:
-        subprocess.run(["C:\\Python312-x64\\python", "-m", "venv", str(venv_path)])
+        paths=["C:\\Python312-x64\\python.exe","$env:LOCALAPPDATA\\Local\\Programs\\Python312\\python.exe"]
+        py_path="" 
+        for p in paths:
+            try:
+                if os.system(p+" -V")==0:
+                    py_path=p
+                    break
+            except:
+                pass
+        if py_path=="":
+            print(f"Couldn't find python")
+            exit(1)         
+        subprocess.run([py_path, "-m", "venv", str(venv_path)])
     else:
 
         subprocess.run(["python", "-m", "venv", str(venv_path)])
@@ -131,8 +143,10 @@ def main():
             "pyside6",
         ]
     )
-    convert_uic_files(venv_path)
+    print("PRE UIC CONVERSION")
 
+    convert_uic_files(venv_path)
+    print("POST UIC CONVERSION")
     formats = ["app"]
     additional_args = []
     briefcase_platform = ""
