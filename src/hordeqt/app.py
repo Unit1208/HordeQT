@@ -219,7 +219,7 @@ class HordeQt(QMainWindow):
         self.job_download_thread.use_metadata = self.ui.saveMetadataCheckBox.isChecked()
 
     def update_kudos_preview(self):
-        jobs = self.create_jobs()
+        jobs = self.create_jobs(True)
         self.ui.GenerateButton.setText("Generate (Cost: Loading)")
         if jobs is not None:
             # FIXME: for now, this will work. However, if multi-config is added (i.e. request with multiple step counts), this might undershoot or overshoot.
@@ -503,9 +503,9 @@ class HordeQt(QMainWindow):
         self.ui.showAPIKey.setText("Show API Key")
         self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Password)
 
-    def create_jobs(self) -> Optional[List[Job]]:
+    def create_jobs(self,checking_cost=False) -> Optional[List[Job]]:
         prompt = self.ui.PromptBox.toPlainText()
-        if prompt.strip() == "":
+        if prompt.strip() == "" and not checking_cost:
             self.show_error_toast("Prompt error", "Prompt cannot be empty")
             LOGGER.error("Empty prompt")
             return None

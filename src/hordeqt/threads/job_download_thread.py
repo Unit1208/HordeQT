@@ -56,14 +56,21 @@ class JobDownloadThread(QThread):
         if len(self.queued_downloads) > 0:
             lj = self.queued_downloads.pop()
             LOGGER.info(f"Downloading {lj.id}")
-            tf = tempfile.NamedTemporaryFile()
-            tf.write(requests.get(lj.downloadURL).content)
+            tf = tempfile.NamedTemporaryFile(delete=False)
+            try:
+                dl = lj.downloadURL
+            except AttributeError as e:
+                LOGGER.error(f"Couldn't get download url for job {lj.id}")
+                tf.close()
+                return
+            tf.write(requests.get(dl).content)
+            tf.close()
             if self.use_metadata:
                 apply_metadata_to_image(Path(tf.name), lj)
             else:
                 im = Image.open(Path(tf.name))
                 im.save(lj.path)
-            tf.close()
+            os.unlink(tf.name)
             LOGGER.debug(f"{lj.id} downloaded")
             self.completed.emit(lj)
             self.completed_downloads.append(lj)

@@ -70,7 +70,7 @@ class SavedData:
             "warned_models": self.warned_models,
             "download_state": self.download_state,
         }
-        jsondata: str = jsonpickle.encode(d)  # type: ignore
+        jsondata: str = jsonpickle.encode(d, indent=4)  # type: ignore
         with open(SAVED_DATA_PATH, "wt") as f:
             f.write(jsondata)
 
