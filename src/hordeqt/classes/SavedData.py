@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import jsonpickle
 
-from hordeqt.other.util import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
+from hordeqt.other.consts import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
 from hordeqt.threads.etc_download_thread import DownloadThread
 from hordeqt.threads.job_download_thread import JobDownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
@@ -21,7 +21,7 @@ class SavedData:
     share_images: bool
     prefered_format: str
     warned_models: List[str]
-    show_done_images:bool
+    show_done_images: bool
 
     def __init__(self) -> None:
 
@@ -40,7 +40,7 @@ class SavedData:
         current_open_tab: int,
         prefered_format: str,
         warned_models: list[str],
-        show_done_images:bool,
+        show_done_images: bool,
     ):
         self.api_state = api.serialize()
         self.current_images = (dlv := dlthread.serialize()).get(
@@ -56,7 +56,7 @@ class SavedData:
         self.current_open_tab = current_open_tab
         self.prefered_format = prefered_format
         self.warned_models = warned_models
-        self.show_done_images=show_done_images
+        self.show_done_images = show_done_images
 
     def write(self):
         d = {
@@ -72,7 +72,7 @@ class SavedData:
             "prefered_format": self.prefered_format,
             "warned_models": self.warned_models,
             "download_state": self.download_state,
-            "show_done_images":self.show_done_images,
+            "show_done_images": self.show_done_images,
         }
         jsondata: str = jsonpickle.encode(d, indent=4)  # type: ignore
         with open(SAVED_DATA_PATH, "wt") as f:
@@ -96,4 +96,4 @@ class SavedData:
         self.prefered_format = j.get("prefered_format", "webp")
         self.warned_models = j.get("warned_models", [])
         self.download_state = j.get("download_state", {})
-        self.show_done_images=j.get("show_done_images",True)
+        self.show_done_images = j.get("show_done_images", True)

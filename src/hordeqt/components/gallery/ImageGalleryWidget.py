@@ -1,28 +1,16 @@
 from __future__ import annotations
+
 from enum import IntEnum, auto
-
-from PySide6.QtWidgets import QWidget
-
-from hordeqt.components.gallery.MasonryLayout import MasonryLayout
-
 from typing import TYPE_CHECKING, List
 
 import requests
 from PySide6.QtCore import QRect, Qt
-from PySide6.QtWidgets import (
-    QAbstractScrollArea,
-    QDockWidget,
-    QFrame,
-    QComboBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QPushButton,
-    QScrollArea,
-    QSizePolicy,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
+                               QFrame, QHBoxLayout, QLabel, QLineEdit,
+                               QPushButton, QScrollArea, QSizePolicy,
+                               QVBoxLayout, QWidget)
+
+from hordeqt.components.gallery.MasonryLayout import MasonryLayout
 
 
 class GallerySortOptions(IntEnum):
@@ -41,8 +29,7 @@ class ImageGalleryWidget(QWidget):
         self.m_layout = MasonryLayout(self)
         galLayout = QVBoxLayout()
         configLayout = QHBoxLayout()
-        
-        
+
         sortOptionsLabel = QLabel("Gallery sort by")
 
         self.sortOptionBox = QComboBox()
@@ -52,14 +39,14 @@ class ImageGalleryWidget(QWidget):
         self.sortOptionBox.addItem("Smallest First", GallerySortOptions.SmallestFirst)
         self.sortOptionBox.addItem("Model name (A-Z)", GallerySortOptions.LargestFirst)
         self.sortOptionBox.addItem("Model name (Z-A)", GallerySortOptions.SmallestFirst)
-        
+
         sortOptionLayout = QHBoxLayout()
         sortOptionLayout.addWidget(sortOptionsLabel)
         sortOptionLayout.addWidget(self.sortOptionBox)
-        
+
         configLayout.addLayout(sortOptionLayout)
-        
+
         galLayout.addLayout(configLayout)
         galLayout.addLayout(self.m_layout)
-        
+
         self.setLayout(galLayout)

@@ -107,4 +107,4 @@
 - [ ] Use CBOR instead of JSON?
   - How does this work with jsonpickle?
 - [ ] Worker view and/or state editor.
-- [ ] Switch to loguru
+- [x] Switch to loguru

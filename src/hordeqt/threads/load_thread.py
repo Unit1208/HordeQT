@@ -1,11 +1,10 @@
 import json
 import os
 import time
-from pathlib import Path
 from typing import Optional, Tuple
 
 import requests
-from PySide6.QtCore import QObject, QStandardPaths, QThread, Signal
+from PySide6.QtCore import QObject, QThread, Signal
 
 from hordeqt.other.consts import BASE_URL, LOGGER
 from hordeqt.other.util import CACHE_PATH, get_headers

@@ -4,9 +4,8 @@ from pathlib import Path
 from PIL import Image
 
 from hordeqt.classes.LocalJob import LocalJob
-from hordeqt.other.consts import LOGGER
+from hordeqt.other.consts import LOGGER, SAVED_IMAGE_DIR_PATH
 from hordeqt.other.format_loader import get_local_job
-from hordeqt.other.util import SAVED_IMAGE_DIR_PATH
 
 
 def _get_possible_path(base: Path):

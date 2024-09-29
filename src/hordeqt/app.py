@@ -29,8 +29,10 @@ from hordeqt.components.loras.lora_item import LoRAItem
 from hordeqt.components.loras.selected_loras import SelectedLoRAs
 from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.gen.ui_form import Ui_MainWindow
-from hordeqt.other.consts import ANON_API_KEY, BASE_URL, LOGGER
-from hordeqt.other.util import get_dynamic_constants, prompt_matrix
+from hordeqt.other.consts import (ANON_API_KEY, APP, BASE_URL, CACHE_PATH,
+                                  LOGGER, SAVED_DATA_DIR_PATH,
+                                  SAVED_IMAGE_DIR_PATH)
+from hordeqt.other.util import prompt_matrix
 from hordeqt.threads.etc_download_thread import DownloadThread
 from hordeqt.threads.job_download_thread import JobDownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
@@ -210,7 +212,7 @@ class HordeQt(QMainWindow):
             self.ui.tabWidget.currentIndex(),
             self.ui.saveFormatComboBox.currentText(),
             self.warned_models,
-            self.ui.showDoneImagesCheckbox.isChecked()
+            self.ui.showDoneImagesCheckbox.isChecked(),
         )
         LOGGER.debug("Writing saved data")
         self.savedData.write()
@@ -505,7 +507,7 @@ class HordeQt(QMainWindow):
         self.ui.showAPIKey.setText("Show API Key")
         self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Password)
 
-    def create_jobs(self,checking_cost=False) -> Optional[List[Job]]:
+    def create_jobs(self, checking_cost=False) -> Optional[List[Job]]:
         prompt = self.ui.PromptBox.toPlainText()
         if prompt.strip() == "" and not checking_cost:
             self.show_error_toast("Prompt error", "Prompt cannot be empty")
@@ -721,7 +723,7 @@ class HordeQt(QMainWindow):
         success_toast.setText(message)
         success_toast.applyPreset(
             ToastPreset.SUCCESS
-            if app.styleHints() == Qt.ColorScheme.Light
+            if APP.styleHints() == Qt.ColorScheme.Light
             else ToastPreset.SUCCESS_DARK
         )
         success_toast.show()
@@ -733,7 +735,7 @@ class HordeQt(QMainWindow):
         info_toast.setText(message)
         info_toast.applyPreset(
             ToastPreset.INFORMATION
-            if app.styleHints() == Qt.ColorScheme.Light
+            if APP.styleHints() == Qt.ColorScheme.Light
             else ToastPreset.INFORMATION_DARK
         )
         info_toast.show()
@@ -746,7 +748,7 @@ class HordeQt(QMainWindow):
         error_toast.setText(message)
         error_toast.applyPreset(
             ToastPreset.ERROR
-            if app.styleHints() == Qt.ColorScheme.Light
+            if APP.styleHints() == Qt.ColorScheme.Light
             else ToastPreset.ERROR_DARK
         )
         error_toast.show()
@@ -759,7 +761,7 @@ class HordeQt(QMainWindow):
         warn_toast.setText(message)
         warn_toast.applyPreset(
             ToastPreset.WARNING
-            if app.styleHints() == Qt.ColorScheme.Light
+            if APP.styleHints() == Qt.ColorScheme.Light
             else ToastPreset.WARNING_DARK
         )
         warn_toast.show()
@@ -809,7 +811,7 @@ class HordeQt(QMainWindow):
             item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
         table.resizeColumnsToContents()
         table.setSortingEnabled(True)
-        
+
     def update_inprogess_table(self):
         table = self.ui.inProgressItemsTable
         table.setUpdatesEnabled(True)
@@ -864,7 +866,6 @@ class HordeQt(QMainWindow):
                     lj.completed_at - time.time(),
                 )
 
-
     def clear_cache(self):
         if CACHE_PATH.exists():
             try:
@@ -891,15 +892,10 @@ class HordeQt(QMainWindow):
 
 
 def main():
-    global app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH, CACHE_PATH
-    # I don't care.
-    (app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH, CACHE_PATH) = (
-        get_dynamic_constants()
-    )  # type: ignore
 
     os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
     os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
 
-    widget = HordeQt(app)
+    widget = HordeQt(APP)
     widget.show()
-    sys.exit(app.exec())
+    sys.exit(APP.exec())

@@ -5,9 +5,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import requests
 from PySide6.QtCore import QMutex, QThread, QWaitCondition
 
-from hordeqt.other.consts import LOGGER
-from hordeqt.other.util import (SAVED_DATA_DIR_PATH, get_bucketized_cache_path,
-                                get_hash)
+from hordeqt.other.consts import LOGGER, SAVED_DATA_DIR_PATH
+from hordeqt.other.util import get_bucketized_cache_path, get_hash
 
 dl_callback = Callable[[requests.Response], None]
 queued_dl = Tuple[str, requests.Request, Optional[dl_callback]]

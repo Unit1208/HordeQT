@@ -3,15 +3,11 @@ import importlib.metadata
 import re
 import sys
 import uuid
-from pathlib import Path
-from typing import Dict, List
-
-from PySide6.QtCore import QStandardPaths
-from PySide6.QtWidgets import QApplication
+from typing import List
 
 from hordeqt.civit.civit_api import BaseModel
 from hordeqt.classes.Model import Model
-from hordeqt.other.consts import LOGGER
+from hordeqt.other.consts import CACHE_PATH
 
 
 def get_metadata():
@@ -21,36 +17,6 @@ def get_metadata():
         raise Exception("Invalid package metadata")
     metadata = importlib.metadata.metadata(app_module)
     return metadata
-
-
-# This whole function just feels... wrong.
-def get_dynamic_constants():
-    global SAVED_IMAGE_DIR_PATH, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, app, CACHE_PATH
-
-    if "app" not in globals():
-        app = QApplication(sys.argv)
-        app.setApplicationDisplayName("Horde QT")
-        app.setApplicationName("hordeqt")
-        app.setOrganizationName("Unit1208")
-
-    SAVED_DATA_DIR_PATH = Path(
-        QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
-    )
-
-    SAVED_IMAGE_DIR_PATH = SAVED_DATA_DIR_PATH / "images"
-    SAVED_DATA_PATH = SAVED_DATA_DIR_PATH / "saved_data.json"
-    CACHE_PATH = Path(
-        QStandardPaths.writableLocation(QStandardPaths.StandardLocation.CacheLocation)
-    )
-    LOGGER.debug(f"Saved data path: {SAVED_DATA_PATH}")
-    LOGGER.debug(f"Saved data dir: {SAVED_DATA_DIR_PATH}")
-    LOGGER.debug(f"Saved images dir: {SAVED_IMAGE_DIR_PATH}")
-
-    return app, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH, SAVED_IMAGE_DIR_PATH, CACHE_PATH  # type: ignore
-
-
-# Ensure these are really loaded
-get_dynamic_constants()
 
 
 def create_uuid():

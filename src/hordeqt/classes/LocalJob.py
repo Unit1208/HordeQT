@@ -7,7 +7,7 @@ from typing import Optional, Self
 from PIL import ExifTags, Image
 
 from hordeqt.classes.Job import Job
-from hordeqt.other.util import SAVED_IMAGE_DIR_PATH
+from hordeqt.other.consts import SAVED_IMAGE_DIR_PATH
 
 
 @dataclass

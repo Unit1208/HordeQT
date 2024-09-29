@@ -1,6 +1,5 @@
 import os
 import tempfile
-import time
 from pathlib import Path
 from typing import Dict, List, Self
 
@@ -9,8 +8,7 @@ from PIL import Image
 from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
 
 from hordeqt.classes.LocalJob import LocalJob, apply_metadata_to_image
-from hordeqt.other.consts import LOGGER
-from hordeqt.other.util import SAVED_IMAGE_DIR_PATH
+from hordeqt.other.consts import LOGGER, SAVED_IMAGE_DIR_PATH
 
 
 class JobDownloadThread(QThread):
