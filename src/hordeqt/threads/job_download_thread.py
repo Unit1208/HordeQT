@@ -57,7 +57,7 @@ class JobDownloadThread(QThread):
             tf = tempfile.NamedTemporaryFile(delete=False)
             try:
                 dl = lj.downloadURL
-            except AttributeError as e:
+            except AttributeError:
                 LOGGER.error(f"Couldn't get download url for job {lj.id}")
                 tf.close()
                 return
@@ -79,7 +79,7 @@ class JobDownloadThread(QThread):
             LOGGER.info(f"Deleting {lj.id}")
             try:
                 self.completed_downloads.remove(lj)
-            except ValueError as e:
+            except ValueError:
                 LOGGER.warning(f"Failed to delete {lj.id}")
             if os.path.exists(lj.path):
                 if lj.path.is_file():

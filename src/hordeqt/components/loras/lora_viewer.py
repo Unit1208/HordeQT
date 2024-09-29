@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional
 
 from hordeqt.civit.civit_api import CivitModel, ModelVersion
-from hordeqt.classes.LoRA import LoRA
 from hordeqt.other.util import get_bucketized_cache_path
 
 if TYPE_CHECKING:
@@ -54,7 +53,6 @@ class LoraViewer(QDockWidget):
         gallery_scroll_area.setWidget(gallery_widget)
 
         if creator_image_url is not None:
-
             path = get_bucketized_cache_path(creator_image_url)
 
             def _set_pixmap_closure(path: Path):
@@ -63,7 +61,6 @@ class LoraViewer(QDockWidget):
             if path.exists():
                 self._set_creator_image(creator_image, path)
             else:
-
                 self._parent.download_thread.download_to_cache(
                     creator_image_url, _set_pixmap_closure
                 )

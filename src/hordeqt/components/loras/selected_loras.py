@@ -10,9 +10,7 @@ if TYPE_CHECKING:
     from hordeqt.app import HordeQt
 
 from PySide6.QtCore import Signal
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import (QDoubleSpinBox, QHBoxLayout, QLabel, QLineEdit,
-                               QPushButton, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import QVBoxLayout, QWidget
 
 from hordeqt.other.consts import LOGGER
 
@@ -29,9 +27,9 @@ class SelectedLoRAs(QWidget):
 
     def add_lora_widget(self, LoRAModel: CivitModel, LoRAVersion: ModelVersion):
         LOGGER.debug(f"Adding LoRA {LoRAModel.name}")
-        l = LoRAItem(self, LoRAModel, LoRAVersion)
-        self.loraLayout.addWidget(l)
-        self.loras.append(l)
+        loraItem = LoRAItem(self, LoRAModel, LoRAVersion)
+        self.loraLayout.addWidget(loraItem)
+        self.loras.append(loraItem)
         self.updated.emit()
 
     def deleteLoRA(self, lora: LoRAItem):
@@ -44,4 +42,4 @@ class SelectedLoRAs(QWidget):
         self.loraLayout.update()
 
     def to_LoRA_list(self) -> List[LoRA]:
-        return [l.to_LoRA_obj() for l in self.loras]
+        return [lora.to_LoRA_obj() for lora in self.loras]

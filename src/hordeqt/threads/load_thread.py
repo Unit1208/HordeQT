@@ -21,7 +21,7 @@ class LoadThread(QThread):
         self.api_key = api_key
 
     def reload_user_info(self, api_key: Optional[str] = None):
-        if api_key != None:
+        if api_key is not None:
             self.api_key = api_key
         LOGGER.debug("loading user info")
         self.user_info.emit(
@@ -54,7 +54,6 @@ class LoadThread(QThread):
             self.progress.emit((n + 1) * 100 / (len(t)))
 
     def load_model_cache(self):
-
         model_cache_path = CACHE_PATH / "model_ref.json"
 
         if (

@@ -244,7 +244,6 @@ class JobManagerThread(QThread):
             if (
                 time.time() - self.status_rl_reset
             ) > 0 and self.status_rl_remaining > 0:
-
                 lj = LocalJob(job)
                 try:
                     r = requests.get(BASE_URL + f"generate/status/{job.horde_job_id}")

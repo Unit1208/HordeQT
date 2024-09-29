@@ -11,7 +11,6 @@ from hordeqt.classes.LocalJob import LocalJob
 
 
 def _artbot(img: Image.Image):
-
     lines = str(img.info.get("Comment", "")).strip().splitlines()
 
     prompt = lines[0].strip()
@@ -115,7 +114,6 @@ def _from_nai_prompt(prompt: str):
 
 
 def _nai_png(img: Image.Image):
-
     line = str(img.info.get("Comment", "")).strip()
     j: dict = json.loads(line)
     return {
@@ -165,7 +163,7 @@ class ImageType(IntEnum):
     HORDEQT = auto()
 
 
-def detect_format(img: Image.Image):
+def detect_format(img: Image.Image) -> Optional[ImageType]:
     e = img.getexif()
     desc = e.get(Base.ImageDescription.value, None)
     if desc is not None:
@@ -206,7 +204,6 @@ def get_job_config(img: Image.Image) -> Optional[dict]:
     d = get_data(img)
     if d is not None:
         try:
-
             return {
                 "prompt": d.get("prompt"),
                 "negative_prompt": d.get("negative_prompt", ""),

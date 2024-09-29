@@ -92,7 +92,6 @@ class DownloadThread(QThread):
 
     @classmethod
     def deserialize(cls, data: Dict[str, dict | list[requests.Response]]):
-
         queued_downloads: list[Tuple[str, requests.Request]] = data.get(
             "queued_downloads", []
         )  # type: ignore

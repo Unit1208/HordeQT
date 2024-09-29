@@ -3,7 +3,8 @@ from typing import Dict, List, Optional
 
 import requests
 
-from hordeqt.civit.civit_enums import *
+from hordeqt.civit.civit_enums import (FP, BaseModel, ModelFormat, ModelSize,
+                                       ModelType, ScanResult)
 
 # TRANSLATED FROM HORDENG's implementation
 
@@ -40,7 +41,6 @@ class ModelVersionFileMetadata:
 
     @staticmethod
     def deserialize(data: dict):
-
         return ModelVersionFileMetadata(
             fp=FP(str(data.get("fp"))) if data.get("fp", None) is not None else None,
             size=(
@@ -276,7 +276,6 @@ class CivitModel:
 
     @staticmethod
     def deserialize(data: dict):
-
         return CivitModel(
             id=data.get("id", -1),
             name=data.get("name", ""),
@@ -316,7 +315,6 @@ class SearchOptions:
 
 
 class CivitApi:
-
     def search_models(self, options: SearchOptions) -> List[CivitModel]:
         options.query = options.query or ""
         options.page = options.page or 1

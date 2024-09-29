@@ -1,14 +1,9 @@
 from __future__ import annotations
 
 from enum import IntEnum, auto
-from typing import TYPE_CHECKING, List
 
-import requests
-from PySide6.QtCore import QRect, Qt
-from PySide6.QtWidgets import (QAbstractScrollArea, QComboBox, QDockWidget,
-                               QFrame, QHBoxLayout, QLabel, QLineEdit,
-                               QPushButton, QScrollArea, QSizePolicy,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QVBoxLayout,
+                               QWidget)
 
 from hordeqt.components.gallery.MasonryLayout import MasonryLayout
 

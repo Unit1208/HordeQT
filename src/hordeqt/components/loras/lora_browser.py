@@ -61,7 +61,6 @@ class LoraBrowser(QDockWidget):
         self.search_for_loras()
 
     def search_for_loras(self):
-
         query = self.query_box.text().strip()
         if len(query) > 0:
             self.setWindowTitle(f"LoRA Browser ({query})")

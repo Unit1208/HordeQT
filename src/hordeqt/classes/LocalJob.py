@@ -68,7 +68,6 @@ class LocalJob:
         return "\n".join(b)
 
     def update_path(self):
-
         self.path = (SAVED_IMAGE_DIR_PATH / self.id).with_suffix("." + self.file_type)
 
     def serialize(self) -> dict:
@@ -106,5 +105,4 @@ def apply_metadata_to_image(path: Path, lj: LocalJob) -> Path:
 
 
 def read_metadata_from_image(path: Path):
-
     pass

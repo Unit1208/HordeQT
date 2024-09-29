@@ -60,13 +60,12 @@ class MasonryLayout(QLayout):
     def delete_image(self, id: str):
         index = -1
         for i in range(len(self.items)):
-
             widget: ImageWidget = self.items[i].widget()  # type: ignore
             if id == widget.lj.id:
                 index = i
                 break
         if index == -1:
-            LOGGER.warning(f"Image couldn't be found in gallery.")
+            LOGGER.warning("Image couldn't be found in gallery.")
             return
         del self.items[index]
 
@@ -75,7 +74,6 @@ class MasonryLayout(QLayout):
             i * (self.column_width + self.m_spacing) for i in range(self.num_columns)
         ]
         for item in self.items:
-
             widget: QLabel = item.widget()  # type: ignore
             pixmap = widget.pixmap()
             aspect_ratio = (

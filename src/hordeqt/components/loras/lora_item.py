@@ -12,14 +12,11 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (QDoubleSpinBox, QFrame, QHBoxLayout, QLabel,
                                QLineEdit, QPushButton, QVBoxLayout)
 
-from hordeqt.other.consts import LOGGER
-
 
 class LoRAItem(QFrame):
     def __init__(
         self, parent: SelectedLoRAs, LoRAModel: CivitModel, LoRAVersion: ModelVersion
     ) -> None:
-
         super().__init__(parent)
         self._parent = parent
         self.loraModel = LoRAModel
@@ -94,7 +91,6 @@ class LoRAItem(QFrame):
 
     @classmethod
     def deserialize(cls, val: dict, parent: SelectedLoRAs) -> Self:
-
         return cls(
             parent,
             CivitModel.deserialize(val.get("loraModel", {})),

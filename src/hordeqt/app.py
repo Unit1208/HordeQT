@@ -18,7 +18,6 @@ from PySide6.QtWidgets import (QApplication, QLineEdit, QMainWindow,
 
 from hordeqt.classes.Job import Job
 from hordeqt.classes.LocalJob import LocalJob
-from hordeqt.classes.LoRA import LoRA
 from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
 from hordeqt.components.gallery.ImageGalleryWidget import ImageGalleryWidget
@@ -41,7 +40,6 @@ from hordeqt.threads.save_thread import SaveThread
 
 
 class HordeQt(QMainWindow):
-
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
         LOGGER.debug("Main Window init start")
@@ -357,11 +355,10 @@ class HordeQt(QMainWindow):
             "hires_fix": self.ui.highResFixCheckBox.isChecked(),
             "karras": self.ui.karrasCheckBox.isChecked(),
             "upscale": self.ui.upscaleComboBox.currentText(),
-            "loras": [l.serialize() for l in self.selectedLoRAs.loras],
+            "loras": [lora.serialize() for lora in self.selectedLoRAs.loras],
         }
 
     def restore_job_config(self, job_config: dict):
-
         # Restore job configuration
 
         self.ui.PromptBox.setPlainText(job_config.get("prompt", ""))
@@ -381,7 +378,7 @@ class HordeQt(QMainWindow):
         self.ui.karrasCheckBox.setChecked(job_config.get("karras", True))
         self.ui.upscaleComboBox.setCurrentText(job_config.get("upscale", "None"))
         ser_loras = job_config.get("loras", [])
-        loras = [LoRAItem.deserialize(l, self.selectedLoRAs) for l in ser_loras]
+        loras = [LoRAItem.deserialize(lora, self.selectedLoRAs) for lora in ser_loras]
         for lora in self.selectedLoRAs.loras:
             lora.remove_lora()
         for lora in loras:
@@ -462,35 +459,45 @@ class HordeQt(QMainWindow):
         self.ui.tokensGeneratedSpinBox.setValue(contrib["tokens"])
         self.ui.megapixelstepsGeneratedDoubleSpinBox.setValue(contrib["megapixelsteps"])
 
-    def update_horde_info(self, l: Tuple[requests.Response, requests.Response]):
-        (r1, r2) = l
+    def update_horde_info(
+        self, horde_info_tuple: Tuple[requests.Response, requests.Response]
+    ):
+        (image_totals_response, performance_response) = horde_info_tuple
 
-        if r1.status_code != 200:
+        if image_totals_response.status_code != 200:
             self.show_error_toast(
                 "Horde API Error",
                 "The AI Horde API didn't respond correctly, something is likely extremely broken",
             )
             return
-        j1 = r1.json()
-        if r2.status_code != 200:
+        image_totals_dict = image_totals_response.json()
+        if performance_response.status_code != 200:
             # Subtly different, to make it easier to tell which endpoint is misbehaving.
             self.show_error_toast(
                 "Horde API Error",
                 "The AI Horde API didn't respond correctly, something is probably extremely broken",
             )
             return
-        j2 = r2.json()
-        self.horde_info = {"stats": j1, "perf": j2}
-        self.ui.lastMinuteImagesLineEdit.setText(str(j1["minute"]["images"]))
-        self.ui.lastHourImagesLineEdit.setText(str(j1["hour"]["images"]))
-        self.ui.lastDayImagesLineEdit.setText(str(j1["day"]["images"]))
-        self.ui.lastMonthImagesLineEdit.setText(str(j1["month"]["images"]))
-        self.ui.allTimeImagesLineEdit.setText(str(j1["total"]["images"]))
-        self.ui.pastMinuteMPSLineEdit.setText(str(j2["past_minute_megapixelsteps"]))
-        self.ui.queuedMPSLineEdit.setText(str(j2["queued_megapixelsteps"]))
-        self.ui.queuedRequestsLineEdit.setText(str(j2["queued_requests"]))
-        self.ui.workerCountLineEdit.setText(str(j2["worker_count"]))
-        self.ui.imageThreadCountLineEdit.setText(str(j2["thread_count"]))
+        performance_dict = performance_response.json()
+        self.horde_info = {"stats": image_totals_dict, "perf": performance_dict}
+        self.ui.lastMinuteImagesLineEdit.setText(
+            str(image_totals_dict["minute"]["images"])
+        )
+        self.ui.lastHourImagesLineEdit.setText(str(image_totals_dict["hour"]["images"]))
+        self.ui.lastDayImagesLineEdit.setText(str(image_totals_dict["day"]["images"]))
+        self.ui.lastMonthImagesLineEdit.setText(
+            str(image_totals_dict["month"]["images"])
+        )
+        self.ui.allTimeImagesLineEdit.setText(str(image_totals_dict["total"]["images"]))
+        self.ui.pastMinuteMPSLineEdit.setText(
+            str(performance_dict["past_minute_megapixelsteps"])
+        )
+        self.ui.queuedMPSLineEdit.setText(
+            str(performance_dict["queued_megapixelsteps"])
+        )
+        self.ui.queuedRequestsLineEdit.setText(str(performance_dict["queued_requests"]))
+        self.ui.workerCountLineEdit.setText(str(performance_dict["worker_count"]))
+        self.ui.imageThreadCountLineEdit.setText(str(performance_dict["thread_count"]))
 
     def toggle_api_key_visibility(self):
         visible = self.ui.apiKeyEntry.echoMode() == QLineEdit.EchoMode.Normal
@@ -659,7 +666,6 @@ class HordeQt(QMainWindow):
                 m.details = mod[m.name]
             except KeyError:
                 if m.name not in self.warned_models:
-
                     self.show_warn_toast(
                         "Unknown Model",
                         f"{m.name} is not on the official model list. This may be a custom model, or may be an extremely new model.",
@@ -892,7 +898,6 @@ class HordeQt(QMainWindow):
 
 
 def main():
-
     os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
     os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
 

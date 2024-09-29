@@ -24,7 +24,7 @@ def create_uuid():
 
 
 def get_hash(b: bytes | str) -> str:
-    if type(b) is bytes:
+    if isinstance(b, bytes):
         return hashlib.sha256(b).hexdigest()
     else:
         return get_hash(str(b).encode("utf-8"))

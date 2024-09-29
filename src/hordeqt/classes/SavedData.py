@@ -24,7 +24,6 @@ class SavedData:
     show_done_images: bool
 
     def __init__(self) -> None:
-
         os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
 
     def update(

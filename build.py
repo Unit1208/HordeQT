@@ -103,25 +103,26 @@ def main():
     gitignore_tmp_path = curr_dir / "src" / "hordeqt" / ".wasgitignore"
     install_sys_reqs()
     if is_windows:
-        paths=["C:\\Python312-x64\\python.exe","$env:LOCALAPPDATA\\Local\\Programs\\Python312\\python.exe"]
-        py_path="" 
+        paths = [
+            "C:\\Python312-x64\\python.exe",
+            "$env:LOCALAPPDATA\\Local\\Programs\\Python312\\python.exe",
+        ]
+        py_path = ""
         for p in paths:
             try:
-                if os.system(p+" -V")==0:
-                    py_path=p
+                if os.system(p + " -V") == 0:
+                    py_path = p
                     break
             except:
                 pass
-        if py_path=="":
+        if py_path == "":
             print(f"Couldn't find python")
-            exit(1)         
+            exit(1)
         subprocess.run([py_path, "-m", "venv", str(venv_path)])
     else:
-
         subprocess.run(["python", "-m", "venv", str(venv_path)])
 
     if is_linux or is_macos:
-
         new_python = venv_path / "bin" / "python"
     elif is_windows:
         new_python = venv_path / "Scripts" / "python.exe"

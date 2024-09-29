@@ -23,16 +23,16 @@ def rescan_jobs(current_jobs: list[LocalJob]):
     new_data = current_jobs
     for img_id in unknown_images:
         base = (SAVED_IMAGE_DIR_PATH / img_id).resolve()
-        o = _get_possible_path(base)
-        if o is None:
+        possible_path = _get_possible_path(base)
+        if possible_path is None:
             # we will continue to try to scan for this and fail every time, but I'm not sure if there's an elegant way to solve it (non-destructively)
             LOGGER.warning(f'Unknown or invalid file in image directory: "{base}"')
             continue
-        o = o.resolve()
-        l = get_local_job(Image.open(o))
-        if l is not None:
-            new_data.append(l)
+        possible_path = possible_path.resolve()
+        local_job = get_local_job(Image.open(possible_path))
+        if local_job is not None:
+            new_data.append(local_job)
         else:
             LOGGER.warning(
-                f'Unknown or invalid image type in image directory: "{str(o)}"'
+                f'Unknown or invalid image type in image directory: "{str(possible_path)}"'
             )

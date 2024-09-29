@@ -94,7 +94,7 @@ class Job:
                 "height": self.height,
                 "width": self.width,
                 "post_processing": (
-                    [] if (k := UPSCALE_MAP[self.upscale]) == None else [k]
+                    [] if (k := UPSCALE_MAP[self.upscale]) is None else [k]
                 ),
                 "karras": self.karras,
                 "hires_fix": self.hires_fix,
@@ -102,8 +102,8 @@ class Job:
                 "steps": self.steps,
                 "n": 1,
                 "loras": [
-                    l.to_job_format()
-                    for l in (self.loras if self.loras is not None else [])
+                    lora.to_job_format()
+                    for lora in (self.loras if self.loras is not None else [])
                 ],
             },
             "nsfw": self.allow_nsfw,
