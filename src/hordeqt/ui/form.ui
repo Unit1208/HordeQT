@@ -39,7 +39,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="documentMode">
        <bool>false</bool>
@@ -106,7 +106,7 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>-132</y>
+              <y>0</y>
               <width>935</width>
               <height>1031</height>
              </rect>
@@ -674,9 +674,9 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>30</y>
+          <y>50</y>
           <width>951</width>
-          <height>861</height>
+          <height>841</height>
          </rect>
         </property>
         <property name="sizePolicy">
@@ -694,7 +694,7 @@
            <x>0</x>
            <y>0</y>
            <width>951</width>
-           <height>851</height>
+           <height>841</height>
           </rect>
          </property>
          <property name="sizePolicy">
@@ -733,14 +733,30 @@
        <widget class="QLabel" name="label_4">
         <property name="geometry">
          <rect>
-          <x>10</x>
-          <y>10</y>
+          <x>20</x>
+          <y>20</y>
           <width>211</width>
           <height>16</height>
          </rect>
         </property>
         <property name="text">
          <string>Current In-progress items</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="showDoneImagesCheckbox">
+        <property name="geometry">
+         <rect>
+          <x>820</x>
+          <y>10</y>
+          <width>141</width>
+          <height>22</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show Done Images</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
         </property>
        </widget>
       </widget>

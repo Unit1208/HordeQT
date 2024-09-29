@@ -88,6 +88,7 @@ class HordeQt(QMainWindow):
         self.ui.saveMetadataCheckBox.setChecked(self.savedData.save_metadata)
         self.ui.tabWidget.setCurrentIndex(self.savedData.current_open_tab)
         self.ui.saveFormatComboBox.setCurrentText(self.savedData.prefered_format)
+        self.ui.showDoneImagesCheckbox.setChecked(self.savedData.show_done_images)
         self.warned_models = self.savedData.warned_models
         LOGGER.debug("Initializing API thread")
         self.api_thread = JobManagerThread.deserialize(
@@ -209,6 +210,7 @@ class HordeQt(QMainWindow):
             self.ui.tabWidget.currentIndex(),
             self.ui.saveFormatComboBox.currentText(),
             self.warned_models,
+            self.ui.showDoneImagesCheckbox.isChecked()
         )
         LOGGER.debug("Writing saved data")
         self.savedData.write()
@@ -769,7 +771,6 @@ class HordeQt(QMainWindow):
         # ID, STATUS, PROMPT, MODEL, ETA
         table = self.ui.inProgressItemsTable
         table.setSortingEnabled(False)
-
         for col, value in enumerate(
             [
                 id,
@@ -807,9 +808,8 @@ class HordeQt(QMainWindow):
             item.setText(value)
             item.setFlags(Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled)
         table.resizeColumnsToContents()
-        # self.ui.groupBox_2.resize()
         table.setSortingEnabled(True)
-
+        
     def update_inprogess_table(self):
         table = self.ui.inProgressItemsTable
         table.setUpdatesEnabled(True)
@@ -842,16 +842,28 @@ class HordeQt(QMainWindow):
         )
         update_table_with_jobs(self.api_thread.current_requests, "In Progress")
 
+        show_done_images = self.ui.showDoneImagesCheckbox.isChecked()
+
+        # Clear the table if necessary
+        if not show_done_images:
+            # Optionally remove all "Done" rows if we don't want to show them
+            for row in range(table.rowCount() - 1, -1, -1):  # Traverse in reverse
+                status_item = table.item(row, 1)
+                if status_item and status_item.text() == "Done":
+                    table.removeRow(row)
+
         for lj in self.job_download_thread.completed_downloads:
-            row = find_or_insert_row(lj.id)
-            self.update_row(
-                row,
-                lj.id,
-                "Done",
-                lj.original.prompt,
-                lj.original.model,
-                lj.completed_at - time.time(),
-            )
+            if show_done_images:
+                row = find_or_insert_row(lj.id)
+                self.update_row(
+                    row,
+                    lj.id,
+                    "Done",
+                    lj.original.prompt,
+                    lj.original.model,
+                    lj.completed_at - time.time(),
+                )
+
 
     def clear_cache(self):
         if CACHE_PATH.exists():
