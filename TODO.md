@@ -106,3 +106,4 @@
   - [ ] Setup with no key
 - [ ] Use CBOR instead of JSON?
   - How does this work with jsonpickle?
+- [ ] [Notifications for finishing long-running tasks](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QSystemTrayIcon.html)
