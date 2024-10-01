@@ -108,4 +108,4 @@
   - How does this work with jsonpickle?
 - [ ] Worker view and/or state editor.
 - [x] Switch to loguru
-- [ ] [Notifications for finishing long-running tasks](https://doc.qt.io/qtforpython-6/PySide6/)
+- [ ] [Notifications for finishing long-running tasks](https://doc.qt.io/qtforpython-6.6/PySide6/QtWidgets/QSystemTrayIcon.html)
