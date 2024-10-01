@@ -43,14 +43,14 @@
 - [ ] Error handling
   - [ ] Errored/Censored job state + handling
     - [ ] NSFW
-    - [ ] CSAM 
+    - [ ] CSAM
     - [ ] LoRA/TI
     ```
     lora, ti ---->  download_failed, baseline_mismatch
-    censorship ----> csam, nsfw  
-    source_image, source_mask, extra_source_images ---->  parse_failed  
+    censorship ----> csam, nsfw
+    source_image, source_mask, extra_source_images ---->  parse_failed
     batch_index ----> see_ref
-    ``` 
+    ```
 - [x] Add a toggle for metadata?
 - [ ] Why isn't the gallery working on certain machines?
 - [x] Delete button on images
@@ -61,7 +61,7 @@
 - [ ] Double click table entry to jump to location in gallery and open popup
   - [See this](https://stackoverflow.com/questions/4324005/how-to-detect-doubleclick-in-qtableview)
 - [ ] Allow sorting queued table by creation time or filter by a certain metric
-  - [See pythonguis.com](https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/)  
+  - [See pythonguis.com](https://www.pythonguis.com/tutorials/pyqt6-qtableview-modelviews-numpy-pandas/)
 - [ ] Sort options on gallery.
 - [ ] Move loading images to load_thread
 - [x] Resize images to fit screen on popup
@@ -75,7 +75,7 @@
 - [~] Refactor code into more managable chunks.
 - [x] Get appveyor working
   - [x] Use build.py instead of appveyor.yml.
-  - [-] Why is MacOS taking so long to start?  
+  - [-] Why is MacOS taking so long to start?
     Known issue on Appveyor's side, nothing I can do about it.
 - [ ] Fix Flux
   - [x] Allow for custom models that aren't in the official list
@@ -83,7 +83,7 @@
   - [x] Hires-fix toggle
   - [x] Karras toggle
 - [x] Save unknown models to saved data, don't remind again.
-- [x] Autosave every ~60s  
+- [x] Autosave every ~60s
 - [ ] Add errored jobs to a signal on API thread, then connect to a warning on the app
 - [ ] Allow toggle for slow/extra slow workers
 - [x] Upscale combobox
@@ -108,3 +108,4 @@
   - How does this work with jsonpickle?
 - [ ] Worker view and/or state editor.
 - [x] Switch to loguru
+- [ ] [Notifications for finishing long-running tasks](https://doc.qt.io/qtforpython-6/PySide6/)
