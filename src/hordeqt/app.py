@@ -11,7 +11,7 @@ import keyring
 import requests
 from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtCore import Qt, QTimer, QUrl
-from PySide6.QtGui import QDesktopServices, QFont
+from PySide6.QtGui import QDesktopServices, QFont, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QLineEdit,
@@ -34,6 +34,7 @@ from hordeqt.components.loras.lora_browser import LoraBrowser
 from hordeqt.components.loras.lora_item import LoRAItem
 from hordeqt.components.loras.selected_loras import SelectedLoRAs
 from hordeqt.components.model_dialog import ModelPopup
+from hordeqt.gen.res_resources import qCleanupResources, qInitResources
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.other.consts import (
     ANON_API_KEY,
@@ -92,11 +93,15 @@ class HordeQt(QMainWindow):
         self.ui.scrollArea.setSizePolicy(sizePolicy)
         self.ui.scrollArea.setWidgetResizable(True)
         LOGGER.debug("Showing main window")
-
         self.show()
-        LOGGER.debug("Setting saved values on UI")
-        self.systemTray = QSystemTrayIcon()
+        LOGGER.debug("Loading resources")
+        qInitResources()
+        LOGGER.debug("Updating resources")
+        self.ui.tabWidget.setTabIcon(6, QIcon(":/icons/IconSmall.png"))  # "About" Tab
+        LOGGER.debug("Opening system tray for notifications")
+        self.systemTray = QSystemTrayIcon(QIcon(":/icons/IconSmaller.png"))
         self.systemTray.show()
+        LOGGER.debug("Setting saved values on UI")
 
         if (
             not self.systemTray.isSystemTrayAvailable()
@@ -241,6 +246,8 @@ class HordeQt(QMainWindow):
         )
         LOGGER.debug("Writing saved data")
         self.savedData.write()
+        LOGGER.debug("Unloading resources")
+        qCleanupResources()
         LOGGER.debug("Closing Main window")
         QMainWindow.closeEvent(self, event)
 

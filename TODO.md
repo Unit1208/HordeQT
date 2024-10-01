@@ -109,5 +109,5 @@
 - [ ] Worker view and/or state editor.
 - [x] Switch to loguru
 - [x] [Notifications for finishing long-running tasks](https://doc.qt.io/qtforpython-6.6/PySide6/QtWidgets/QSystemTrayIcon.html)
-  - [ ] Load icon for use here (And other places in the code)
+  - [x] Load icon for use here (And other places in the code)
 - [ ] Persistent Kudos display at top right.

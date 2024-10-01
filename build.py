@@ -66,6 +66,27 @@ def convert_uic_files(prefix: Path):
         print(f"Converted {str(file)} to {str(new_py_fpath)}")
 
 
+def convert_qrc_resources(prefix: Path):
+    qrc_fns = ["resources.qrc"]
+    qrc_files: List[Path] = [
+        Path(__file__).parent / "src" / "hordeqt" / "resources" / x for x in qrc_fns
+    ]
+    rcc = find_executable("pyside6-rcc", prefix)
+
+    for file in qrc_files:
+        new_py_fpath = (
+            Path(__file__).parent
+            / "src"
+            / "hordeqt"
+            / "gen"
+            / ("res_" + file.stem + ".py")
+        ).resolve()
+        os.makedirs(new_py_fpath.parent, exist_ok=True)
+        cmd = [str(rcc.resolve()), str(file.resolve()), f"-o={str(new_py_fpath)}"]
+        subprocess.run(cmd, check=True)
+        print(f"Converted {str(file)} to {str(new_py_fpath)}")
+
+
 def detect_platform():
     curr_platform = platform.system().lower()
 
@@ -109,14 +130,11 @@ def main():
         ]
         py_path = ""
         for p in paths:
-            try:
-                if os.system(p + " -V") == 0:
-                    py_path = p
-                    break
-            except:
-                pass
+            if os.system(p + " -V") == 0:
+                py_path = p
+                break
         if py_path == "":
-            print(f"Couldn't find python")
+            print("Couldn't find python")
             exit(1)
         subprocess.run([py_path, "-m", "venv", str(venv_path)])
     else:
@@ -147,6 +165,8 @@ def main():
     print("PRE UIC CONVERSION")
 
     convert_uic_files(venv_path)
+    convert_qrc_resources(venv_path)
+
     print("POST UIC CONVERSION")
     formats = ["app"]
     additional_args = []
@@ -173,6 +193,7 @@ def main():
             [str(new_python), briefcase_exec, "create", briefcase_platform, f]
         )
         convert_uic_files(venv_path)
+        convert_qrc_resources(venv_path)
         subprocess.run(
             [
                 str(new_python),
