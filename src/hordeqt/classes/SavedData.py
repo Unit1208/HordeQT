@@ -22,6 +22,7 @@ class SavedData:
     prefered_format: str
     warned_models: List[str]
     show_done_images: bool
+    notify_after_n: int
 
     def __init__(self) -> None:
         os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
@@ -40,6 +41,7 @@ class SavedData:
         prefered_format: str,
         warned_models: list[str],
         show_done_images: bool,
+        notify_after_n: int,
     ):
         self.api_state = api.serialize()
         self.current_images = (dlv := dlthread.serialize()).get(
@@ -56,6 +58,7 @@ class SavedData:
         self.prefered_format = prefered_format
         self.warned_models = warned_models
         self.show_done_images = show_done_images
+        self.notify_after_n = notify_after_n
 
     def write(self):
         d = {
@@ -72,6 +75,7 @@ class SavedData:
             "warned_models": self.warned_models,
             "download_state": self.download_state,
             "show_done_images": self.show_done_images,
+            "notify_after_n": self.notify_after_n,
         }
         jsondata: str = jsonpickle.encode(d, indent=4)  # type: ignore
         with open(SAVED_DATA_PATH, "wt") as f:
@@ -96,3 +100,4 @@ class SavedData:
         self.warned_models = j.get("warned_models", [])
         self.download_state = j.get("download_state", {})
         self.show_done_images = j.get("show_done_images", True)
+        self.notify_after_n = j.get("notify_after_n", 10)

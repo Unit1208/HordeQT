@@ -58,7 +58,7 @@ class LoadThread(QThread):
 
         if (
             not model_cache_path.exists()
-            or time.time() - model_cache_path.stat().st_mtime > 60 * 60 * 24
+            or time.time() - model_cache_path.stat().st_mtime > 60 * 60
         ):
             LOGGER.debug(f"Refreshing model cache at {model_cache_path}")
             os.makedirs(model_cache_path.parent, exist_ok=True)

@@ -33,6 +33,7 @@ class SaveThread(QThread):
             self.app.ui.saveFormatComboBox.currentText(),
             self.app.warned_models,
             self.app.ui.showDoneImagesCheckbox.isChecked(),
+            self.app.ui.notifyAfterNFinishedSpinBox.value(),
         )
         self.app.savedData.write()
 

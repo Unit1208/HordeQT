@@ -12,9 +12,16 @@ import requests
 from pyqttoast import Toast, ToastPreset, toast_enums
 from PySide6.QtCore import Qt, QTimer, QUrl
 from PySide6.QtGui import QDesktopServices, QFont
-from PySide6.QtWidgets import (QApplication, QLineEdit, QMainWindow,
-                               QScrollArea, QSizePolicy, QTableWidgetItem,
-                               QVBoxLayout)
+from PySide6.QtWidgets import (
+    QApplication,
+    QLineEdit,
+    QMainWindow,
+    QScrollArea,
+    QSizePolicy,
+    QSystemTrayIcon,
+    QTableWidgetItem,
+    QVBoxLayout,
+)
 
 from hordeqt.classes.Job import Job
 from hordeqt.classes.LocalJob import LocalJob
@@ -28,9 +35,15 @@ from hordeqt.components.loras.lora_item import LoRAItem
 from hordeqt.components.loras.selected_loras import SelectedLoRAs
 from hordeqt.components.model_dialog import ModelPopup
 from hordeqt.gen.ui_form import Ui_MainWindow
-from hordeqt.other.consts import (ANON_API_KEY, APP, BASE_URL, CACHE_PATH,
-                                  LOGGER, SAVED_DATA_DIR_PATH,
-                                  SAVED_IMAGE_DIR_PATH)
+from hordeqt.other.consts import (
+    ANON_API_KEY,
+    APP,
+    BASE_URL,
+    CACHE_PATH,
+    LOGGER,
+    SAVED_DATA_DIR_PATH,
+    SAVED_IMAGE_DIR_PATH,
+)
 from hordeqt.other.util import prompt_matrix
 from hordeqt.threads.etc_download_thread import DownloadThread
 from hordeqt.threads.job_download_thread import JobDownloadThread
@@ -82,6 +95,19 @@ class HordeQt(QMainWindow):
 
         self.show()
         LOGGER.debug("Setting saved values on UI")
+        self.systemTray = QSystemTrayIcon()
+        self.systemTray.show()
+
+        if (
+            not self.systemTray.isSystemTrayAvailable()
+            or not self.systemTray.supportsMessages()
+        ):
+
+            self.ui.notifyAfterNFinishedSpinBox.setEnabled(False)
+
+        else:
+            self.ui.notifyAfterNFinishedSpinBox.setValue(self.savedData.notify_after_n)
+
         self.ui.maxJobsSpinBox.setValue(self.savedData.max_jobs)
         self.ui.NSFWCheckBox.setChecked(self.savedData.nsfw_allowed)
         self.ui.shareImagesCheckBox.setChecked(self.savedData.share_images)
@@ -110,6 +136,7 @@ class HordeQt(QMainWindow):
         self.download_thread: DownloadThread = DownloadThread.deserialize(
             self.savedData.download_state
         )
+
         LOGGER.debug("Connecting DL signals")
         self.job_download_thread.completed.connect(self.on_image_fully_downloaded)
         self.job_download_thread.use_metadata = self.savedData.save_metadata
@@ -154,7 +181,6 @@ class HordeQt(QMainWindow):
         self.ui.karrasCheckBox.checkStateChanged.connect(self.update_kudos_preview)
         self.ui.highResFixCheckBox.checkStateChanged.connect(self.update_kudos_preview)
         self.ui.progressBar.setValue(0)
-        # self.ui.loraListView
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None
         self.job_history: List[Dict] = []
@@ -191,8 +217,8 @@ class HordeQt(QMainWindow):
     def closeEvent(self, event):
         LOGGER.debug("Close clicked.")
 
-        self.api_thread.stop()
         self.save_thread.stop()
+        self.api_thread.stop()
         LOGGER.debug("Stopping DL thread")
         self.job_download_thread.stop()
         LOGGER.debug("DL thread stopped")
@@ -211,6 +237,7 @@ class HordeQt(QMainWindow):
             self.ui.saveFormatComboBox.currentText(),
             self.warned_models,
             self.ui.showDoneImagesCheckbox.isChecked(),
+            self.ui.notifyAfterNFinishedSpinBox.value(),
         )
         LOGGER.debug("Writing saved data")
         self.savedData.write()
@@ -306,6 +333,29 @@ class HordeQt(QMainWindow):
 
     def on_image_fully_downloaded(self, lj: LocalJob):
         self.add_image_to_gallery(lj)
+        self.check_for_notifications()
+
+    def check_for_notifications(self):
+        # this seems like it could be an oppurtuniy for a race condition, but it's probably not a huge deal.
+        # Also, this construction is... not the cleanest or clearest, but it's also probably fine.
+        conditions = [
+            len(self.job_download_thread.queued_downloads),
+            self.api_thread.job_queue.qsize(),
+            len(self.api_thread.current_requests),
+        ]
+        preconditions_satisfied = all([condition == 0 for condition in conditions])
+        if preconditions_satisfied:
+            if self.jobs_in_progress >= 0:
+                self.systemTray.showMessage(
+                    "Images done",
+                    f"All {self.jobs_in_progress} finished processing",
+                    msecs=5000,
+                )
+            self.show_success_toast("Images done", "All images finished processing")
+        else:
+            LOGGER.debug(
+                f"{len(self.job_download_thread.queued_downloads)=} {self.api_thread.job_queue.qsize()=} {len(self.api_thread.current_requests)=}"
+            )
 
     def add_image_to_gallery(self, lj: LocalJob):
         image_widget = ImageWidget(lj)
@@ -588,7 +638,7 @@ class HordeQt(QMainWindow):
                     self.ui.guidenceDoubleSpinBox.setValue(float(cfgreq))
                     return None
             if (rsamplers := reqs.get("samplers", [])) != []:  # type: ignore
-                if type(rsamplers) == type(str):
+                if isinstance(rsamplers, str):
                     rsamplers = [rsamplers]
                 rsamplers: list[str] = rsamplers
                 if sampler_name not in rsamplers:
@@ -701,6 +751,7 @@ class HordeQt(QMainWindow):
         self.job_history.append(self.save_job_config())
         jobs = self.create_jobs()
         if jobs is not None:
+            pre_queue_size = self.api_thread.job_queue.qsize()
             for n in range(len(jobs)):
                 self.api_thread.add_job(jobs[n])
                 LOGGER.debug(f"Added job {jobs[n].job_id}")
@@ -710,6 +761,14 @@ class HordeQt(QMainWindow):
                 + (" Job was" if len(jobs) == 1 else " Jobs were")
                 + " created and put into queue",
             )
+            if (
+                (pre_queue_size + len(jobs))
+                >= self.ui.notifyAfterNFinishedSpinBox.value()
+                and self.ui.notifyAfterNFinishedSpinBox.isEnabled()
+                and self.ui.notifyAfterNFinishedSpinBox.value() > 0
+            ):
+
+                self.jobs_in_progress = self.api_thread.job_queue.qsize()
 
     def save_api_key(self):
         self.hide_api_key()
