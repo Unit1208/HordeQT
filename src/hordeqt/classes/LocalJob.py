@@ -2,12 +2,13 @@ import json
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Self
+from typing import Mapping, Optional, Self
 
 from PIL import ExifTags, Image
 
 from hordeqt.classes.Job import Job
 from hordeqt.other.consts import SAVED_IMAGE_DIR_PATH
+from hordeqt.other.util import create_uuid
 
 
 @dataclass
@@ -23,12 +24,23 @@ class LocalJob:
 
     @classmethod
     def load_from_metadata(
-        cls, val: dict[str, str | dict], file_type: str = "webp"
+        cls, value: Mapping[str, str | float | dict], file_type: str = "webp"
     ) -> Self:
-        return cls(
-            Job.deserialize(val.get("job", {})),  # type: ignore
+        lj = cls(
+            Job.deserialize(value.get("job", {})),  # type: ignore
             file_type,
+            str(value.get("worker_name", "Unknown")),
+            str(value.get("worker_id", "00000000-0000-0000-0000-000000000000")),
         )
+        job = value.get("original", {})
+
+        lj.completed_at = value.get("completed_at", time.time())  # type: ignore
+        lj.file_type = file_type
+
+        lj.id = job.get("id", create_uuid())  # type: ignore
+        lj.original.job_id = lj.id
+        lj.update_path()
+        return lj
 
     def convert_to_metadata(self) -> dict:
         return {
@@ -38,10 +50,19 @@ class LocalJob:
             "worker": f"{self.worker_name} ({self.worker_id})",
         }
 
-    def __init__(self, job: Job, file_type: str = "webp") -> None:
+    def __init__(
+        self,
+        job: Job,
+        file_type: str = "webp",
+        worker_name="Unknown",
+        worker_id="00000000-0000-0000-0000-000000000000",
+    ) -> None:
         self.id = job.job_id
         self.original = job
         self.file_type = file_type
+        self.worker_name = worker_name
+        self.worker_id = worker_id
+        self.completed_at = time.time()
         self.update_path()
 
     def pretty_format(self) -> str:
@@ -89,6 +110,8 @@ class LocalJob:
         lj.worker_name = value.get("worker_name", "Unknown")
         lj.worker_id = value.get("worker_id", "00000000-0000-0000-0000-000000000000")
         lj.file_type = value.get("fileType", "webp")
+        lj.id = job.get("id", create_uuid())  # type: ignore
+        lj.original.job_id = lj.id
         lj.update_path()
         return lj
 
@@ -105,4 +128,5 @@ def apply_metadata_to_image(path: Path, lj: LocalJob) -> Path:
 
 
 def read_metadata_from_image(path: Path):
+    # TODO: Implement
     pass

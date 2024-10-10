@@ -3,8 +3,14 @@ from typing import Dict, List, Optional
 
 import requests
 
-from hordeqt.civit.civit_enums import (FP, BaseModel, ModelFormat, ModelSize,
-                                       ModelType, ScanResult)
+from hordeqt.civit.civit_enums import (
+    FP,
+    BaseModel,
+    ModelFormat,
+    ModelSize,
+    ModelType,
+    ScanResult,
+)
 
 # TRANSLATED FROM HORDENG's implementation
 
@@ -210,7 +216,7 @@ class ModelVersion:
             id=data.get("id", int),
             name=data.get("name", ""),
             status=data.get("status", ""),
-            baseModel=BaseModel(data.get("baseModel")),
+            baseModel=BaseModel(data.get("baseModel", BaseModel.StableDiffusion2_1)),
             description=data.get("description", None),
             stats=ModelVersionStats.deserialize(data.get("stats", {})),
             files=[
