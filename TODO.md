@@ -45,12 +45,14 @@
     - [ ] NSFW
     - [ ] CSAM
     - [ ] LoRA/TI
+
     ```
     lora, ti ---->  download_failed, baseline_mismatch
     censorship ----> csam, nsfw
     source_image, source_mask, extra_source_images ---->  parse_failed
     batch_index ----> see_ref
     ```
+
 - [x] Add a toggle for metadata?
 - [ ] Why isn't the gallery working on certain machines?
 - [x] Delete button on images
@@ -112,4 +114,5 @@
   - [x] Load icon for use here (And other places in the code)
 - [ ] Persistent Kudos display at top right.
 - [ ] Turn job queue into a priority queue to check jobs with a closer ETA more often
-- [ ] Feature docs
+- [ ] Documentation
+  - [ ] Build script for documentation
