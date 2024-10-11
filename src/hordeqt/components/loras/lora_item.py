@@ -9,8 +9,15 @@ if TYPE_CHECKING:
     from hordeqt.components.loras.selected_loras import SelectedLoRAs
 
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import (QDoubleSpinBox, QFrame, QHBoxLayout, QLabel,
-                               QLineEdit, QPushButton, QVBoxLayout)
+from PySide6.QtWidgets import (
+    QDoubleSpinBox,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QVBoxLayout,
+)
 
 
 class LoRAItem(QFrame):

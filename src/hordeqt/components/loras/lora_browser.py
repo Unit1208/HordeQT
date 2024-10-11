@@ -4,15 +4,24 @@ from typing import TYPE_CHECKING, List
 
 import requests
 from PySide6.QtCore import QRect, Qt
-from PySide6.QtWidgets import (QAbstractScrollArea, QDockWidget, QFrame,
-                               QHBoxLayout, QLabel, QLineEdit, QPushButton,
-                               QScrollArea, QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QAbstractScrollArea,
+    QDockWidget,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QScrollArea,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
 
-from hordeqt.civit.civit_api import (CivitApi, CivitModel, ModelType,
-                                     SearchOptions)
+from hordeqt.civit.civit_api import CivitApi, CivitModel, ModelType, SearchOptions
 from hordeqt.components.loras.lora_viewer import LoraViewer
 from hordeqt.other.util import horde_model_to_civit_baseline
 

@@ -1,6 +1,6 @@
 import pytest
 
-from hordeqt.other.util import prompt_matrix
+from hordeqt.other.prompt_util import prompt_matrix
 
 
 @pytest.mark.parametrize(

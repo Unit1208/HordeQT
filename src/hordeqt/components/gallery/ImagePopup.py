@@ -7,8 +7,15 @@ if TYPE_CHECKING:
 
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QDesktopServices, QPixmap
-from PySide6.QtWidgets import (QDockWidget, QHBoxLayout, QLabel, QPushButton,
-                               QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QDockWidget,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.components.gallery.ImageDetailsPopup import ImageDetailsPopup

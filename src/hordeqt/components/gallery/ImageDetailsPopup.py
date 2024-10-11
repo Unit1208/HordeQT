@@ -1,6 +1,11 @@
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (QDockWidget, QPlainTextEdit, QSizePolicy,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QDockWidget,
+    QPlainTextEdit,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
 
 from hordeqt.classes.LocalJob import LocalJob
 

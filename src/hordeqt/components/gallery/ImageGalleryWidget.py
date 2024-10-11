@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from enum import IntEnum, auto
 
-from PySide6.QtWidgets import (QComboBox, QHBoxLayout, QLabel, QVBoxLayout,
-                               QWidget)
+from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
 from hordeqt.components.gallery.MasonryLayout import MasonryLayout
 

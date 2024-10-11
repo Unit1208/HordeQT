@@ -12,9 +12,17 @@ if TYPE_CHECKING:
 import human_readable as hr
 from PySide6.QtCore import QSize, Qt, Slot
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (QComboBox, QDockWidget, QHBoxLayout, QLabel,
-                               QProgressDialog, QPushButton, QScrollArea,
-                               QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (
+    QComboBox,
+    QDockWidget,
+    QHBoxLayout,
+    QLabel,
+    QProgressDialog,
+    QPushButton,
+    QScrollArea,
+    QVBoxLayout,
+    QWidget,
+)
 
 from hordeqt.other.consts import LOGGER
 

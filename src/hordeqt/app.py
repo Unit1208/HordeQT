@@ -1,6 +1,5 @@
 import datetime as dt
 import os
-import random
 import shutil
 import sys
 import time
@@ -45,7 +44,7 @@ from hordeqt.other.consts import (
     SAVED_DATA_DIR_PATH,
     SAVED_IMAGE_DIR_PATH,
 )
-from hordeqt.other.util import prompt_matrix
+from hordeqt.other.prompt_util import create_jobs
 from hordeqt.threads.etc_download_thread import DownloadThread
 from hordeqt.threads.job_download_thread import JobDownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
@@ -255,7 +254,7 @@ class HordeQt(QMainWindow):
         self.job_download_thread.use_metadata = self.ui.saveMetadataCheckBox.isChecked()
 
     def update_kudos_preview(self):
-        jobs = self.create_jobs(True)
+        jobs = self.get_job_data(True)
         self.ui.GenerateButton.setText("Generate (Cost: Loading)")
         if jobs is not None:
             # FIXME: for now, this will work. However, if multi-config is added (i.e. request with multiple step counts), this might undershoot or overshoot.
@@ -571,27 +570,13 @@ class HordeQt(QMainWindow):
         self.ui.showAPIKey.setText("Show API Key")
         self.ui.apiKeyEntry.setEchoMode(QLineEdit.EchoMode.Password)
 
-    def create_jobs(self, checking_cost=False) -> Optional[List[Job]]:
-        prompt = self.ui.PromptBox.toPlainText()
-        if prompt.strip() == "" and not checking_cost:
+    def get_job_data(self, checking_cost=False) -> Optional[List[Job]]:
+        p = self.ui.PromptBox.toPlainText()
+        if p.strip() == "" and not checking_cost:
             self.show_error_toast("Prompt error", "Prompt cannot be empty")
-            LOGGER.error("Empty prompt")
             return None
         np = self.ui.NegativePromptBox.toPlainText()
-        if np.strip() != "":
-            """
-            NOTE: the subsequent call to prompt matrix could do some *really* dumb stuff with this current implementation.
-            Along the lines of:
 
-            Prompt: This is a {test|
-            Negative Prompt: negative test}
-            new prompt: This is a {test| ### negative test}
-
-            prompt matrix: [This is a test, this is a  ### negative test]
-            "###" delineates prompt from negative prompt in the horde. i.e prompt ### negative prompt
-            *To be fair*, you'd either be an idiot or know exactly what you're doing to encounter this. :shrug:
-            """
-            prompt = prompt + " ### " + np
         sampler_name = self.ui.samplerComboBox.currentText()
         cfg_scale = self.ui.guidenceDoubleSpinBox.value()
 
@@ -606,6 +591,13 @@ class HordeQt(QMainWindow):
         reqs: Optional[Dict[str, int | str]] = model_details.details.get(
             "requirements", None
         )
+        karras = self.ui.karrasCheckBox.isChecked()
+        hires_fix = self.ui.highResFixCheckBox.isChecked()
+        allow_nsfw = self.ui.NSFWCheckBox.isChecked()
+        share_image = self.ui.shareImagesCheckBox.isChecked()
+        upscale = self.ui.upscaleComboBox.currentText()
+        loras = self.selectedLoRAs.to_LoRA_list()
+        images = self.ui.imagesSpinBox.value()
         if reqs is not None:
             LOGGER.warning(
                 "Model has requirements. This is a WIP feature, and may have issues."
@@ -662,43 +654,25 @@ class HordeQt(QMainWindow):
                     self.ui.samplerComboBox.setCurrentText(rsamplers[0])
                     return None
 
-        karras = self.ui.karrasCheckBox.isChecked()
-        hires_fix = self.ui.highResFixCheckBox.isChecked()
-        allow_nsfw = self.ui.NSFWCheckBox.isChecked()
-        share_image = self.ui.shareImagesCheckBox.isChecked()
-        upscale = self.ui.upscaleComboBox.currentText()
-        loras = self.selectedLoRAs.to_LoRA_list()
-        prompts = prompt_matrix(prompt)
-        prompts *= self.ui.imagesSpinBox.value()
-        jobs = []
-
-        for nprompt in prompts:
-            # if the user hasn't provided a seed, pick one. It must be under 2**31 so that we can display it on a spinbox eventually.
-            # something something C++.
-            if seed == 0:
-                sj_seed = random.randint(0, 2**31 - 1)
-            else:
-                sj_seed = seed
-            job = Job(
-                prompt=nprompt,
-                sampler_name=sampler_name,
-                cfg_scale=cfg_scale,
-                seed=str(sj_seed),
-                width=width,
-                height=height,
-                clip_skip=clip_skip,
-                steps=steps,
-                model=model,
-                karras=karras,
-                hires_fix=hires_fix,
-                allow_nsfw=allow_nsfw,
-                share_image=share_image,
-                upscale=upscale,
-                loras=loras,
-            )
-            jobs.append(job)
-        LOGGER.info(f"Created {len(jobs)} jobs")
-        return jobs
+        return create_jobs(
+            p,
+            np,
+            sampler_name,
+            cfg_scale,
+            seed,
+            width,
+            height,
+            clip_skip,
+            steps,
+            model,
+            karras,
+            hires_fix,
+            allow_nsfw,
+            share_image,
+            upscale,
+            loras,
+            images,
+        )
 
     def construct_model_dict(self, mod):
         self.ui.modelComboBox.clear()
@@ -756,7 +730,7 @@ class HordeQt(QMainWindow):
 
     def on_generate_click(self):
         self.job_history.append(self.save_job_config())
-        jobs = self.create_jobs()
+        jobs = self.get_job_data()
         if jobs is not None:
             pre_queue_size = self.api_thread.job_queue.qsize()
             for n in range(len(jobs)):
