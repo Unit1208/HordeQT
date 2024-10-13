@@ -8,7 +8,7 @@ app = typer.Typer()
 
 
 def update_hordeqt_version(version: str):
-    hordeqt_file = Path("src/hordeqt/__init__.py")
+    hordeqt_file = Path("src/hordeqt/VERSION.py")
     lines = hordeqt_file.read_text().splitlines()
     for i, line in enumerate(lines):
         if line.startswith("APPVERSION"):

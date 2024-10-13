@@ -1,129 +1,71 @@
 [tool.briefcase]
 project_name = "HordeQT"
 bundle = "org.unit1208"
-version = "1.3.0"
+version = "1.3.1"
 url = "https://github.com/Unit1208/HordeQT"
-license.file = "LICENSE"
 author = "Unit1208"
 author_email = "unit1208@national.shitposting.agency"
 
-[tool.briefcase.app.hordeqt]
-icon="src/hordeqt/resources/icons/icon"
+[tool.pyright]
+exclude = [ "build/**", "dist/**", "logs/**",]
+include = [ "src",]
+typeCheckingMode = "standard"
 
+[tool.isort]
+profile = "black"
+
+[tool.briefcase.license]
+file = "LICENSE"
+
+[tool.briefcase.app.hordeqt]
+icon = "src/hordeqt/resources/icons/icon"
 formal_name = "HordeQT"
 description = "Generate images using the AI Horde"
-long_description="HordeQT is a local frontend to the AI Horde. It is primarily aimed at power users and people already familiar with Stable Diffusion."
-sources = [
-    "src/hordeqt",
-]
+long_description = "HordeQT is a local frontend to the AI Horde. It is primarily aimed at power users and people already familiar with Stable Diffusion."
+sources = [ "src/hordeqt",]
+requires = [ "PySide6~=6.7.3", "keyring~=25.3.0", "keyrings-alt~=5.0.2", "requests~=2.32.3", "human-readable~=1.3.4", "pyqt-toast-notification~=1.3.2", "pillow~=10.4.0", "jsonpickle~=3.3.0", "loguru~=0.7.2",]
 
-requires = [
-    "PySide6~=6.7.3",
-    "keyring~=25.3.0",
-    "keyrings-alt~=5.0.2",
-    "requests~=2.32.3",
-    "human-readable~=1.3.4",
-    "pyqt-toast-notification~=1.3.2",
-    "pillow~=10.4.0",
-    "jsonpickle~=3.3.0",
-    "loguru~=0.7.2"
-]
 [tool.briefcase.app.hordeqt.macOS]
 universal_build = true
-requires = [
-    "std-nslog~=1.0.0",
-]
+requires = [ "std-nslog~=1.0.0",]
 
 [tool.briefcase.app.hordeqt.linux]
-requires = [
-]
-
-[tool.briefcase.app.hordeqt.linux.system.debian]
-system_requires = [
-]
-
-system_runtime_requires = [
-    # Derived from https://doc.qt.io/qt-6/linux-requirements.html
-    "libxext6",
-    "libxrender1",
-    "libx11-xcb1",
-    "libxkbcommon-x11-0",
-    "libxcb-image0",
-    "libxcb-cursor0",
-    "libxcb-shape0",
-    "libxcb-randr0",
-    "libxcb-xfixes0",
-    "libxcb-sync1",
-    "libxcb-icccm4",
-    "libxcb-keysyms1",
-    "libfontconfig1",
-    "libsm6",
-    "libice6",
-    "libglib2.0-0",
-    "libgl1",
-    "libegl1",
-    "libdbus-1-3",
-]
-
-[tool.briefcase.app.hordeqt.linux.system.rhel]
-system_requires = [
-]
-
-system_runtime_requires = [
-    "qt6-qtbase-gui",
-]
-
-[tool.briefcase.app.hordeqt.linux.system.suse]
-system_requires = [
-]
-
-system_runtime_requires = [
-    "libgthread-2_0-0",
-    "libQt6Gui6",
-]
-
-[tool.briefcase.app.hordeqt.linux.system.arch]
-system_requires = [
-]
-
-system_runtime_requires = [
-    "qt6-base",
-]
-
-[tool.briefcase.app.hordeqt.linux.appimage]
-manylinux = "manylinux_2_28"
-
-system_requires = [
-# ?? FIXME
-]
-
-linuxdeploy_plugins = [
-]
-
-[tool.briefcase.app.hordeqt.linux.flatpak]
-flatpak_runtime = "org.kde.Platform"
-flatpak_runtime_version = "6.6"
-flatpak_sdk = "org.kde.Sdk"
+requires = []
 
 [tool.briefcase.app.hordeqt.windows]
-requires = [
-]
+requires = []
 
-# Mobile deployments
 [tool.briefcase.app.hordeqt.iOS]
 supported = false
 
 [tool.briefcase.app.hordeqt.android]
 supported = false
 
-# Web deployments
 [tool.briefcase.app.hordeqt.web]
 supported = false
 
-[tool.pyright]
-exclude = [ "build/**", "dist/**", "logs/**"]
-include = ["src"]
-typeCheckingMode="standard"
+[tool.briefcase.app.hordeqt.linux.appimage]
+manylinux = "manylinux_2_28"
+system_requires = []
+linuxdeploy_plugins = []
 
-[tool.isort]
-profile = "black"
+[tool.briefcase.app.hordeqt.linux.flatpak]
+flatpak_runtime = "org.kde.Platform"
+flatpak_runtime_version = "6.6"
+flatpak_sdk = "org.kde.Sdk"
+
+[tool.briefcase.app.hordeqt.linux.system.debian]
+system_requires = []
+system_runtime_requires = [ "libxext6", "libxrender1", "libx11-xcb1", "libxkbcommon-x11-0", "libxcb-image0", "libxcb-cursor0", "libxcb-shape0", "libxcb-randr0", "libxcb-xfixes0", "libxcb-sync1", "libxcb-icccm4", "libxcb-keysyms1", "libfontconfig1", "libsm6", "libice6", "libglib2.0-0", "libgl1", "libegl1", "libdbus-1-3",]
+
+[tool.briefcase.app.hordeqt.linux.system.rhel]
+system_requires = []
+system_runtime_requires = [ "qt6-qtbase-gui",]
+
+[tool.briefcase.app.hordeqt.linux.system.suse]
+system_requires = []
+system_runtime_requires = [ "libgthread-2_0-0", "libQt6Gui6",]
+
+[tool.briefcase.app.hordeqt.linux.system.arch]
+system_requires = []
+system_runtime_requires = [ "qt6-base",]
