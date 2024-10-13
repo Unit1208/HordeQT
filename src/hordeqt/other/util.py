@@ -6,6 +6,7 @@ import uuid
 from hordeqt.civit.civit_api import BaseModel
 from hordeqt.classes.Model import Model
 from hordeqt.other.consts import CACHE_PATH
+from hordeqt.VERSION import APPVERSION
 
 
 def get_metadata():
@@ -60,9 +61,8 @@ def horde_model_to_civit_baseline(model: Model) -> BaseModel:
 
 
 def get_headers(api_key: str, include_api_key: bool = True):
-    version = get_metadata()["Version"]
     t = {
-        "Client-Agent": f"HordeQt:{version}:Unit1208",
+        "Client-Agent": f"HordeQt:{APPVERSION}:Unit1208",
         "accept": "application/json",
         "Content-Type": "application/json",
     }

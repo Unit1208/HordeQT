@@ -1,7 +1,7 @@
 [tool.briefcase]
 project_name = "HordeQT"
 bundle = "org.unit1208"
-version = "1.2.1"
+version = "1.3.0"
 url = "https://github.com/Unit1208/HordeQT"
 license.file = "LICENSE"
 author = "Unit1208"

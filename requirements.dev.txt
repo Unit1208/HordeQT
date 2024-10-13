@@ -3,3 +3,6 @@ black
 ruff
 isort
 pytest
+typer
+toml
+ruamel.yaml
