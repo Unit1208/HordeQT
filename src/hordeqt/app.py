@@ -198,11 +198,19 @@ class HordeQt(QMainWindow):
         scroll_area.setSizePolicy(sizePolicy)
         scroll_area.setWidgetResizable(True)
         self.gallery_container = ImageGalleryWidget()
+        existing_ids: List[str] = []
+        filtered_jobs: List[LocalJob] = []
         for lj in self.job_download_thread.completed_downloads:
-            lj.update_path()
-            LOGGER.info(f"Image found, adding to gallery: {lj.id}")
-            self.add_image_to_gallery(lj)
-            # May need to update scroll_area when jobs are added?
+            if lj.id in existing_ids:
+                LOGGER.debug(f"Found duplicate for {lj.id}")
+            else:
+                lj.update_path()
+                LOGGER.info(f"Image found, adding to gallery: {lj.id}")
+                self.add_image_to_gallery(lj)
+                filtered_jobs.append(lj)
+                existing_ids.append(lj.id)
+        self.job_download_thread.completed_downloads = filtered_jobs
+        # May need to update scroll_area when jobs are added?
         scroll_area.setWidget(self.gallery_container)
         container_layout.addWidget(scroll_area)
         self.ui.galleryViewFrame.setLayout(container_layout)

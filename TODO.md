@@ -114,7 +114,7 @@
   - [x] Load icon for use here (And other places in the code)
 - [ ] Persistent Kudos display at top right.
 - [x] Turn job queue into a priority queue to check jobs with a closer ETA more often
-- [ ] Deduplicate job ids
+- [x] Deduplicate job ids
 - [ ] Documentation
   - [ ] Build script for documentation
   - [ ] Adapt existing documentation, it can be more specific to the Horde and HordeQT.
