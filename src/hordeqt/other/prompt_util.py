@@ -45,8 +45,17 @@ def prompt_matrix(prompt: str) -> List[str]:
 
 def parse_prompt_LoRAs(prompt: str) -> Tuple[str, List[LoRA]]:
     lora_list = []
-    # \<lora:(?P<LoraID>\d+?) ((?:\:(?P<ModelStrength>-?\d+(\.\d+)?)?)?(?:\:(?P<CLIPStrength>-?\d+(\.\d+)?)?)?)(?:\:.+?)?>
-    processed_prompt = prompt
+    lora_re = r"\<lora:(?P<LoraID>\d+?) ((?:\:(?P<ModelStrength>-?\d+(\.\d+)?)?)?(?:\:(?P<CLIPStrength>-?\d+(\.\d+)?)?)?)(?:\:.+?)?>"
+
+    matches = re.finditer(lora_re, prompt, re.VERBOSE | re.X)
+
+    # Iterate through matches
+    for match in matches:
+        lora_id = int(match.group("LoraID"))
+        lora_strength = float(match.group("ModelStrength"))
+        lora_clip_strength = float(match.group("CLIPStrength"))
+        lora_list.append(lora)
+    processed_prompt = re.sub(lora_re, "", prompt).strip()
 
     return (processed_prompt, lora_list)
 

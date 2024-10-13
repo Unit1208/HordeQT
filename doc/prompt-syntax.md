@@ -1,6 +1,6 @@
 ## Prompt Syntax
 
-While [Prompt](doc/prompt.md) deals with the prompt's content, HordeQT has some special features that allow for more advanced prompting.
+While [Prompt.md](doc/prompt.md) deals with the prompt's content, HordeQT has some special features that allow for more advanced prompting.
 
 ### {Multiple|Prompts}
 
@@ -21,7 +21,8 @@ It also applies with multiple options. In this case, *one request for **every** 
 
 > [!WARNING]
 > This can cause the amount of images requested to grow very, very rapidly.
-With the prompt "A {red|green|blue|purple} {high-end|retro|modern} {car|motorcycle}" will generate *24* images.
+With the prompt "A {red|green|blue|purple} {high-end|retro|modern} {car|motorcycle}" will generate 24 images.
+With the prompt "A {red|green|blue|purple} {high-end|retro|modern} {car|motorcycle|train}" will generate *36* images.
 
 This feature also applies to multiple prompts within multiple prompts.
 > A { {light|dark}-green|blue} car

@@ -116,3 +116,4 @@
 - [ ] Turn job queue into a priority queue to check jobs with a closer ETA more often
 - [ ] Documentation
   - [ ] Build script for documentation
+  - [ ] Adapt existing documentation, it can be more specific to the Horde and HordeQT.
