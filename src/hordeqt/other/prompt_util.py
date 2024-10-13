@@ -45,17 +45,24 @@ def prompt_matrix(prompt: str) -> List[str]:
 
 def parse_prompt_LoRAs(prompt: str) -> Tuple[str, List[LoRA]]:
     lora_list = []
-    lora_re = r"\<lora:(?P<LoraID>\d+?) ((?:\:(?P<ModelStrength>-?\d+(\.\d+)?)?)?(?:\:(?P<CLIPStrength>-?\d+(\.\d+)?)?)?)(?:\:.+?)?>"
+    lora_re = r"\s?\<lora:(?P<LoraID>\d+?) ((?:\:(?P<ModelStrength>-?\d+(\.\d+)?)?)?(?:\:(?P<CLIPStrength>-?\d+(\.\d+)?)?)?)(?:\:(?P<Comment>.+?))?>"
 
     matches = re.finditer(lora_re, prompt, re.VERBOSE | re.X)
-
     # Iterate through matches
     for match in matches:
         lora_id = int(match.group("LoraID"))
-        lora_strength = float(match.group("ModelStrength"))
-        lora_clip_strength = float(match.group("CLIPStrength"))
+        lora_strength = float(match.group("ModelStrength") or 1)
+        lora_clip_strength = float(match.group("CLIPStrength") or 1)
+        lora_comment = str(match.group("Comment") or "")
+        lora = LoRA(
+            f"Prompt Lora: {lora_comment} ({lora_id})",
+            lora_id,
+            lora_strength,
+            lora_clip_strength,
+            None,
+        )
         lora_list.append(lora)
-    processed_prompt = re.sub(lora_re, "", prompt).strip()
+    processed_prompt = re.sub(lora_re, "", prompt, 0, re.VERBOSE | re.X).strip()
 
     return (processed_prompt, lora_list)
 
@@ -78,7 +85,7 @@ def create_jobs(
     upscale: str,
     loras: List[LoRA],
     images: int,
-):
+) -> List[Job]:
     if neg_prompt is not None and neg_prompt.strip() != "":
         """
         NOTE: the subsequent call to prompt matrix could do some *really* dumb stuff with this current implementation.
@@ -97,15 +104,17 @@ def create_jobs(
     prompts = prompt_matrix(prompt)
     prompts *= images
     for nprompt in prompts:
+        complete_loras = loras.copy()
+        parsed_prompt, parsed_loras = parse_prompt_LoRAs(nprompt)
+        complete_loras.extend(parsed_loras)
         # if the user hasn't provided a seed, pick one. It must be under 2**31 so that we can display it on a spinbox eventually.
         # something something C++.
         if seed == 0:
             sj_seed = random.randint(0, 2**31 - 1)
         else:
             sj_seed = seed
-
         job = Job(
-            prompt=nprompt,
+            prompt=parsed_prompt,
             sampler_name=sampler_name,
             cfg_scale=cfg_scale,
             seed=str(sj_seed),
@@ -119,7 +128,7 @@ def create_jobs(
             allow_nsfw=allow_nsfw,
             share_image=share_image,
             upscale=upscale,
-            loras=loras,
+            loras=complete_loras,
         )
         jobs.append(job)
     LOGGER.info(f"Created {len(jobs)} jobs")

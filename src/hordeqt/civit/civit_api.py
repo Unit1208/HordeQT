@@ -213,7 +213,7 @@ class ModelVersion:
     @staticmethod
     def deserialize(data: dict):
         return ModelVersion(
-            id=data.get("id", int),
+            id=data.get("id", 0),
             name=data.get("name", ""),
             status=data.get("status", ""),
             baseModel=BaseModel(data.get("baseModel", BaseModel.StableDiffusion2_1)),

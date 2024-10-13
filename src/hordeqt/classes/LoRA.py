@@ -10,7 +10,7 @@ class LoRA:
     version_id: int
     strength: float
     clip_strength: float
-    model_version: ModelVersion
+    model_version: Optional[ModelVersion]
     inject_trigger: Optional[str] = None
 
     @classmethod
@@ -40,13 +40,17 @@ class LoRA:
         return base
 
     def serialize(self) -> dict:
+        if self.model_version is not None:
+            mv = self.model_version.serialize()
+        else:
+            mv = {}
         return {
             "name": self.name,
             "id": self.version_id,
             "strength": self.strength,
             "clip_strength": self.clip_strength,
             "inject_trigger": self.inject_trigger,
-            "model_version": self.model_version.serialize(),
+            "model_version": mv,
         }
 
     @classmethod
