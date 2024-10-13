@@ -40,11 +40,11 @@
 - [ ] Handle resizing
 - [x] Actually decent logging - logging and coloredlogs. See verboselogs by the same author as coloredlogs
 - [ ] Rescan directory in order to load images that weren't properly saved
-- [ ] Error handling
-  - [ ] Errored/Censored job state + handling
-    - [ ] NSFW
-    - [ ] CSAM
-    - [ ] LoRA/TI
+- [x] Error handling
+  - [x] Errored/Censored job state + handling
+    - [x] NSFW
+    - [x] CSAM
+    - [x] LoRA/TI
 
     ```
     lora, ti ---->  download_failed, baseline_mismatch
@@ -118,3 +118,5 @@
 - [ ] Documentation
   - [ ] Build script for documentation
   - [ ] Adapt existing documentation, it can be more specific to the Horde and HordeQT.
+- [ ] Add actual kudos cost to LJ
+- [ ] "Clear in progress/queued" button

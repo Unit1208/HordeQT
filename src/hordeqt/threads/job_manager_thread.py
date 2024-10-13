@@ -15,6 +15,9 @@ from hordeqt.other.util import get_headers
 
 class JobManagerThread(QThread):
     job_completed = Signal(LocalJob)  # Signal emitted when a job is completed
+    job_errored = Signal(dict)
+    job_info = Signal(dict)
+
     updated = Signal()
     kudos_cost_updated = Signal(type(Optional[float]))
     request_kudo_cost_update = Signal(Job)
@@ -192,6 +195,8 @@ class JobManagerThread(QThread):
                     self.generate_rl_remaining = int(
                         response.headers.get("x-ratelimit-remaining") or 1
                     )
+                    self.updated.emit()
+
                 except requests.RequestException as e:
                     LOGGER.error(e)
                     # Nested try: except feels like bad practice.
@@ -218,8 +223,6 @@ class JobManagerThread(QThread):
                 LOGGER.warning(
                     f'Job "{job_id}" was created more than 10 minutes ago, likely errored'
                 )
-                job.faulted = True
-
             try:
                 LOGGER.debug(f"Checking job {job_id} - ({job.horde_job_id})")
                 response = requests.get(BASE_URL + f"generate/check/{job.horde_job_id}")
@@ -228,8 +231,12 @@ class JobManagerThread(QThread):
                 if job.done:
                     LOGGER.info(f"Job {job_id} done")
                     self.completed_jobs.append(job)
+                elif job.faulted:
+                    LOGGER.error(f"Job {job_id} Errored")
+                    self.errored_jobs.append(job)
                 else:
                     self.current_requests.put((round(job.wait_time or 0), job_id, job))
+                    self.updated.emit()
 
             except requests.RequestException as e:
                 LOGGER.error(e)
@@ -250,22 +257,30 @@ class JobManagerThread(QThread):
                     r.raise_for_status()
                     rj = r.json()
                     if len(rj["generations"]) > 0:
-                        gen = rj["generations"][0]
-                        lj.downloadURL = gen["img"]
-                        lj.worker_id = gen["worker_id"]
-                        lj.worker_name = gen["worker_name"]
-                        lj.completed_at = time.time()
                         self.status_reset_time = float(
                             r.headers.get("x-ratelimit-reset") or time.time() + 60
                         )
                         self.status_rl_remaining = int(
                             r.headers.get("x-ratelimit-remaining") or 1
                         )
-                        self.job_completed.emit(lj)
+                        rj["job_id"] = job.job_id
+                        rj["prompt"] = job.prompt
+                        gen = rj["generations"][0]
+                        if gen["censored"] or rj["faulted"]:
+                            self.job_errored.emit(rj)
+                        else:
+                            if len("gen_metadata") > 0:
+                                self.job_info.emit(rj)
+                            lj.downloadURL = gen["img"]
+                            lj.worker_id = gen["worker_id"]
+                            lj.worker_name = gen["worker_name"]
+                            lj.completed_at = time.time()
+                            self.job_completed.emit(lj)
+                        self.updated.emit()
+
                     else:
                         self.log_error(lj.original, r)
-                        # Is this a good idea?
-                        # self.job_queue.put(lj.original)
+
                 except requests.RequestException as e:
                     LOGGER.error(e)
                 self.status_rl_reset = time.time()
@@ -288,7 +303,6 @@ class JobManagerThread(QThread):
         self.running = False
         self.wait_condition.wakeAll()  # Wake the thread immediately to exit
         self.mutex.unlock()
-        self.wait()
         LOGGER.debug("API thread stopped.")
 
     def add_job(self, job: Job):

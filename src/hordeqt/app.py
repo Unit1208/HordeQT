@@ -3,7 +3,7 @@ import os
 import shutil
 import sys
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import human_readable as hr
 import keyring
@@ -146,6 +146,8 @@ class HordeQt(QMainWindow):
         self.job_download_thread.use_metadata = self.savedData.save_metadata
         LOGGER.debug("Connecting API signals")
         self.api_thread.job_completed.connect(self.on_job_completed)
+        self.api_thread.job_errored.connect(self.on_job_errored)
+        self.api_thread.job_info.connect(self.on_job_info)
         self.api_thread.updated.connect(self.update_inprogess_table)
         self.api_thread.kudos_cost_updated.connect(self.on_kudo_cost_get)
         LOGGER.debug("Connecting Loading signals")
@@ -461,6 +463,59 @@ class HordeQt(QMainWindow):
         self.restore_job_config({})
         self.ui.modelComboBox.setCurrentIndex(0)
         self.update_kudos_preview()
+
+    def on_job_errored(self, val: Dict[str, Any]):
+        response = val
+        prompt = val["prompt"]
+        job_id = val["job_id"]
+        formatted_error = ""
+        # TODO: Extract logic into a util function
+        gen_metas = response["generations"][0]["gen_metadata"]
+        for gen_meta in gen_metas:
+            if gen_meta["type"] == "censorship":
+                formatted_error += "Image was censored"
+                if gen_meta["value"] == "csam":
+                    formatted_error += " due to Horde filtering"
+                if gen_meta["value"] == "nsfw":
+                    formatted_error += " due to user request"
+        self.show_error_toast("Job Errored", f"{formatted_error} ({job_id}:{prompt})")
+
+    def on_job_info(self, val: Dict[str, Any]):
+        response = val
+        prompt = val["prompt"]
+        job_id = val["job_id"]
+        formatted_warning_tokens = []
+        # TODO: Extract logic into a util function
+        gen_metas = response["generations"][0]["gen_metadata"]
+        for gen_meta in gen_metas:
+            if gen_meta["type"] == "lora":
+                formatted_warning_tokens.append("LoRA(s)")
+            elif gen_meta["type"] == "ti":
+                formatted_warning_tokens.append("TI(s)")
+            elif (
+                gen_meta["type"] == "source_image"
+            ):  # img2img isn't actually implemented yet, but doesn't hurt to include code to handle it if I do implement it.
+                formatted_warning_tokens.append("img2img source image")
+            elif gen_meta["type"] == "source_mask":  # ditto
+                formatted_warning_tokens.append("img2img mask image")
+            elif gen_meta["type"] == "extra_source_images":  # ditto
+                formatted_warning_tokens.append("img2img extra source image(s)")
+            elif gen_meta["type"] == "information":
+                formatted_warning_tokens.append("INFORMATION:")
+
+            if gen_meta["value"] == "download_failed":
+                formatted_warning_tokens.append("failed to download")
+            elif gen_meta["value"] == "parse_failed":
+                formatted_warning_tokens.append("failed to parse")
+            elif gen_meta["value"] == "baseline_mismatch":
+                formatted_warning_tokens.append("was used on the wrong baseline")
+
+            if gen_meta["value"] == "see_ref" or gen_meta.get("ref", None) is not None:
+                formatted_warning_tokens.append("Ref: ")
+                formatted_warning_tokens.append(gen_meta["ref"])
+            formatted_warning_tokens.append(";")
+        warning = " ".join(formatted_warning_tokens)
+        self.show_warn_toast("Job Warning", f"{warning} ({job_id}:{prompt})")
 
     def on_job_completed(self, job: LocalJob):
         LOGGER.info(f"Job {job.id} completed.")
