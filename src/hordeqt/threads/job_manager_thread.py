@@ -1,8 +1,8 @@
 import copy
 import json
 import time
-from queue import Queue
-from typing import Dict, List, Optional
+from queue import PriorityQueue, Queue
+from typing import Dict, List, Optional, Tuple
 
 import requests
 from PySide6.QtCore import QMutex, QThread, QWaitCondition, Signal
@@ -24,7 +24,9 @@ class JobManagerThread(QThread):
         super().__init__(parent)
         self.api_key = api_key
         self.max_requests = max_requests
-        self.current_requests: Dict[str, Job] = {}
+        self.current_requests: PriorityQueue[Tuple[int, str, Job]] = PriorityQueue(
+            max_requests
+        )
         self.job_queue: Queue[Job] = Queue()
         self.status_rl_reset = time.time()
         self.generate_rl_reset = time.time()
@@ -58,9 +60,9 @@ class JobManagerThread(QThread):
 
     def serialize(self):
         return {
-            "current_requests": {
-                k: self.current_requests[k].serialize() for k in self.current_requests
-            },
+            "current_requests": [
+                (k[0], k[1], k[2].serialize()) for k in self.current_requests.queue
+            ],
             "job_queue": [_.serialize() for _ in list(self.job_queue.queue)],
             "completed_jobs": [_.serialize() for _ in self.completed_jobs],
             "errored_jobs": [_.serialize() for _ in self.errored_jobs],
@@ -133,9 +135,9 @@ class JobManagerThread(QThread):
     ):
         instance = cls(api_key, max_requests, parent)
 
-        instance.current_requests = {
-            k: Job.deserialize(v) for k, v in data.get("current_requests", {}).items()
-        }
+        instance.current_requests = PriorityQueue(max_requests)
+        for item in data.get("current_requests", []):
+            instance.current_requests.put((item[0], item[1], Job.deserialize(item[2])))
 
         instance.job_queue = Queue()
         for item in data.get("job_queue", []):
@@ -157,10 +159,7 @@ class JobManagerThread(QThread):
         self._get_download_paths()
 
     def _send_new_jobs(self):
-        if (
-            len(self.current_requests) < self.max_requests
-            and not self.job_queue.empty()
-        ):
+        if (not self.current_requests.full()) and not self.job_queue.empty():
             if (
                 time.time() - self.generate_rl_reset
             ) > 0 and self.generate_rl_remaining > 0:
@@ -180,9 +179,10 @@ class JobManagerThread(QThread):
                         self.log_error(job, response)
                         return
                     response.raise_for_status()
-                    horde_job_id = response.json().get("id")
+                    response_json = response.json()
+                    horde_job_id = response_json.get("id")
                     job.horde_job_id = horde_job_id
-                    self.current_requests[job.job_id] = job
+                    self.current_requests.put((0, job.horde_job_id, job))
                     LOGGER.info(
                         f"Job {job.job_id} now has horde uuid: " + job.horde_job_id
                     )
@@ -211,15 +211,14 @@ class JobManagerThread(QThread):
                 self.generate_rl_remaining = 2
 
     def _update_current_jobs(self):
-        to_remove = []
-        for job_id, job in self.current_requests.items():
+        if not self.current_requests.empty():
+            _, job_id, job = self.current_requests.get()
+
             if time.time() - job.creation_time > 600:
-                LOGGER.info(
+                LOGGER.warning(
                     f'Job "{job_id}" was created more than 10 minutes ago, likely errored'
                 )
                 job.faulted = True
-                to_remove.append(job_id)
-                continue
 
             try:
                 LOGGER.debug(f"Checking job {job_id} - ({job.horde_job_id})")
@@ -229,14 +228,11 @@ class JobManagerThread(QThread):
                 if job.done:
                     LOGGER.info(f"Job {job_id} done")
                     self.completed_jobs.append(job)
-                    to_remove.append(job_id)
+                else:
+                    self.current_requests.put((round(job.wait_time or 0), job_id, job))
 
-                    # Emit the signal for the completed job
             except requests.RequestException as e:
                 LOGGER.error(e)
-
-        for job_id in to_remove:
-            del self.current_requests[job_id]
 
     def _get_download_paths(self):
         njobs = []
@@ -279,9 +275,6 @@ class JobManagerThread(QThread):
             else:
                 njobs.append(job)
         self.completed_jobs = njobs
-
-    def get_current_jobs(self) -> Dict[str, Job]:
-        return self.current_requests
 
     def get_queued_jobs(self) -> List[Job]:
         return list(self.job_queue.queue)

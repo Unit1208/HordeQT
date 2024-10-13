@@ -113,7 +113,8 @@
 - [x] [Notifications for finishing long-running tasks](https://doc.qt.io/qtforpython-6.6/PySide6/QtWidgets/QSystemTrayIcon.html)
   - [x] Load icon for use here (And other places in the code)
 - [ ] Persistent Kudos display at top right.
-- [ ] Turn job queue into a priority queue to check jobs with a closer ETA more often
+- [x] Turn job queue into a priority queue to check jobs with a closer ETA more often
+- [ ] Deduplicate job ids
 - [ ] Documentation
   - [ ] Build script for documentation
   - [ ] Adapt existing documentation, it can be more specific to the Horde and HordeQT.

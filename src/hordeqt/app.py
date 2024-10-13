@@ -189,7 +189,7 @@ class HordeQt(QMainWindow):
         self.last_job_config: Optional[Dict] = None
         self.job_history: List[Dict] = []
         self.current_kudos_preview_cost = 10.0
-
+        self.jobs_in_progress = 0
         LOGGER.debug("Initializing Masonry/Gallery layout")
         self.ui.galleryViewFrame.setSizePolicy(sizePolicy)
         container_layout = QVBoxLayout(self.ui.galleryViewFrame)
@@ -349,7 +349,7 @@ class HordeQt(QMainWindow):
         conditions = [
             len(self.job_download_thread.queued_downloads),
             self.api_thread.job_queue.qsize(),
-            len(self.api_thread.current_requests),
+            self.api_thread.current_requests.qsize(),
         ]
         preconditions_satisfied = all([condition == 0 for condition in conditions])
         if preconditions_satisfied:
@@ -362,7 +362,7 @@ class HordeQt(QMainWindow):
             self.show_success_toast("Images done", "All images finished processing")
         else:
             LOGGER.debug(
-                f"{len(self.job_download_thread.queued_downloads)=} {self.api_thread.job_queue.qsize()=} {len(self.api_thread.current_requests)=}"
+                f"{len(self.job_download_thread.queued_downloads)=} {self.api_thread.job_queue.qsize()=} {self.api_thread.current_requests.qsize()=}"
             )
 
     def add_image_to_gallery(self, lj: LocalJob):
@@ -875,7 +875,7 @@ class HordeQt(QMainWindow):
                 row = r[0].row()
             return row
 
-        def update_table_with_jobs(jobs, status):
+        def update_table_with_jobs(jobs: Dict[str, Job], status: str):
             for job_id, job in jobs.items():
                 row = find_or_insert_row(job_id)
                 self.update_row(
@@ -890,7 +890,10 @@ class HordeQt(QMainWindow):
         update_table_with_jobs(
             {job.job_id: job for job in self.api_thread.job_queue.queue}, "Queued"
         )
-        update_table_with_jobs(self.api_thread.current_requests, "In Progress")
+        update_table_with_jobs(
+            {job_id: job for _, job_id, job in self.api_thread.current_requests.queue},
+            "In Progress",
+        )
 
         show_done_images = self.ui.showDoneImagesCheckbox.isChecked()
 
