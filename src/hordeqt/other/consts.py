@@ -41,6 +41,11 @@ os.makedirs(CACHE_PATH, exist_ok=True)
 
 _imported = False
 if not _imported:
+    LOGGER.remove(0)
+    if os.environ.get("HORDEQT_DEBUG"):
+        LOGGER.add(sys.stdout, backtrace=True, diagnose=True)
+    else:
+        LOGGER.add(sys.stdout, level="WARNING")
     LOGGER.add(
         SAVED_LOG_PATH / "hordeqtlog_{time}.log",
         compression="tar.gz",

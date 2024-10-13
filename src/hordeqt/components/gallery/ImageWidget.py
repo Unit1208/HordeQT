@@ -1,3 +1,4 @@
+from PIL import Image
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QLabel, QSizePolicy
@@ -8,10 +9,19 @@ from hordeqt.other.consts import LOGGER
 
 class ImageWidget(QLabel):
     imageClicked = Signal(QPixmap)
+    valid: bool = True
 
     def __init__(self, lj: LocalJob):
         super().__init__()
         self.lj = lj
+        if not lj.path.exists():
+            self.valid = False
+            return
+        try:
+            Image.open(lj.path).close()
+        except Image.UnidentifiedImageError:
+            self.valid = False
+            return
         self.original_pixmap = QPixmap(lj.path)
         self.setPixmap(self.original_pixmap)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)

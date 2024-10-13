@@ -236,7 +236,7 @@ class JobManagerThread(QThread):
                     self.errored_jobs.append(job)
                 else:
                     self.current_requests.put((round(job.wait_time or 0), job_id, job))
-                    self.updated.emit()
+                self.updated.emit()
 
             except requests.RequestException as e:
                 LOGGER.error(e)

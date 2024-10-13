@@ -44,6 +44,7 @@ from hordeqt.other.consts import (
     SAVED_DATA_DIR_PATH,
     SAVED_IMAGE_DIR_PATH,
 )
+from hordeqt.other.job_util import get_horde_metadata_pretty
 from hordeqt.other.prompt_util import create_jobs
 from hordeqt.threads.etc_download_thread import DownloadThread
 from hordeqt.threads.job_download_thread import JobDownloadThread
@@ -207,10 +208,13 @@ class HordeQt(QMainWindow):
                 LOGGER.debug(f"Found duplicate for {lj.id}")
             else:
                 lj.update_path()
-                LOGGER.info(f"Image found, adding to gallery: {lj.id}")
-                self.add_image_to_gallery(lj)
-                filtered_jobs.append(lj)
-                existing_ids.append(lj.id)
+                v = self.add_image_to_gallery(lj)
+                if not v:
+                    LOGGER.warning(f"Image {lj.path} is invalid, not adding to gallery")
+                else:
+                    LOGGER.info(f"Image found, added to gallery: {lj.id}")
+                    filtered_jobs.append(lj)
+                    existing_ids.append(lj.id)
         self.job_download_thread.completed_downloads = filtered_jobs
         # May need to update scroll_area when jobs are added?
         scroll_area.setWidget(self.gallery_container)
@@ -377,8 +381,10 @@ class HordeQt(QMainWindow):
 
     def add_image_to_gallery(self, lj: LocalJob):
         image_widget = ImageWidget(lj)
-        image_widget.imageClicked.connect(lambda v: self.show_image_popup(v, lj))
-        self.gallery_container.m_layout.addWidget(image_widget)
+        if image_widget.valid:
+            image_widget.imageClicked.connect(lambda v: self.show_image_popup(v, lj))
+            self.gallery_container.m_layout.addWidget(image_widget)
+        return image_widget.valid
 
     def show_image_popup(self, pixmap, lj):
         popup = ImagePopup(pixmap, lj, self)
@@ -465,57 +471,10 @@ class HordeQt(QMainWindow):
         self.update_kudos_preview()
 
     def on_job_errored(self, val: Dict[str, Any]):
-        response = val
-        prompt = val["prompt"]
-        job_id = val["job_id"]
-        formatted_error = ""
-        # TODO: Extract logic into a util function
-        gen_metas = response["generations"][0]["gen_metadata"]
-        for gen_meta in gen_metas:
-            if gen_meta["type"] == "censorship":
-                formatted_error += "Image was censored"
-                if gen_meta["value"] == "csam":
-                    formatted_error += " due to Horde filtering"
-                if gen_meta["value"] == "nsfw":
-                    formatted_error += " due to user request"
-        self.show_error_toast("Job Errored", f"{formatted_error} ({job_id}:{prompt})")
+        self.show_error_toast("Job Errored", get_horde_metadata_pretty(val))
 
     def on_job_info(self, val: Dict[str, Any]):
-        response = val
-        prompt = val["prompt"]
-        job_id = val["job_id"]
-        formatted_warning_tokens = []
-        # TODO: Extract logic into a util function
-        gen_metas = response["generations"][0]["gen_metadata"]
-        for gen_meta in gen_metas:
-            if gen_meta["type"] == "lora":
-                formatted_warning_tokens.append("LoRA(s)")
-            elif gen_meta["type"] == "ti":
-                formatted_warning_tokens.append("TI(s)")
-            elif (
-                gen_meta["type"] == "source_image"
-            ):  # img2img isn't actually implemented yet, but doesn't hurt to include code to handle it if I do implement it.
-                formatted_warning_tokens.append("img2img source image")
-            elif gen_meta["type"] == "source_mask":  # ditto
-                formatted_warning_tokens.append("img2img mask image")
-            elif gen_meta["type"] == "extra_source_images":  # ditto
-                formatted_warning_tokens.append("img2img extra source image(s)")
-            elif gen_meta["type"] == "information":
-                formatted_warning_tokens.append("INFORMATION:")
-
-            if gen_meta["value"] == "download_failed":
-                formatted_warning_tokens.append("failed to download")
-            elif gen_meta["value"] == "parse_failed":
-                formatted_warning_tokens.append("failed to parse")
-            elif gen_meta["value"] == "baseline_mismatch":
-                formatted_warning_tokens.append("was used on the wrong baseline")
-
-            if gen_meta["value"] == "see_ref" or gen_meta.get("ref", None) is not None:
-                formatted_warning_tokens.append("Ref: ")
-                formatted_warning_tokens.append(gen_meta["ref"])
-            formatted_warning_tokens.append(";")
-        warning = " ".join(formatted_warning_tokens)
-        self.show_warn_toast("Job Warning", f"{warning} ({job_id}:{prompt})")
+        self.show_warn_toast("Job Warning", get_horde_metadata_pretty(val))
 
     def on_job_completed(self, job: LocalJob):
         LOGGER.info(f"Job {job.id} completed.")
@@ -952,6 +911,9 @@ class HordeQt(QMainWindow):
 
         update_table_with_jobs(
             {job.job_id: job for job in self.api_thread.job_queue.queue}, "Queued"
+        )
+        update_table_with_jobs(
+            {job.job_id: job for job in self.api_thread.errored_jobs}, "Errored"
         )
         update_table_with_jobs(
             {job_id: job for _, job_id, job in self.api_thread.current_requests.queue},
