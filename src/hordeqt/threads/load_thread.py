@@ -63,7 +63,7 @@ class LoadThread(QThread):
             LOGGER.debug(f"Refreshing model cache at {model_cache_path}")
             os.makedirs(model_cache_path.parent, exist_ok=True)
             r = requests.get(
-                "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/flux/stable_diffusion.json"
+                "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-image-model-reference/main/stable_diffusion.json"
             )
             j = r.json()
             with open(model_cache_path, "wt") as f:

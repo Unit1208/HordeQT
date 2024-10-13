@@ -289,6 +289,7 @@ class HordeQt(QMainWindow):
         self.update_kudos_preview()
 
     def on_preset_change(self):
+        # TODO: Refactor into a separate util functions
         current_model_needs_1024 = self.model_dict[
             self.ui.modelComboBox.currentText()
         ].details.get("baseline", None) in ["stable_diffusion_xl", "stable_cascade"]
