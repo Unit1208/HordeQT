@@ -120,3 +120,4 @@
   - [ ] Adapt existing documentation, it can be more specific to the Horde and HordeQT.
 - [ ] Add actual kudos cost to LJ
 - [ ] "Clear in progress/queued" button
+- [ ] Something with the Job IDs got messed up during the addition of pytests
