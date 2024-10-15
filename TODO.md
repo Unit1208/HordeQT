@@ -121,3 +121,4 @@
 - [ ] Add actual kudos cost to LJ
 - [ ] "Clear in progress/queued" button
 - [ ] Rewrite the whole job status message section.
+- [x] Something with the Job IDs got messed up during the addition of pytests
