@@ -120,3 +120,4 @@
   - [ ] Adapt existing documentation, it can be more specific to the Horde and HordeQT.
 - [ ] Add actual kudos cost to LJ
 - [ ] "Clear in progress/queued" button
+- [ ] Rewrite the whole job status message section.

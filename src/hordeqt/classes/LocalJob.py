@@ -8,7 +8,6 @@ from PIL import ExifTags, Image
 
 from hordeqt.classes.Job import Job
 from hordeqt.other.consts import SAVED_IMAGE_DIR_PATH
-from hordeqt.other.util import create_uuid
 
 
 @dataclass
@@ -32,13 +31,10 @@ class LocalJob:
             str(value.get("worker_name", "Unknown")),
             str(value.get("worker_id", "00000000-0000-0000-0000-000000000000")),
         )
-        job = value.get("original", {})
 
         lj.completed_at = value.get("completed_at", time.time())  # type: ignore
         lj.file_type = file_type
 
-        lj.id = job.get("id", create_uuid())  # type: ignore
-        lj.original.job_id = lj.id
         lj.update_path()
         return lj
 
@@ -110,8 +106,6 @@ class LocalJob:
         lj.worker_name = value.get("worker_name", "Unknown")
         lj.worker_id = value.get("worker_id", "00000000-0000-0000-0000-000000000000")
         lj.file_type = value.get("fileType", "webp")
-        lj.id = job.get("id", create_uuid())  # type: ignore
-        lj.original.job_id = lj.id
         lj.update_path()
         return lj
 

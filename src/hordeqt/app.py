@@ -355,7 +355,7 @@ class HordeQt(QMainWindow):
 
     def on_image_fully_downloaded(self, lj: LocalJob):
         self.add_image_to_gallery(lj)
-        self.check_for_notifications()
+        QTimer.singleShot(1000, self.check_for_notifications)
 
     def check_for_notifications(self):
         # this seems like it could be an oppurtuniy for a race condition, but it's probably not a huge deal.
@@ -367,13 +367,14 @@ class HordeQt(QMainWindow):
         ]
         preconditions_satisfied = all([condition == 0 for condition in conditions])
         if preconditions_satisfied:
-            if self.jobs_in_progress >= 0:
+            if self.jobs_in_progress > 0:
                 self.systemTray.showMessage(
                     "Images done",
                     f"All {self.jobs_in_progress} finished processing",
                     msecs=5000,
                 )
             self.show_success_toast("Images done", "All images finished processing")
+            self.jobs_in_progress = 0
         else:
             LOGGER.debug(
                 f"{len(self.job_download_thread.queued_downloads)=} {self.api_thread.job_queue.qsize()=} {self.api_thread.current_requests.qsize()=}"
@@ -773,7 +774,7 @@ class HordeQt(QMainWindow):
                 and self.ui.notifyAfterNFinishedSpinBox.value() > 0
             ):
 
-                self.jobs_in_progress = self.api_thread.job_queue.qsize()
+                self.jobs_in_progress += len(jobs)
 
     def save_api_key(self):
         self.hide_api_key()

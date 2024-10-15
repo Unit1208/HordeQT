@@ -185,7 +185,7 @@ class JobManagerThread(QThread):
                     response_json = response.json()
                     horde_job_id = response_json.get("id")
                     job.horde_job_id = horde_job_id
-                    self.current_requests.put((0, job.horde_job_id, job))
+                    self.current_requests.put((0, job.job_id, job))
                     LOGGER.info(
                         f"Job {job.job_id} now has horde uuid: " + job.horde_job_id
                     )
@@ -235,7 +235,14 @@ class JobManagerThread(QThread):
                     LOGGER.error(f"Job {job_id} Errored")
                     self.errored_jobs.append(job)
                 else:
-                    self.current_requests.put((round(job.wait_time or 0), job_id, job))
+                    self.current_requests.put(
+                        (
+                            round(job.wait_time or 0)
+                            + self.current_requests.qsize() * 5,
+                            job_id,
+                            job,
+                        )
+                    )
                 self.updated.emit()
 
             except requests.RequestException as e:
