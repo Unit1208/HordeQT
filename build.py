@@ -126,7 +126,7 @@ def main():
     if is_windows:
         paths = [
             "C:\\Python312-x64\\python.exe",
-            "$env:LOCALAPPDATA\\Local\\Programs\\Python312\\python.exe",
+            "$env:LOCALAPPDATA\\Local\\Programs\\Python312\\python.exe",  # TODO: FIX
         ]
         py_path = ""
         for p in paths:

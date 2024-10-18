@@ -1,7 +1,7 @@
 import copy
 import json
 import time
-from queue import PriorityQueue, Queue
+from queue import Empty, PriorityQueue, Queue
 from typing import Dict, List, Optional, Tuple
 
 import requests
@@ -20,7 +20,6 @@ class JobManagerThread(QThread):
 
     updated = Signal()
     kudos_cost_updated = Signal(type(Optional[float]))
-    request_kudo_cost_update = Signal(Job)
     job_count = 1
 
     def __init__(self, api_key: str, max_requests: int, parent=None):
@@ -31,6 +30,7 @@ class JobManagerThread(QThread):
             max_requests
         )
         self.job_queue: Queue[Job] = Queue()
+        self.kudos_cost_queue: Queue[Job] = Queue()
         self.status_rl_reset = time.time()
         self.generate_rl_reset = time.time()
         self.completed_jobs: List[Job] = []
@@ -44,7 +44,6 @@ class JobManagerThread(QThread):
         self.mutex = QMutex()  # Mutex for synchronization
 
         self.errored_jobs: List[Job] = []
-        self.request_kudo_cost_update.connect(self.get_kudos_cost)
 
     def run(self):
         LOGGER.debug("API thread started")
@@ -78,7 +77,11 @@ class JobManagerThread(QThread):
         errors = ", ".join(valid_error.get("errors", {}).items())
         LOGGER.error(f'Job {job.job_id} failed validation: "{rc}" {message}. {errors}')
 
-    def get_kudos_cost(self, job: Job):
+    def _get_kudos_cost(self):
+        try:
+            job = self.kudos_cost_queue.get(block=False)
+        except Empty:
+            return
         while (
             not (time.time() - self.generate_rl_reset) > 0
             and self.generate_rl_remaining > 0
@@ -160,6 +163,7 @@ class JobManagerThread(QThread):
         self._send_new_jobs()
         self._update_current_jobs()
         self._get_download_paths()
+        self._get_kudos_cost()
 
     def _send_new_jobs(self):
         if (not self.current_requests.full()) and not self.job_queue.empty():

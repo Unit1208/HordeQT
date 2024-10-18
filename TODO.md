@@ -34,12 +34,12 @@
 - [ ] Figure out why opening takes so long
 - [ ] Reload button for user details
 - [x] Preview kudos cost
-  - [ ] Debug thread issue - it hangs every time a parameter is changed
-- [ ] Toggle for done jobs
+  - [x] Debug thread issue - it hangs every time a parameter is changed
+- [x] Toggle for done jobs
 - [x] Why isn't the scrollbar working on the Masonry layout?
 - [ ] Handle resizing
 - [x] Actually decent logging - logging and coloredlogs. See verboselogs by the same author as coloredlogs
-- [ ] Rescan directory in order to load images that weren't properly saved
+- [x] Rescan directory in order to load images that weren't properly saved
 - [x] Error handling
   - [x] Errored/Censored job state + handling
     - [x] NSFW

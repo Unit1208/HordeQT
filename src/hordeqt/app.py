@@ -268,12 +268,12 @@ class HordeQt(QMainWindow):
         self.job_download_thread.use_metadata = self.ui.saveMetadataCheckBox.isChecked()
 
     def update_kudos_preview(self):
-        jobs = self.get_job_data(True)
         self.ui.GenerateButton.setText("Generate (Cost: Loading)")
+        jobs = self.get_job_data(True)
         if jobs is not None:
             # FIXME: for now, this will work. However, if multi-config is added (i.e. request with multiple step counts), this might undershoot or overshoot.
-            self.api_thread.request_kudo_cost_update.emit(jobs[0])
             self.api_thread.job_count = len(jobs)
+            self.api_thread.kudos_cost_queue.put(jobs[0])
 
     def on_kudo_cost_get(self, value: float):
         LOGGER.debug(
@@ -409,8 +409,8 @@ class HordeQt(QMainWindow):
         self.ui.modelComboBox.setEnabled(True)
         # this doesn't feel right, for some reason.
         self.ui.maxJobsSpinBox.setMaximum(self.ui.maxConcurrencySpinBox.value())
-        LOGGER.debug("Loading kudos preview after 300 ms")
-        QTimer.singleShot(300, self.update_kudos_preview)
+        LOGGER.debug("Loading kudos preview after 200 ms")
+        QTimer.singleShot(200, self.update_kudos_preview)
         LOGGER.debug("Hiding progress bar after 500 ms")
         QTimer.singleShot(500, self.ui.progressBar.hide)
 
