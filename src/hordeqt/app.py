@@ -35,6 +35,7 @@ from hordeqt.components.loras.lora_browser import LoraBrowser
 from hordeqt.components.loras.lora_item import LoRAItem
 from hordeqt.components.loras.selected_loras import SelectedLoRAs
 from hordeqt.components.model_dialog import ModelPopup
+from hordeqt.components.style_library.style_browser import StyleBrowser
 from hordeqt.gen.res_resources import qCleanupResources, qInitResources
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.other.consts import (
@@ -130,9 +131,10 @@ class HordeQt(QMainWindow):
             api_key=self.api_key,
             max_requests=self.savedData.max_jobs,
         )
-        LOGGER.debug("Disabling Generate button until models are loaded")
+        LOGGER.debug("Disabling buttons until fully loaded")
         self.ui.GenerateButton.setEnabled(False)
         self.ui.modelComboBox.setEnabled(False)
+        self.ui.StyleSelector.setEnabled(False)
 
         self.job_download_thread: JobDownloadThread = JobDownloadThread.deserialize(
             {
@@ -167,6 +169,7 @@ class HordeQt(QMainWindow):
             self.update_metadata_save
         )
         self.ui.LoRASelector.clicked.connect(lambda: LoraBrowser(self))
+
         self.ui.apiKeyEntry.editingFinished.connect(self.save_api_key)
         self.ui.saveAPIkey.clicked.connect(self.save_api_key)
         self.ui.copyAPIkey.clicked.connect(self.copy_api_key)
@@ -671,6 +674,8 @@ class HordeQt(QMainWindow):
 
     def construct_style_info(self, styles: List[Style]):
         self.styleLibrary = StyleLibrary(styles=styles, parent=self)
+        self.ui.StyleSelector.clicked.connect(lambda: StyleBrowser(self))
+        self.ui.StyleSelector.setEnabled(True)
 
     def construct_model_dict(self, mod):
         self.ui.modelComboBox.clear()

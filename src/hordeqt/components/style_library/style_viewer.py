@@ -11,11 +11,13 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
     QDockWidget,
+    QDoubleSpinBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QProgressDialog,
     QPushButton,
+    QSpinBox,
     QVBoxLayout,
     QWidget,
 )
@@ -38,13 +40,13 @@ class StyleViewer(QDockWidget):
 
         name_label = QLabel(style.name)
         prompt_layout = QHBoxLayout()
-        prompt_label = QLabel("Prompt: ")
+        prompt_label = QLabel("Prompt")
         self.prompt_data = QLineEdit(self.style_data.prompt_format)
         prompt_layout.addWidget(prompt_label)
         prompt_layout.addWidget(self.prompt_data)
 
         model_layout = QHBoxLayout()
-        model_label = QLabel("Model: ")
+        model_label = QLabel("Model")
         self.model_data = QComboBox()
         for model in parent.model_dict.keys():
             self.model_data.addItem(model)
@@ -52,6 +54,31 @@ class StyleViewer(QDockWidget):
 
         model_layout.addWidget(model_label)
         model_layout.addWidget(self.model_data)
+
+        cfg_layout = QHBoxLayout()
+        cfg_label = QLabel("Guidence")
+        self.cfg_data = QDoubleSpinBox()
+        self.cfg_data.setDecimals(1)
+        cfg_layout.addWidget(cfg_label)
+        cfg_layout.addWidget(self.cfg_data)
+
+        steps_layout = QHBoxLayout()
+        steps_label = QLabel("Steps")
+        self.steps_data = QSpinBox()
+        steps_layout.addWidget(steps_label)
+        steps_layout.addWidget(self.steps_data)
+
+        width_layout = QHBoxLayout()
+        width_label = QLabel("Width")
+        self.width_data = QSpinBox()
+        width_layout.addWidget(width_label)
+        width_layout.addWidget(self.width_data)
+
+        height_layout = QHBoxLayout()
+        height_label = QLabel("Height")
+        self.height_data = QSpinBox()
+        height_layout.addWidget(height_label)
+        height_layout.addWidget(self.height_data)
 
         use_button = QPushButton("Use Style")
         save_button = QPushButton("Save Style")
@@ -65,6 +92,9 @@ class StyleViewer(QDockWidget):
         layout.addWidget(name_label)
         layout.addLayout(prompt_layout)
         layout.addLayout(model_layout)
+        layout.addLayout(cfg_layout)
+        layout.addLayout(steps_layout)
+
         layout.addLayout(buttons_layout)
 
         # Create a central widget to set the layout

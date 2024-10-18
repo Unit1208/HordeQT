@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 
 from hordeqt.classes.Style import Style
 from hordeqt.components.style_library.style_viewer import StyleViewer
+from hordeqt.other.consts import LOGGER
 
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
@@ -36,7 +37,7 @@ class StyleBrowser(QDockWidget):
         self.query_box = QLineEdit()
         self.query_box.setClearButtonEnabled(True)
         self.query_box.setPlaceholderText("Search for Styles")
-        self.query_box.editingFinished.connect(self.search_for_styles)
+        self.query_box.textEdited.connect(self.search_for_styles)
         self.scrollArea = QScrollArea()
         self.scrollArea.setObjectName("scrollArea")
         self.scrollArea.setGeometry(QRect(10, 10, 951, 901))
@@ -80,22 +81,23 @@ class StyleBrowser(QDockWidget):
             curr_widget.deleteLater()
 
         self.curr_widgets = []
-        best_match_styles: Sequence[Tuple[int, str]] = process.extract(
+        best_match_styles: Sequence[Tuple[str, int]] = process.extract(
             query, self.styles.get_available_style_names(), limit=10
         )  # type: ignore
-        for ranking, style in best_match_styles:
+        LOGGER.debug(f"Best matches for {query}: {best_match_styles}")
+        for style, ranking in best_match_styles:
             s = self.styles.get_style(style)
-            if s is not None:  # Keep intellisense happy.
+            if s is not None and ranking > 10:  # Keep intellisense happy.
                 self.styleListLayout.addWidget(self.create_widget_from_response(s))
 
     def create_widget_from_response(self, style: Style):
-        loraWidget = QWidget()
-        loraWidgetLayout = QHBoxLayout()
+        styleWidget = QWidget()
+        styleWidgetLayout = QHBoxLayout()
         name_label = QLabel(style.name)
         details_button = QPushButton("Details")
         details_button.clicked.connect(lambda: StyleViewer(style, self._parent))
-        loraWidgetLayout.addWidget(name_label)
-        loraWidgetLayout.addWidget(details_button)
-        loraWidget.setLayout(loraWidgetLayout)
-        self.curr_widgets.append(loraWidget)
-        return loraWidget
+        styleWidgetLayout.addWidget(name_label)
+        styleWidgetLayout.addWidget(details_button)
+        styleWidget.setLayout(styleWidgetLayout)
+        self.curr_widgets.append(styleWidget)
+        return styleWidget
