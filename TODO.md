@@ -122,3 +122,4 @@
 - [ ] "Clear in progress/queued" button
 - [ ] Rewrite the whole job status message section.
 - [x] Something with the Job IDs got messed up during the addition of pytests
+- [ ] Anon key has too many genned tokens, it overflows C++'s 32(?) bit spinbox.

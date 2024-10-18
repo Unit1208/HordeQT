@@ -26,6 +26,8 @@ from hordeqt.classes.Job import Job
 from hordeqt.classes.LocalJob import LocalJob
 from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
+from hordeqt.classes.Style import Style
+from hordeqt.classes.StyleLibrary import StyleLibrary
 from hordeqt.components.gallery.ImageGalleryWidget import ImageGalleryWidget
 from hordeqt.components.gallery.ImagePopup import ImagePopup
 from hordeqt.components.gallery.ImageWidget import ImageWidget
@@ -155,6 +157,7 @@ class HordeQt(QMainWindow):
         LOGGER.debug("Connecting Loading signals")
         self.loading_thread.progress.connect(self.update_progress)
         self.loading_thread.model_info.connect(self.construct_model_dict)
+        self.loading_thread.style_info.connect(self.construct_style_info)
         self.loading_thread.user_info.connect(self.update_user_info)
         self.loading_thread.horde_info.connect(self.update_horde_info)
         LOGGER.debug("Connecting UI signals")
@@ -213,7 +216,7 @@ class HordeQt(QMainWindow):
                 if not v:
                     LOGGER.warning(f"Image {lj.path} is invalid, not adding to gallery")
                 else:
-                    LOGGER.info(f"Image found, added to gallery: {lj.id}")
+                    LOGGER.trace(f"Image found, added to gallery: {lj.id}")
                     filtered_jobs.append(lj)
                     existing_ids.append(lj.id)
         self.job_download_thread.completed_downloads = filtered_jobs
@@ -665,6 +668,9 @@ class HordeQt(QMainWindow):
             loras,
             images,
         )
+
+    def construct_style_info(self, styles: List[Style]):
+        self.styleLibrary = StyleLibrary(styles=styles, parent=self)
 
     def construct_model_dict(self, mod):
         self.ui.modelComboBox.clear()

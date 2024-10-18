@@ -1,11 +1,12 @@
 import json
 import os
 import time
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 import requests
 from PySide6.QtCore import QObject, QThread, Signal
 
+from hordeqt.classes.Style import Style
 from hordeqt.other.consts import BASE_URL, LOGGER
 from hordeqt.other.util import CACHE_PATH, get_headers
 
@@ -13,12 +14,26 @@ from hordeqt.other.util import CACHE_PATH, get_headers
 class LoadThread(QThread):
     progress = Signal(int)
     model_info = Signal(dict)
+    style_info = Signal(list)
+
     user_info = Signal(requests.Response)
     horde_info = Signal(type(Tuple[requests.Response, requests.Response]))
 
     def __init__(self, api_key: str, parent: QObject | None = None) -> None:
         super().__init__(parent)
         self.api_key = api_key
+
+    def run(self):
+        t = [
+            self.reload_user_info,
+            self.reload_horde_info,
+            self.load_model_file,
+            self.load_style_file,
+        ]
+        for n in range(len(t)):
+            # I don't love this, but it's fine.
+            t[n]()
+            self.progress.emit((n + 1) * 100 / (len(t)))
 
     def reload_user_info(self, api_key: Optional[str] = None):
         if api_key is not None:
@@ -46,14 +61,34 @@ class LoadThread(QThread):
         )
         LOGGER.debug("Horde info loaded")
 
-    def run(self):
-        t = [self.reload_user_info, self.reload_horde_info, self.load_model_cache]
-        for n in range(len(t)):
-            # I don't love this, but it's fine.
-            t[n]()
-            self.progress.emit((n + 1) * 100 / (len(t)))
+    # FIXME: The following should absolutely be refactored.
+    def load_style_file(self):
+        style_cache_path = CACHE_PATH / "style_ref.json"
 
-    def load_model_cache(self):
+        if (
+            not style_cache_path.exists()
+            or time.time() - style_cache_path.stat().st_mtime > 60 * 60
+        ):
+            LOGGER.debug(f"Refreshing style cache at {style_cache_path}")
+            os.makedirs(style_cache_path.parent, exist_ok=True)
+            r = requests.get(
+                "https://raw.githubusercontent.com/Haidra-Org/AI-Horde-Styles/refs/heads/main/styles.json"
+            )
+            j: dict[str, dict] = r.json()
+            with open(style_cache_path, "wt") as f:
+                json.dump(j, f)
+        else:
+            LOGGER.debug(f"Style cache at {style_cache_path} is fresh, not reloading")
+
+            with open(style_cache_path, "rt") as f:
+                j: dict[str, dict] = json.load(f)
+        styles: List[Style] = []
+        for k, v in j.items():
+            styles.append(Style.parse_from_json(k, v))
+
+        self.style_info.emit(styles)
+
+    def load_model_file(self):
         model_cache_path = CACHE_PATH / "model_ref.json"
 
         if (

@@ -23,7 +23,7 @@ formal_name = "HordeQT"
 description = "Generate images using the AI Horde"
 long_description = "HordeQT is a local frontend to the AI Horde. It is primarily aimed at power users and people already familiar with Stable Diffusion."
 sources = [ "src/hordeqt",]
-requires = [ "PySide6~=6.7.3", "keyring~=25.3.0", "keyrings-alt~=5.0.2", "requests~=2.32.3", "human-readable~=1.3.4", "pyqt-toast-notification~=1.3.2", "pillow~=10.4.0", "jsonpickle~=3.3.0", "loguru~=0.7.2",]
+requires = [ "PySide6~=6.7.3", "keyring~=25.3.0", "keyrings-alt~=5.0.2", "requests~=2.32.3", "human-readable~=1.3.4", "pyqt-toast-notification~=1.3.2", "pillow~=10.4.0", "jsonpickle~=3.3.0", "loguru~=0.7.2", "fuzzywuzzy[speedup]~=0.18.0"]
 
 [tool.briefcase.app.hordeqt.macOS]
 universal_build = true
