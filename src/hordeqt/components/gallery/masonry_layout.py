@@ -3,7 +3,7 @@ from typing import List
 from PySide6.QtCore import QRect, QSize
 from PySide6.QtWidgets import QLabel, QLayout, QLayoutItem
 
-from hordeqt.components.gallery.ImageWidget import ImageWidget
+from hordeqt.components.gallery.image_widget import ImageWidget
 from hordeqt.other.consts import LOGGER
 
 

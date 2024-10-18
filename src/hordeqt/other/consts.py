@@ -43,7 +43,7 @@ _imported = False
 if not _imported:
     LOGGER.remove(0)
     if os.environ.get("HORDEQT_DEBUG"):
-        LOGGER.add(sys.stdout, backtrace=True, diagnose=True)
+        LOGGER.add(sys.stdout, backtrace=True, diagnose=True, level="TRACE")
     else:
         LOGGER.add(sys.stdout, level="WARNING")
     LOGGER.add(

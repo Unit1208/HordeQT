@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 )
 
 from hordeqt.classes.LocalJob import LocalJob
-from hordeqt.components.gallery.ImageDetailsPopup import ImageDetailsPopup
+from hordeqt.components.gallery.image_details_popup import ImageDetailsPopup
 from hordeqt.other.consts import LOGGER
 
 

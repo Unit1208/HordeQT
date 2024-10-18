@@ -4,7 +4,7 @@ from enum import IntEnum, auto
 
 from PySide6.QtWidgets import QComboBox, QHBoxLayout, QLabel, QVBoxLayout, QWidget
 
-from hordeqt.components.gallery.MasonryLayout import MasonryLayout
+from hordeqt.components.gallery.masonry_layout import MasonryLayout
 
 
 class GallerySortOptions(IntEnum):

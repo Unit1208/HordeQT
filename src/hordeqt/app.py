@@ -28,9 +28,9 @@ from hordeqt.classes.Model import Model
 from hordeqt.classes.SavedData import SavedData
 from hordeqt.classes.Style import Style
 from hordeqt.classes.StyleLibrary import StyleLibrary
-from hordeqt.components.gallery.ImageGalleryWidget import ImageGalleryWidget
-from hordeqt.components.gallery.ImagePopup import ImagePopup
-from hordeqt.components.gallery.ImageWidget import ImageWidget
+from hordeqt.components.gallery.image_gallery_widget import ImageGalleryWidget
+from hordeqt.components.gallery.image_popup import ImagePopup
+from hordeqt.components.gallery.image_widget import ImageWidget
 from hordeqt.components.loras.lora_browser import LoraBrowser
 from hordeqt.components.loras.lora_item import LoRAItem
 from hordeqt.components.loras.selected_loras import SelectedLoRAs
