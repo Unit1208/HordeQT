@@ -2,6 +2,7 @@ import hashlib
 import importlib.metadata
 import sys
 import uuid
+from typing import Tuple
 
 from hordeqt.civit.civit_api import BaseModel
 from hordeqt.classes.Model import Model
@@ -58,6 +59,40 @@ def horde_model_to_civit_baseline(model: Model) -> BaseModel:
     # current_model_needs_1024 = model_dict[
     # self.ui.modelComboBox.currentText()
     # ].details.get("baseline", None) in ["stable_diffusion_xl", "stable_cascade"]
+
+
+def size_presets(index: int, needs_1024: bool) -> Tuple[int, int]:
+    match index:
+        case 0:
+            pass
+        case 1:
+            # LANDSCAPE (16:9)
+            return (1024, 576)
+        case 2:
+            # LANDSCAPE (3:2)
+            if needs_1024:
+                return (1024, 504)
+            else:
+                return (768, 512)
+        case 3:
+            # PORTRAIT (2:3)
+            if needs_1024:
+                return (704, 1024)
+            else:
+                return (512, 768)
+        case 4:
+            # PHONE BACKGROUND (9:21)
+            return (448, 1024)
+        case 5:
+            # ULTRAWIDE (21:9)
+            return (1024, 448)
+        case 6:
+            # SQUARE (1:1)
+            if needs_1024:
+                return (1024, 1024)
+            else:
+                return (512, 512)
+    return (1024, 1024)
 
 
 def get_headers(api_key: str, include_api_key: bool = True):

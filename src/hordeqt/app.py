@@ -46,6 +46,7 @@ from hordeqt.other.consts import (
 )
 from hordeqt.other.job_util import get_horde_metadata_pretty
 from hordeqt.other.prompt_util import create_jobs
+from hordeqt.other.util import size_presets
 from hordeqt.threads.etc_download_thread import DownloadThread
 from hordeqt.threads.job_download_thread import JobDownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
@@ -303,54 +304,20 @@ class HordeQt(QMainWindow):
         self.update_kudos_preview()
 
     def on_preset_change(self):
-        # TODO: Refactor into a separate util functions
-        current_model_needs_1024 = self.model_dict[
-            self.ui.modelComboBox.currentText()
-        ].details.get("baseline", None) in [
+        current_model = self.ui.modelComboBox.currentText()
+        current_model_needs_1024 = self.model_dict[current_model].details.get(
+            "baseline", None
+        ) in [
             "stable_diffusion_xl",
             "stable_cascade",
             "flux_1",
         ]
         self.preset_being_updated = True
-        match self.ui.presetComboBox.currentIndex():
-            case 0:
-                pass
-            case 1:
-                # LANDSCAPE (16:9)
-                self.ui.widthSpinBox.setValue(1024)
-                self.ui.heightSpinBox.setValue(576)
-            case 2:
-                # LANDSCAPE (3:2)
-                if current_model_needs_1024:
-                    self.ui.widthSpinBox.setValue(1024)
-                    self.ui.heightSpinBox.setValue(704)
-                else:
-                    self.ui.widthSpinBox.setValue(768)
-                    self.ui.heightSpinBox.setValue(512)
-            case 3:
-                # PORTRAIT (2:3)
-                if current_model_needs_1024:
-                    self.ui.widthSpinBox.setValue(704)
-                    self.ui.heightSpinBox.setValue(1024)
-                else:
-                    self.ui.widthSpinBox.setValue(512)
-                    self.ui.heightSpinBox.setValue(768)
-            case 4:
-                # PHONE BACKGROUND (9:21)
-                self.ui.widthSpinBox.setValue(448)
-                self.ui.heightSpinBox.setValue(1024)
-            case 5:
-                # ULTRAWIDE (21:9)
-                self.ui.widthSpinBox.setValue(1024)
-                self.ui.heightSpinBox.setValue(448)
-            case 6:
-                # SQUARE (1:1)
-                if current_model_needs_1024:
-                    self.ui.widthSpinBox.setValue(1024)
-                    self.ui.heightSpinBox.setValue(1024)
-                else:
-                    self.ui.widthSpinBox.setValue(512)
-                    self.ui.heightSpinBox.setValue(512)
+        new_width, new_height = size_presets(
+            self.ui.presetComboBox.currentIndex(), current_model_needs_1024
+        )
+        self.ui.widthSpinBox.setValue(new_width)
+        self.ui.heightSpinBox.setValue(new_height)
         self.preset_being_updated = False
 
     def on_image_fully_downloaded(self, lj: LocalJob):
