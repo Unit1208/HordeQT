@@ -64,11 +64,9 @@ class LoadThread(QThread):
     # FIXME: The following should absolutely be refactored.
     def load_style_file(self):
         style_cache_path = CACHE_PATH / "style_ref.json"
-
         if (
             not style_cache_path.exists()
-            or time.time() - style_cache_path.stat().st_mtime > 60 * 60
-        ):
+        ) or time.time() - style_cache_path.stat().st_mtime > 60 * 60:
             LOGGER.debug(f"Refreshing style cache at {style_cache_path}")
             os.makedirs(style_cache_path.parent, exist_ok=True)
             r = requests.get(
@@ -93,8 +91,7 @@ class LoadThread(QThread):
 
         if (
             not model_cache_path.exists()
-            or time.time() - model_cache_path.stat().st_mtime > 60 * 60
-        ):
+        ) or time.time() - model_cache_path.stat().st_mtime > 60 * 60:
             LOGGER.debug(f"Refreshing model cache at {model_cache_path}")
             os.makedirs(model_cache_path.parent, exist_ok=True)
             r = requests.get(

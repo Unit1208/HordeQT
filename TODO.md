@@ -123,3 +123,4 @@
 - [ ] Rewrite the whole job status message section.
 - [x] Something with the Job IDs got messed up during the addition of pytests
 - [ ] Anon key has too many genned tokens, it overflows C++'s 32(?) bit spinbox.
+- [ ] Add option to compress save file (compressed can be 15k when uncompressed is 200k). Also could try CBOR.
