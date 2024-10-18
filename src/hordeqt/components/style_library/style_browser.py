@@ -30,7 +30,6 @@ class StyleBrowser(QDockWidget):
     def __init__(self, parent: HordeQt):
         super().__init__("Style Browser", parent)
         self._parent = parent
-        self.styles = parent.styleLibrary
         self.setAllowedAreas(
             Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
         )
@@ -82,11 +81,11 @@ class StyleBrowser(QDockWidget):
 
         self.curr_widgets = []
         best_match_styles: Sequence[Tuple[str, int]] = process.extract(
-            query, self.styles.get_available_style_names(), limit=10
+            query, self._parent.styleLibrary.get_available_style_names(), limit=10
         )  # type: ignore
         LOGGER.debug(f"Best matches for {query}: {best_match_styles}")
         for style, ranking in best_match_styles:
-            s = self.styles.get_style(style)
+            s = self._parent.styleLibrary.get_style(style)
             if s is not None and ranking > 10:  # Keep intellisense happy.
                 self.styleListLayout.addWidget(self.create_widget_from_response(s))
 

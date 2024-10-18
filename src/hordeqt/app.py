@@ -66,6 +66,9 @@ class HordeQt(QMainWindow):
         LOGGER.debug("Saved data loaded")
         self.clipboard = app.clipboard()
         self.model_dict: Dict[str, Model] = {}
+        self.user_styles: List[Style] = [
+            Style.deserialize(s) for s in self.savedData.user_saved_styles
+        ]
         self.setGeometry(100, 100, 1200, 1200)
         self.ui: Ui_MainWindow = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -263,6 +266,7 @@ class HordeQt(QMainWindow):
             self.warned_models,
             self.ui.showDoneImagesCheckbox.isChecked(),
             self.ui.notifyAfterNFinishedSpinBox.value(),
+            self.styleLibrary.get_user_styles(),
         )
         LOGGER.debug("Writing saved data")
         self.savedData.write()

@@ -1,5 +1,6 @@
 import os
 import sys
+from enum import StrEnum, auto
 from pathlib import Path
 
 from loguru import logger
@@ -20,6 +21,25 @@ UPSCALE_MAP = {
     "NMKD Siax": "NMKD_Siax",
     "Anime 4x": "4x_AnimeSharp",
 }
+
+
+class Samplers(StrEnum):
+    k_euler = auto()
+    k_euler_a = auto()
+    k_lms = auto()
+    k_heun = auto()
+    k_dpm_2 = auto()
+    k_dpm_2_a = auto()
+    k_dpm_adaptive = auto()
+    k_dpm_fast = auto()
+    k_dpmpp_2m = auto()
+    k_dpmpp_2s_a = auto()
+    k_dpmpp_sde = auto()
+    DDIM = auto()
+    lcm = auto()
+    dpmsolver = auto()
+
+
 APP = QApplication(sys.argv)
 APP.setApplicationDisplayName("Horde QT")
 APP.setApplicationName("hordeqt")

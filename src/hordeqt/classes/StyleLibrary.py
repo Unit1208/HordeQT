@@ -15,9 +15,15 @@ class StyleLibrary:
     styles: Dict[str, Style] = {}
 
     def __init__(self, styles: List[Style], parent: HordeQt):
-        for s in styles:
-            self.styles[s.name] = s
+        self.add_styles(styles)
         self.parent = parent
+
+    def add_styles(self, styles: List[Style]):
+        for s in styles:
+            self.add_style(s)
+
+    def add_style(self, s: Style):
+        self.styles[s.name] = s
 
     def apply_style_to_job_data(self, style_name: str, job: Job):
         style = self.get_style(style_name)
@@ -40,3 +46,6 @@ class StyleLibrary:
 
     def get_style(self, style_name: str):
         return self.styles.get(style_name)
+
+    def get_user_styles(self):
+        return [v for v in self.styles.values() if not v.is_built_in]

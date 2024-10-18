@@ -34,6 +34,7 @@ class SaveThread(QThread):
             self.app.warned_models,
             self.app.ui.showDoneImagesCheckbox.isChecked(),
             self.app.ui.notifyAfterNFinishedSpinBox.value(),
+            self.app.styleLibrary.get_user_styles(),
         )
         self.app.savedData.write()
 
