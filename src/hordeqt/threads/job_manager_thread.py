@@ -1,7 +1,7 @@
 import copy
 import json
 import time
-from queue import Empty, PriorityQueue, Queue
+from queue import PriorityQueue, Queue
 from typing import Dict, List, Optional, Tuple
 
 import requests
@@ -78,9 +78,15 @@ class JobManagerThread(QThread):
         LOGGER.error(f'Job {job.job_id} failed validation: "{rc}" {message}. {errors}')
 
     def _get_kudos_cost(self):
-        try:
-            job = self.kudos_cost_queue.get(block=False)
-        except Empty:
+        # I understand that the qsize calls aren't safe. But I'm fine with it for two reasons:
+        # 1. This is a multi-producer, single-consumer usecase. If the qsize is 5, I know it can't get any lower without handling it here.
+        # 2. It's not a huge deal if it the code asks for a job multiple times. It's not great, but it's fine.
+        if self.kudos_cost_queue.qsize() > 0:
+            job = self.kudos_cost_queue.get()
+            while not self.kudos_cost_queue.empty():
+                # Get to the bottom of the queue
+                job = self.kudos_cost_queue.get()
+        else:
             return
         while (
             not (time.time() - self.generate_rl_reset) > 0
