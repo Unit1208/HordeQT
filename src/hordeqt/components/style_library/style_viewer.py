@@ -174,19 +174,19 @@ class StyleViewer(QDockWidget):
             "Model",
         )
         self.cfg_data = self.create_double_spin_box(
-            self.style_data.cfg_scale or 5.0, "Guidence", 1, 0.05, 0, 20
+            self.style_data.cfg_scale, "Guidence", 1, 0.05, 0, 20
         )
         self.steps_data = self.create_spin_box(
-            self.style_data.steps or 20, "Steps", 1, 1, 100
+            self.style_data.steps, "Steps", 1, 1, 100
         )
         self.width_data = self.create_spin_box(
-            self.style_data.width or 1024, "Width", 64, 64, 3072
+            self.style_data.width, "Width", 64, 64, 3072
         )
         self.height_data = self.create_spin_box(
-            self.style_data.height or 1024, "Height", 64, 64, 3072
+            self.style_data.height, "Height", 64, 64, 3072
         )
         self.clip_skip_data = self.create_spin_box(
-            self.style_data.clip_skip or 1, "CLIP skip", 1, 1, 12
+            self.style_data.clip_skip, "CLIP skip", 1, 1, 12
         )
 
         # Enable/disable UI elements based on style_data
