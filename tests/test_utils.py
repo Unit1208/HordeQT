@@ -1,6 +1,7 @@
 import pytest
 
 from hordeqt.classes.LoRA import LoRA
+from hordeqt.classes.Style import Style, StyleLora
 from hordeqt.other.prompt_util import create_jobs, parse_prompt_LoRAs, prompt_matrix
 
 
@@ -136,6 +137,7 @@ def test_create_jobs_no_negative_prompt():
     share_image = False
     upscale = "upscale"
     loras = []
+    styles = []
     images = 2
 
     jobs = create_jobs(
@@ -155,6 +157,7 @@ def test_create_jobs_no_negative_prompt():
         share_image,
         upscale,
         loras,
+        styles,
         images,
     )
 
@@ -194,6 +197,7 @@ def test_create_jobs_with_negative_prompt():
     share_image = False
     upscale = "upscale"
     loras = []
+    styles = []
     images = 2
 
     jobs = create_jobs(
@@ -213,6 +217,7 @@ def test_create_jobs_with_negative_prompt():
         share_image,
         upscale,
         loras,
+        styles,
         images,
     )
 
@@ -251,6 +256,7 @@ def test_create_jobs_with_loras():
     share_image = False
     upscale = "upscale"
     loras = []
+    styles = []
     images = 2
 
     jobs = create_jobs(
@@ -270,6 +276,7 @@ def test_create_jobs_with_loras():
         share_image,
         upscale,
         loras,
+        styles,
         images,
     )
 
@@ -295,6 +302,7 @@ def test_create_jobs_with_zero_seed():
     share_image = False
     upscale = "upscale"
     loras = []
+    styles = []
     images = 2
 
     jobs = create_jobs(
@@ -314,9 +322,211 @@ def test_create_jobs_with_zero_seed():
         share_image,
         upscale,
         loras,
+        styles,
         images,
     )
 
     assert len(jobs) == 2
     for job in jobs:
         assert int(job.seed) != 0
+
+
+# Sample data for testing
+sample_style_data = {
+    "name": "test_style",
+    "prompt_format": "{p}### {np}",
+    "model": "test_model",
+    "width": 512,
+    "height": 512,
+    "cfg_scale": 7.5,
+    "karras": True,
+    "sampler": "test_sampler",
+    "steps": 50,
+    "clip_skip": 2,
+    "hires_fix": False,
+    "loras": [],
+    "is_built_in": False,
+}
+
+sample_style_lora_data = {
+    "name": "42",
+    "is_version": False,
+    "strength": 0.8,
+    "clip_strength": 0.5,
+}
+
+
+@pytest.fixture
+def style():
+    return Style(**sample_style_data)
+
+
+@pytest.fixture
+def style_lora():
+    return StyleLora.parse_from_json(sample_style_lora_data)
+
+
+def test_style_serialization(style):
+    serialized = style.serialize()
+    assert serialized["name"] == style.name
+    assert serialized["prompt_format"] == style.prompt_format
+    assert serialized["model"] == style.model
+    assert serialized["width"] == style.width
+    assert serialized["height"] == style.height
+    assert serialized["cfg_scale"] == style.cfg_scale
+    assert serialized["karras"] == style.karras
+    assert serialized["sampler"] == style.sampler
+    assert serialized["steps"] == style.steps
+    assert serialized["clip_skip"] == style.clip_skip
+    assert serialized["hires_fix"] == style.hires_fix
+    assert serialized["loras"] == []
+
+
+def test_style_deserialization(style):
+    serialized = style.serialize()
+    deserialized = Style.deserialize(serialized)
+    assert deserialized.name == style.name
+    assert deserialized.prompt_format == style.prompt_format
+    assert deserialized.model == style.model
+    assert deserialized.width == style.width
+    assert deserialized.height == style.height
+    assert deserialized.cfg_scale == style.cfg_scale
+    assert deserialized.karras == style.karras
+    assert deserialized.sampler == style.sampler
+    assert deserialized.steps == style.steps
+    assert deserialized.clip_skip == style.clip_skip
+    assert deserialized.hires_fix == style.hires_fix
+    assert deserialized.loras == []
+
+
+def test_style_lora_serialization(style_lora):
+    serialized = style_lora.serialize()
+    assert serialized["name"] == style_lora.name
+    assert serialized["is_version"] == style_lora.is_version
+    assert serialized["strength"] == style_lora.strength
+    assert serialized["clip_strength"] == style_lora.clip_strength
+
+
+def test_style_lora_deserialization(style_lora):
+    serialized = style_lora.serialize()
+    deserialized = StyleLora.deserialize(serialized)
+    assert deserialized.name == style_lora.name
+    assert deserialized.is_version == style_lora.is_version
+    assert deserialized.strength == style_lora.strength
+    assert deserialized.clip_strength == style_lora.clip_strength
+
+
+def test_create_jobs_with_style(style):
+    prompt = "This is a test prompt"
+    neg_prompt = "This is a negative prompt"
+    sampler_name = "default_sampler"
+    cfg_scale = 7.0
+    seed = 0
+    width = 512
+    height = 512
+    clip_skip = 1
+    steps = 20
+    model = "model_v1"
+    karras = False
+    hires_fix = False
+    allow_nsfw = False
+    share_image = False
+    upscale = "none"
+    loras = []
+    styles = [style]
+    images = 1
+
+    jobs = create_jobs(
+        prompt,
+        neg_prompt,
+        sampler_name,
+        cfg_scale,
+        seed,
+        width,
+        height,
+        clip_skip,
+        steps,
+        model,
+        karras,
+        hires_fix,
+        allow_nsfw,
+        share_image,
+        upscale,
+        loras,
+        styles,
+        images,
+    )
+
+    assert len(jobs) == 1
+    job = jobs[0]
+    assert job.prompt == "This is a test prompt### This is a negative prompt"
+    assert job.sampler_name == "test_sampler"
+    assert job.cfg_scale == 7.5
+    assert job.seed != 0
+    assert job.width == 512
+    assert job.height == 512
+    assert job.clip_skip == 2
+    assert job.steps == 50
+    assert job.model == "test_model"
+    assert job.karras
+    assert not job.hires_fix
+    assert job.loras == []
+
+
+def test_create_jobs_with_style_with_lora(style, style_lora):
+    prompt = "This is a test prompt"
+    neg_prompt = "This is a negative prompt"
+    sampler_name = "default_sampler"
+    cfg_scale = 7.0
+    seed = 0
+    width = 512
+    height = 512
+    clip_skip = 1
+    steps = 20
+    model = "model_v1"
+    karras = False
+    hires_fix = False
+    allow_nsfw = False
+    share_image = False
+    upscale = "none"
+    loras = []
+    s = style
+    s.loras = [style_lora]
+    styles = [s]
+    images = 1
+
+    jobs = create_jobs(
+        prompt,
+        neg_prompt,
+        sampler_name,
+        cfg_scale,
+        seed,
+        width,
+        height,
+        clip_skip,
+        steps,
+        model,
+        karras,
+        hires_fix,
+        allow_nsfw,
+        share_image,
+        upscale,
+        loras,
+        styles,
+        images,
+    )
+
+    assert len(jobs) == 1
+    job = jobs[0]
+    assert job.prompt == "This is a test prompt### This is a negative prompt"
+    assert job.sampler_name == "test_sampler"
+    assert job.cfg_scale == 7.5
+    assert job.seed != 0
+    assert job.width == 512
+    assert job.height == 512
+    assert job.clip_skip == 2
+    assert job.steps == 50
+    assert job.model == "test_model"
+    assert job.karras
+    assert not job.hires_fix
+    assert job.loras == [style_lora.to_lora()]

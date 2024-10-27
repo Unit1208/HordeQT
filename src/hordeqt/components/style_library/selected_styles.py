@@ -23,6 +23,7 @@ class SelectedStyles(QWidget):
         super().__init__(parent)
         self._parent = parent
         self.styles: List[StyleItem] = []
+        # TODO: Make a scroll area for styles.
         self.styles_layout = QVBoxLayout()
         self.setLayout(self.styles_layout)
 
@@ -32,6 +33,9 @@ class SelectedStyles(QWidget):
         self.styles_layout.addWidget(loraItem)
         self.styles.append(loraItem)
         self.updated.emit()
+
+    def to_style_list(self) -> List[Style]:
+        return [s.style_data for s in self.styles]
 
     def deleteStyle(self, style: StyleItem):
         style.hide()

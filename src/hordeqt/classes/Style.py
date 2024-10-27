@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Self
 
+from hordeqt.classes.LoRA import LoRA
+
 
 @dataclass
 class StyleLora:
@@ -16,6 +18,17 @@ class StyleLora:
             is_version=v.get("is_version", False),
             strength=v.get("model", 1),
             clip_strength=v.get("clip", 1),
+        )
+
+    def to_lora(self):
+        return LoRA(
+            f"Style LoRA - {self.name}",
+            int(self.name),
+            self.strength or 1,
+            self.clip_strength or 1,
+            None,
+            None,
+            self.is_version,
         )
 
     def serialize(self):
@@ -40,8 +53,8 @@ class StyleLora:
 class Style:
     name: str
     prompt_format: str
-    model: str
 
+    model: Optional[str]
     width: Optional[int]
     height: Optional[int]
     cfg_scale: Optional[float]
@@ -92,7 +105,7 @@ class Style:
         return cls(
             name=name,
             prompt_format=v["prompt"],
-            model=v["model"],
+            model=v.get("model", None),
             is_built_in=is_built_in,
             width=v.get("width", None),
             height=v.get("height", None),
@@ -104,3 +117,20 @@ class Style:
             hires_fix=v.get("hires_fix", None),
             loras=[StyleLora.parse_from_json(x) for x in v.get("loras", [])],
         )
+
+
+BaseStyle = Style(
+    name="base",
+    prompt_format="{p}###{np}",
+    model=None,
+    width=None,
+    height=None,
+    cfg_scale=None,
+    karras=None,
+    sampler=None,
+    steps=None,
+    clip_skip=None,
+    hires_fix=None,
+    loras=[],
+    is_built_in=True,
+)

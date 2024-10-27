@@ -12,6 +12,7 @@ class LoRA:
     clip_strength: float
     model_version: Optional[ModelVersion]
     inject_trigger: Optional[str] = None
+    is_version: Optional[bool] = True
 
     @classmethod
     def from_ModelVersion(
@@ -31,7 +32,7 @@ class LoRA:
             "name": str(self.version_id),
             "model": self.strength,
             "clip": self.clip_strength,
-            "is_version": True,
+            "is_version": self.is_version,
         }
         if self.inject_trigger is not None:
             self.inject_trigger = self.inject_trigger.strip()
@@ -51,6 +52,7 @@ class LoRA:
             "clip_strength": self.clip_strength,
             "inject_trigger": self.inject_trigger,
             "model_version": mv,
+            "is_version": self.is_version,
         }
 
     @classmethod
@@ -62,4 +64,5 @@ class LoRA:
             val.get("clip_strength", 1),
             ModelVersion.deserialize(val.get("model_version", {})),
             val.get("inject_trigger", None),
+            val.get("is_version", None),
         )

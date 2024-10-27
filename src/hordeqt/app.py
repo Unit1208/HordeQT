@@ -616,6 +616,7 @@ class HordeQt(QMainWindow):
         share_image = self.ui.shareImagesCheckBox.isChecked()
         upscale = self.ui.upscaleComboBox.currentText()
         loras = self.selectedLoRAs.to_LoRA_list()
+        styles = self.selectedStyles.to_style_list()
         images = self.ui.imagesSpinBox.value()
         if reqs is not None:
             LOGGER.warning(
@@ -690,6 +691,7 @@ class HordeQt(QMainWindow):
             share_image,
             upscale,
             loras,
+            styles,
             images,
         )
 
