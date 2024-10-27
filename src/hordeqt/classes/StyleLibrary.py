@@ -20,12 +20,9 @@ class StyleLibrary:
 
     def add_styles(self, styles: List[Style]):
         for s in styles:
-            self.add_style(s)
+            self.set_style(s)
 
-    def add_style(self, s: Style):
-        self.styles[s.name] = s
-
-    def update_style(self, s: Style):
+    def set_style(self, s: Style):
         self.styles[s.name] = s
 
     def apply_style_to_job_data(self, style_name: str, job: Job):

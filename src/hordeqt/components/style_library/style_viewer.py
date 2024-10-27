@@ -29,15 +29,18 @@ from hordeqt.other.consts import LOGGER
 
 class StyleViewer(QDockWidget):
     def save_style(self):
+        # TODO: check if saving would overwrite existing style.
         if self.style_data.is_built_in:
             self._parent.show_warn_toast(
                 "Failed to save style: Can't overwrite builtin styles.",
                 "Please duplicate the style and try saving again",
             )
             return
+        old_style_name = self.style_data.name
+
         new_style = Style(
-            name=self.name_data.text(),
-            prompt_format=self.prompt_data.text(),
+            name=self.name_data.text().strip(),
+            prompt_format=self.prompt_data.text().strip(),
             model=self.model_data.currentText(),
             width=self.width_data.value(),
             height=self.height_data.value(),
@@ -50,7 +53,36 @@ class StyleViewer(QDockWidget):
             loras=[],
             is_built_in=False,
         )
-        self._parent.styleLibrary.update_style(new_style)
+        if old_style_name.strip() != new_style.name:
+            save_name_confirmation = QMessageBox()
+            save_name_confirmation.setIcon(QMessageBox.Icon.Question)
+            save_name_confirmation.setInformativeText(
+                f'Style name was changed. Would you like to rename "{old_style_name}" to "{new_style.name}"?'
+            )
+            save_name_confirmation.setStandardButtons(
+                QMessageBox.StandardButton.Yes
+                | QMessageBox.StandardButton.No
+                | QMessageBox.StandardButton.Abort
+            )
+            save_name_confirmation.setDefaultButton(QMessageBox.StandardButton.Abort)
+            ret = save_name_confirmation.exec()
+            if ret == QMessageBox.StandardButton.Yes:
+                self._parent.styleLibrary.delete_style(old_style_name)
+            elif ret == QMessageBox.StandardButton.No:
+                pass
+            elif ret == QMessageBox.StandardButton.Abort:
+                self._parent.show_info_toast(
+                    "Style not deleted",
+                    f"{self.style_data.name} was not deleted",
+                )
+                return
+        self._parent.styleLibrary.set_style(new_style)
+        self.style_data = new_style
+        self.reinitialize(new_style)
+        self._parent.show_success_toast(
+            "Saved style",
+            f'Style "{self.style_data.name}" saved.',
+        )
 
     def duplicate_style(self):
         new_style = copy.deepcopy(self.style_data)
@@ -61,7 +93,7 @@ class StyleViewer(QDockWidget):
             n += 1
             new_style.name = base_name + " copy " + str(n)
         new_style.is_built_in = False
-        self._parent.styleLibrary.add_style(new_style)
+        self._parent.styleLibrary.set_style(new_style)
         self._parent.show_success_toast(
             "Duplicated style",
             f'Copy of style "{self.style_data.name}" created, "{new_style.name}"',
@@ -76,6 +108,7 @@ class StyleViewer(QDockWidget):
             )
             return
         confirm_box = QMessageBox()
+        confirm_box.setIcon(QMessageBox.Icon.Warning)
         confirm_box.setText("Deleted styles can not be recovered")
         confirm_box.setInformativeText(
             f'Are you sure you want to delete the style "{self.style_data.name}"'
@@ -86,7 +119,7 @@ class StyleViewer(QDockWidget):
         confirm_box.setDefaultButton(QMessageBox.StandardButton.No)
         ret = confirm_box.exec()
         if ret == QMessageBox.StandardButton.Yes:
-            pass
+            self.delete_style()
         elif ret == QMessageBox.StandardButton.No:
             self._parent.show_info_toast(
                 "Style not deleted",
@@ -100,87 +133,106 @@ class StyleViewer(QDockWidget):
     def __init__(self, style: Style, parent: HordeQt):
         super().__init__(f"Style viewer ({style.name})", parent)
         LOGGER.debug(f"Opened Style viewer for {style.name}")
-
         self._parent = parent
+
         self.progress: Optional[QProgressDialog] = None
         self.setAllowedAreas(
             Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
         )
         self.style_data = style
+        self.setup_ui()
 
-        name_layout = QHBoxLayout()
-        name_label = QLabel("Name")
-        self.name_data = QLineEdit(self.style_data.name)
+    def setup_ui(self):
+        self._layout = QVBoxLayout()
+        self._layout.addStretch()
 
-        name_layout.addWidget(name_label)
-        name_layout.addWidget(self.name_data)
+        # Create the UI layout components
+        self.name_data = self.create_line_edit(self.style_data.name, "Name")
+        self.prompt_data = self.create_line_edit(
+            self.style_data.prompt_format, "Prompt"
+        )
+        self.model_data = self.create_combo_box(
+            [_ for _ in self._parent.model_dict.keys()], self.style_data.model, "Model"
+        )
+        self.cfg_data = self.create_double_spin_box(
+            self.style_data.cfg_scale or 5.0, "Guidence", 1
+        )
+        self.steps_data = self.create_spin_box(self.style_data.steps or 20, "Steps", 1)
+        self.width_data = self.create_spin_box(
+            self.style_data.width or 1024, "Width", 64
+        )
+        self.height_data = self.create_spin_box(
+            self.style_data.height or 1024, "Height", 64
+        )
+        self.clip_skip_data = self.create_spin_box(
+            self.style_data.clip_skip or 1, "CLIP skip", 1
+        )
 
-        prompt_layout = QHBoxLayout()
-        prompt_label = QLabel("Prompt")
-        self.prompt_data = QLineEdit(self.style_data.prompt_format)
-        prompt_layout.addWidget(prompt_label)
-        prompt_layout.addWidget(self.prompt_data)
+        # Enable/disable UI elements based on style_data
+        self.set_ui_enabled(not self.style_data.is_built_in)
 
-        model_layout = QHBoxLayout()
-        model_label = QLabel("Model")
-        self.model_data = QComboBox()
-        for model in parent.model_dict.keys():
-            self.model_data.addItem(model)
-        self.model_data.setCurrentText(self.style_data.model)
+        # Create and set buttons
+        self.create_buttons()
 
-        model_layout.addWidget(model_label)
-        model_layout.addWidget(self.model_data)
-        # FIXME: set bounds
-        cfg_layout = QHBoxLayout()
-        cfg_label = QLabel("Guidence")
-        self.cfg_data = QDoubleSpinBox()
-        self.cfg_data.setDecimals(1)
-        self.cfg_data.setValue(self.style_data.cfg_scale or 5.0)
-        cfg_layout.addWidget(cfg_label)
-        cfg_layout.addWidget(self.cfg_data)
-        # FIXME: set bounds
+        # Finalize the layout
+        self.finalize_layout()
 
-        steps_layout = QHBoxLayout()
-        steps_label = QLabel("Steps")
-        self.steps_data = QSpinBox()
-        self.steps_data.setValue(self.style_data.steps or 20)
-        steps_layout.addWidget(steps_label)
-        steps_layout.addWidget(self.steps_data)
-        # FIXME: set bounds and step size (64)
+    def create_line_edit(self, text: str, label: str) -> QLineEdit:
+        layout = QHBoxLayout()
+        label_widget = QLabel(label)
+        line_edit = QLineEdit(text)
+        layout.addWidget(label_widget)
+        layout.addWidget(line_edit)
+        self._layout.addLayout(layout)
+        return line_edit
 
-        width_layout = QHBoxLayout()
-        width_label = QLabel("Width")
-        self.width_data = QSpinBox()
-        self.width_data.setValue(self.style_data.width or 1024)
-        width_layout.addWidget(width_label)
-        width_layout.addWidget(self.width_data)
-        # FIXME: set bounds and step size (64)
+    def create_combo_box(self, items: list, current_text: str, label: str) -> QComboBox:
+        layout = QHBoxLayout()
+        label_widget = QLabel(label)
+        combo_box = QComboBox()
+        for item in items:
+            combo_box.addItem(item)
+        combo_box.setCurrentText(current_text)
+        layout.addWidget(label_widget)
+        layout.addWidget(combo_box)
+        self._layout.addLayout(layout)
+        return combo_box
 
-        height_layout = QHBoxLayout()
-        height_label = QLabel("Height")
-        self.height_data = QSpinBox()
-        self.height_data.setValue(self.style_data.height or 1024)
-        height_layout.addWidget(height_label)
-        height_layout.addWidget(self.height_data)
+    def create_double_spin_box(
+        self, value: float, label: str, decimals: int
+    ) -> QDoubleSpinBox:
+        layout = QHBoxLayout()
+        label_widget = QLabel(label)
+        spin_box = QDoubleSpinBox()
+        spin_box.setDecimals(decimals)
+        spin_box.setValue(value)
+        layout.addWidget(label_widget)
+        layout.addWidget(spin_box)
+        self._layout.addLayout(layout)
+        return spin_box
 
-        # FIXME: set bounds
-        clip_skip_layout = QHBoxLayout()
-        clip_skip_label = QLabel("CLIP skip")
-        self.clip_skip_data = QSpinBox()
-        self.clip_skip_data.setValue(self.style_data.clip_skip or 1)
-        clip_skip_layout.addWidget(clip_skip_label)
-        clip_skip_layout.addWidget(self.clip_skip_data)
+    def create_spin_box(self, value: int, label: str, step: int) -> QSpinBox:
+        layout = QHBoxLayout()
+        label_widget = QLabel(label)
+        spin_box = QSpinBox()
+        spin_box.setValue(value)
+        spin_box.setSingleStep(step)
+        layout.addWidget(label_widget)
+        layout.addWidget(spin_box)
+        self._layout.addLayout(layout)
+        return spin_box
 
-        if self.style_data.is_built_in:
-            self.name_data.setEnabled(False)
-            self.prompt_data.setEnabled(False)
-            self.model_data.setEnabled(False)
-            self.cfg_data.setEnabled(False)
-            self.steps_data.setEnabled(False)
-            self.width_data.setEnabled(False)
-            self.height_data.setEnabled(False)
-            self.clip_skip_data.setEnabled(False)
+    def set_ui_enabled(self, enabled: bool):
+        self.name_data.setEnabled(enabled)
+        self.prompt_data.setEnabled(enabled)
+        self.model_data.setEnabled(enabled)
+        self.cfg_data.setEnabled(enabled)
+        self.steps_data.setEnabled(enabled)
+        self.width_data.setEnabled(enabled)
+        self.height_data.setEnabled(enabled)
+        self.clip_skip_data.setEnabled(enabled)
 
+    def create_buttons(self):
         use_button = QPushButton("Use Style")
         save_button = QPushButton("Save Style")
         duplicate_button = QPushButton("Duplicate Style")
@@ -188,6 +240,7 @@ class StyleViewer(QDockWidget):
 
         duplicate_button.clicked.connect(self.duplicate_style)
         save_button.clicked.connect(self.save_style)
+        delete_button.clicked.connect(self.delete_style)
 
         buttons_layout = QHBoxLayout()
         buttons_layout.addWidget(use_button)
@@ -195,24 +248,26 @@ class StyleViewer(QDockWidget):
         buttons_layout.addWidget(duplicate_button)
         buttons_layout.addWidget(delete_button)
 
-        layout = QVBoxLayout()
-        layout.addLayout(name_layout)
-        layout.addLayout(prompt_layout)
-        layout.addLayout(model_layout)
-        layout.addLayout(cfg_layout)
-        layout.addLayout(steps_layout)
-        layout.addLayout(width_layout)
-        layout.addLayout(height_layout)
-        layout.addLayout(clip_skip_layout)
+        self._layout.addLayout(buttons_layout)
 
-        layout.addLayout(buttons_layout)
-
-        # Create a central widget to set the layout
+    def finalize_layout(self):
         widget = QWidget()
-        widget.setLayout(layout)
-
-        # Set the widget for the QDockWidget
+        widget.setLayout(self._layout)
         self.setWidget(widget)
         self.setFloating(True)
         self.resize(600, 600)
         self.show()
+
+    def reinitialize(self, new_style: Style):
+        # Update style data and UI elements
+        self.style_data = new_style
+        self.name_data.setText(self.style_data.name)
+        self.prompt_data.setText(self.style_data.prompt_format)
+        self.model_data.setCurrentText(self.style_data.model)
+        self.cfg_data.setValue(self.style_data.cfg_scale or 5.0)
+        self.steps_data.setValue(self.style_data.steps or 20)
+        self.width_data.setValue(self.style_data.width or 1024)
+        self.height_data.setValue(self.style_data.height or 1024)
+        self.clip_skip_data.setValue(self.style_data.clip_skip or 1)
+
+        self.set_ui_enabled(not self.style_data.is_built_in)
