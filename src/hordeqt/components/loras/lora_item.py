@@ -66,6 +66,7 @@ class LoRAItem(QFrame):
         RemoveLoraButton = QPushButton(
             QIcon.fromTheme(QIcon.ThemeIcon.EditDelete), "Remove LoRA"
         )
+        RemoveLoraButton.clicked.connect(self.remove_lora)
 
         CLIPLayout = QHBoxLayout()
         CLIPLayout.addWidget(CLIPStrengthLabel)
