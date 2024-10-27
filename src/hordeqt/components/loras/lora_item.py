@@ -38,6 +38,7 @@ class LoRAItem(QFrame):
         self.modelStrength.setMaximum(5)
         self.modelStrength.setDecimals(2)
         self.modelStrength.setValue(1)
+        self.modelStrength.setSingleStep(0.05)
 
         modelLayout = QHBoxLayout()
         modelLayout.addWidget(modelStrengthLabel)
@@ -49,6 +50,7 @@ class LoRAItem(QFrame):
         self.CLIPStrength.setMaximum(5)
         self.CLIPStrength.setDecimals(2)
         self.CLIPStrength.setValue(1)
+        self.CLIPStrength.setSingleStep(0.05)
 
         CLIPLayout = QHBoxLayout()
         CLIPLayout.addWidget(CLIPStrengthLabel)
