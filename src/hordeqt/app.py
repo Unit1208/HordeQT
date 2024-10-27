@@ -36,7 +36,9 @@ from hordeqt.components.loras.lora_browser import LoraBrowser
 from hordeqt.components.loras.lora_item import LoRAItem
 from hordeqt.components.loras.selected_loras import SelectedLoRAs
 from hordeqt.components.model_dialog import ModelPopup
+from hordeqt.components.style_library.selected_styles import SelectedStyles
 from hordeqt.components.style_library.style_browser import StyleBrowser
+from hordeqt.components.style_library.style_item import StyleItem
 from hordeqt.gen.res_resources import qCleanupResources, qInitResources
 from hordeqt.gen.ui_form import Ui_MainWindow
 from hordeqt.other.consts import (
@@ -76,6 +78,8 @@ class HordeQt(QMainWindow):
         LOGGER.debug("UI setup")
         self.selectedLoRAs = SelectedLoRAs(self)
         self.ui.LoraVBox.addWidget(self.selectedLoRAs)
+        self.selectedStyles = SelectedStyles(self)
+        self.ui.StyleVBox.addWidget(self.selectedStyles)
         self.restore_job_config(self.savedData.job_config)
         if (
             k := keyring.get_password("HordeQT", "HordeQTUser")
@@ -410,6 +414,9 @@ class HordeQt(QMainWindow):
             "karras": self.ui.karrasCheckBox.isChecked(),
             "upscale": self.ui.upscaleComboBox.currentText(),
             "loras": [lora.serialize() for lora in self.selectedLoRAs.loras],
+            "styles": [
+                style.style_data.serialize() for style in self.selectedStyles.styles
+            ],
         }
 
     def restore_job_config(self, job_config: dict):
@@ -437,6 +444,14 @@ class HordeQt(QMainWindow):
             lora.remove_lora()
         for lora in loras:
             self.selectedLoRAs.add_lora_widget(lora.loraModel, lora.loraVersion)
+        ser_styles = job_config.get("styles", [])
+        styles = [
+            StyleItem.deserialize(style, self.selectedStyles) for style in ser_styles
+        ]
+        for style in self.selectedStyles.styles:
+            style.remove_style()
+        for style in styles:
+            self.selectedStyles.add_style_widget(style.style_data)
 
     def undo_reset_job_config(self):
         if self.last_job_config is not None:

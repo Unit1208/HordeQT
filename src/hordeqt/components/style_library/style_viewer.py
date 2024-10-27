@@ -31,6 +31,7 @@ from hordeqt.other.consts import LOGGER
 class StyleViewer(QDockWidget):
     def save_style(self):
         # TODO: check if saving would overwrite existing style.
+
         if self.style_data.is_built_in:
             self._parent.show_warn_toast(
                 "Failed to save style: Can't overwrite builtin styles.",
@@ -51,7 +52,7 @@ class StyleViewer(QDockWidget):
             sampler="k_euler",  # FIXME: add sampler spinbox
             clip_skip=self.clip_skip_data.value(),
             hires_fix=False,  # FIXME: Add Hires fix toggle
-            loras=[],
+            loras=[],  # FIXME: LoRA editor (mini-selectedLoras?)
             is_built_in=False,
         )
         if old_style_name.strip() != new_style.name:
@@ -129,6 +130,10 @@ class StyleViewer(QDockWidget):
 
     def _delete_style(self):
         self._parent.styleLibrary.delete_style(self.style_data)
+        self.close()
+
+    def use_style(self):
+        self._parent.selectedStyles.add_style_widget(self.style_data)
         self.close()
 
     def __init__(self, style: Style, parent: HordeQt):
@@ -223,6 +228,9 @@ class StyleViewer(QDockWidget):
         label_widget = QLabel(label)
         spin_box = QDoubleSpinBox()
         spin_box.setDecimals(decimals)
+        spin_box.setMinimum(min_v)
+        spin_box.setMaximum(max_v)
+        spin_box.setSingleStep(step)
         spin_box.setValue(value)
         layout.addWidget(label_widget)
         layout.addWidget(spin_box)
@@ -265,6 +273,7 @@ class StyleViewer(QDockWidget):
         duplicate_button.clicked.connect(self.duplicate_style)
         save_button.clicked.connect(self.save_style)
         delete_button.clicked.connect(self.delete_style)
+        use_button.clicked.connect(self.use_style)
 
         buttons_layout = QHBoxLayout()
         buttons_layout.addWidget(use_button)

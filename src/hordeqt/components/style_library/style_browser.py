@@ -95,8 +95,15 @@ class StyleBrowser(QDockWidget):
         name_label = QLabel(style.name)
         details_button = QPushButton("Details")
         details_button.clicked.connect(lambda: StyleViewer(style, self._parent))
+        use_button = QPushButton("Use style")
+        use_button.clicked.connect(
+            lambda: self._parent.selectedStyles.add_style_widget(style)
+        )
+
         styleWidgetLayout.addWidget(name_label)
         styleWidgetLayout.addWidget(details_button)
+        styleWidgetLayout.addWidget(use_button)
+
         styleWidget.setLayout(styleWidgetLayout)
         self.curr_widgets.append(styleWidget)
         return styleWidget
