@@ -82,7 +82,7 @@ class LoadThread(QThread):
                 j: dict[str, dict] = json.load(f)
         styles: List[Style] = []
         for k, v in j.items():
-            styles.append(Style.parse_from_json(k, v))
+            styles.append(Style.parse_from_json(k, v, True))
 
         self.style_info.emit(styles)
 

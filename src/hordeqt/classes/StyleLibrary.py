@@ -25,6 +25,9 @@ class StyleLibrary:
     def add_style(self, s: Style):
         self.styles[s.name] = s
 
+    def update_style(self, s: Style):
+        self.styles[s.name] = s
+
     def apply_style_to_job_data(self, style_name: str, job: Job):
         style = self.get_style(style_name)
         if style is None:
@@ -49,3 +52,13 @@ class StyleLibrary:
 
     def get_user_styles(self):
         return [v for v in self.styles.values() if not v.is_built_in]
+
+    def delete_style(self, style: str | Style) -> bool:
+        if isinstance(style, str):
+            if self.styles.get(style) is None:
+                return False
+            self.styles.pop(style)
+            return True
+        elif isinstance(style, Style):
+            return self.delete_style(style.name)
+        return False

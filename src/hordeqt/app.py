@@ -2,6 +2,7 @@ import datetime as dt
 import os
 import shutil
 import sys
+import threading
 import time
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -240,7 +241,6 @@ class HordeQt(QMainWindow):
         self.job_download_thread.start()
         self.download_thread.start()
         self.api_thread.start()
-        self.save_thread.start()
 
     def closeEvent(self, event):
         LOGGER.debug("Close clicked.")
@@ -390,6 +390,8 @@ class HordeQt(QMainWindow):
         QTimer.singleShot(200, self.update_kudos_preview)
         LOGGER.debug("Hiding progress bar after 500 ms")
         QTimer.singleShot(500, self.ui.progressBar.hide)
+        LOGGER.debug("Starting save thread after 750 ms")
+        QTimer.singleShot(750, self.save_thread.start)
 
     def save_job_config(self):
         return {
@@ -951,6 +953,7 @@ class HordeQt(QMainWindow):
 
 
 def main():
+    LOGGER.debug(f"Running on {threading.current_thread().native_id}")
     os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
     os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
 

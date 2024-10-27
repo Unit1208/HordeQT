@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QProgressDialog,
     QPushButton,
     QSpinBox,
@@ -34,6 +35,22 @@ class StyleViewer(QDockWidget):
                 "Please duplicate the style and try saving again",
             )
             return
+        new_style = Style(
+            name=self.name_data.text(),
+            prompt_format=self.prompt_data.text(),
+            model=self.model_data.currentText(),
+            width=self.width_data.value(),
+            height=self.height_data.value(),
+            steps=self.steps_data.value(),
+            cfg_scale=self.cfg_data.value(),
+            karras=True,  # FIXME: add Karras toggle
+            sampler="k_euler",  # FIXME: add sampler spinbox
+            clip_skip=self.clip_skip_data.value(),
+            hires_fix=False,  # FIXME: Add Hires fix toggle
+            loras=[],
+            is_built_in=False,
+        )
+        self._parent.styleLibrary.update_style(new_style)
 
     def duplicate_style(self):
         new_style = copy.deepcopy(self.style_data)
@@ -47,9 +64,38 @@ class StyleViewer(QDockWidget):
         self._parent.styleLibrary.add_style(new_style)
         self._parent.show_success_toast(
             "Duplicated style",
-            f'Copy of style "{self.style_data.name}" created, "{new_style}"',
+            f'Copy of style "{self.style_data.name}" created, "{new_style.name}"',
         )
         StyleViewer(new_style, self._parent)
+
+    def delete_style(self):
+        if self.style_data.is_built_in:
+            self._parent.show_warn_toast(
+                "Failed to delete style",
+                "Builtin styles can not be deleted",
+            )
+            return
+        confirm_box = QMessageBox()
+        confirm_box.setText("Deleted styles can not be recovered")
+        confirm_box.setInformativeText(
+            f'Are you sure you want to delete the style "{self.style_data.name}"'
+        )
+        confirm_box.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        confirm_box.setDefaultButton(QMessageBox.StandardButton.No)
+        ret = confirm_box.exec()
+        if ret == QMessageBox.StandardButton.Yes:
+            pass
+        elif ret == QMessageBox.StandardButton.No:
+            self._parent.show_info_toast(
+                "Style not deleted",
+                f"{self.style_data.name} was not deleted",
+            )
+
+    def _delete_style(self):
+        self._parent.styleLibrary.delete_style(self.style_data)
+        self.close()
 
     def __init__(self, style: Style, parent: HordeQt):
         super().__init__(f"Style viewer ({style.name})", parent)
@@ -62,7 +108,13 @@ class StyleViewer(QDockWidget):
         )
         self.style_data = style
 
-        name_label = QLabel(style.name)
+        name_layout = QHBoxLayout()
+        name_label = QLabel("Name")
+        self.name_data = QLineEdit(self.style_data.name)
+
+        name_layout.addWidget(name_label)
+        name_layout.addWidget(self.name_data)
+
         prompt_layout = QHBoxLayout()
         prompt_label = QLabel("Prompt")
         self.prompt_data = QLineEdit(self.style_data.prompt_format)
@@ -78,7 +130,7 @@ class StyleViewer(QDockWidget):
 
         model_layout.addWidget(model_label)
         model_layout.addWidget(self.model_data)
-
+        # FIXME: set bounds
         cfg_layout = QHBoxLayout()
         cfg_label = QLabel("Guidence")
         self.cfg_data = QDoubleSpinBox()
@@ -86,6 +138,7 @@ class StyleViewer(QDockWidget):
         self.cfg_data.setValue(self.style_data.cfg_scale or 5.0)
         cfg_layout.addWidget(cfg_label)
         cfg_layout.addWidget(self.cfg_data)
+        # FIXME: set bounds
 
         steps_layout = QHBoxLayout()
         steps_label = QLabel("Steps")
@@ -93,6 +146,7 @@ class StyleViewer(QDockWidget):
         self.steps_data.setValue(self.style_data.steps or 20)
         steps_layout.addWidget(steps_label)
         steps_layout.addWidget(self.steps_data)
+        # FIXME: set bounds and step size (64)
 
         width_layout = QHBoxLayout()
         width_label = QLabel("Width")
@@ -100,34 +154,49 @@ class StyleViewer(QDockWidget):
         self.width_data.setValue(self.style_data.width or 1024)
         width_layout.addWidget(width_label)
         width_layout.addWidget(self.width_data)
+        # FIXME: set bounds and step size (64)
 
         height_layout = QHBoxLayout()
         height_label = QLabel("Height")
         self.height_data = QSpinBox()
         self.height_data.setValue(self.style_data.height or 1024)
-
         height_layout.addWidget(height_label)
         height_layout.addWidget(self.height_data)
 
+        # FIXME: set bounds
         clip_skip_layout = QHBoxLayout()
         clip_skip_label = QLabel("CLIP skip")
         self.clip_skip_data = QSpinBox()
         self.clip_skip_data.setValue(self.style_data.clip_skip or 1)
-
         clip_skip_layout.addWidget(clip_skip_label)
         clip_skip_layout.addWidget(self.clip_skip_data)
+
+        if self.style_data.is_built_in:
+            self.name_data.setEnabled(False)
+            self.prompt_data.setEnabled(False)
+            self.model_data.setEnabled(False)
+            self.cfg_data.setEnabled(False)
+            self.steps_data.setEnabled(False)
+            self.width_data.setEnabled(False)
+            self.height_data.setEnabled(False)
+            self.clip_skip_data.setEnabled(False)
 
         use_button = QPushButton("Use Style")
         save_button = QPushButton("Save Style")
         duplicate_button = QPushButton("Duplicate Style")
+        delete_button = QPushButton("Delete Style")
+
         duplicate_button.clicked.connect(self.duplicate_style)
+        save_button.clicked.connect(self.save_style)
+
         buttons_layout = QHBoxLayout()
         buttons_layout.addWidget(use_button)
         buttons_layout.addWidget(save_button)
         buttons_layout.addWidget(duplicate_button)
+        buttons_layout.addWidget(delete_button)
 
         layout = QVBoxLayout()
-        layout.addWidget(name_label)
+        layout.addLayout(name_layout)
         layout.addLayout(prompt_layout)
         layout.addLayout(model_layout)
         layout.addLayout(cfg_layout)
