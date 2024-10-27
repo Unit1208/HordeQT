@@ -680,6 +680,7 @@ class HordeQt(QMainWindow):
 
     def construct_style_info(self, styles: List[Style]):
         self.styleLibrary = StyleLibrary(styles=styles, parent=self)
+        self.styleLibrary.add_styles(self.user_styles)
         self.ui.StyleSelector.clicked.connect(lambda: StyleBrowser(self))
         self.ui.StyleSelector.setEnabled(True)
 

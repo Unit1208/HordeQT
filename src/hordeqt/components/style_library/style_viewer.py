@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QProgressDialog,
     QPushButton,
     QSpinBox,
+    QTextEdit,
     QVBoxLayout,
     QWidget,
 )
@@ -40,7 +41,7 @@ class StyleViewer(QDockWidget):
 
         new_style = Style(
             name=self.name_data.text().strip(),
-            prompt_format=self.prompt_data.text().strip(),
+            prompt_format=self.prompt_data.toPlainText().strip(),
             model=self.model_data.currentText(),
             width=self.width_data.value(),
             height=self.height_data.value(),
@@ -119,7 +120,7 @@ class StyleViewer(QDockWidget):
         confirm_box.setDefaultButton(QMessageBox.StandardButton.No)
         ret = confirm_box.exec()
         if ret == QMessageBox.StandardButton.Yes:
-            self.delete_style()
+            self._delete_style()
         elif ret == QMessageBox.StandardButton.No:
             self._parent.show_info_toast(
                 "Style not deleted",
@@ -148,24 +149,26 @@ class StyleViewer(QDockWidget):
 
         # Create the UI layout components
         self.name_data = self.create_line_edit(self.style_data.name, "Name")
-        self.prompt_data = self.create_line_edit(
+        self.prompt_data = self.create_text_edit(
             self.style_data.prompt_format, "Prompt"
         )
         self.model_data = self.create_combo_box(
             [_ for _ in self._parent.model_dict.keys()], self.style_data.model, "Model"
         )
         self.cfg_data = self.create_double_spin_box(
-            self.style_data.cfg_scale or 5.0, "Guidence", 1
+            self.style_data.cfg_scale or 5.0, "Guidence", 1, 0.05, 0, 20
         )
-        self.steps_data = self.create_spin_box(self.style_data.steps or 20, "Steps", 1)
+        self.steps_data = self.create_spin_box(
+            self.style_data.steps or 20, "Steps", 1, 1, 100
+        )
         self.width_data = self.create_spin_box(
-            self.style_data.width or 1024, "Width", 64
+            self.style_data.width or 1024, "Width", 64, 64, 3072
         )
         self.height_data = self.create_spin_box(
-            self.style_data.height or 1024, "Height", 64
+            self.style_data.height or 1024, "Height", 64, 64, 3072
         )
         self.clip_skip_data = self.create_spin_box(
-            self.style_data.clip_skip or 1, "CLIP skip", 1
+            self.style_data.clip_skip or 1, "CLIP skip", 1, 1, 12
         )
 
         # Enable/disable UI elements based on style_data
@@ -186,6 +189,15 @@ class StyleViewer(QDockWidget):
         self._layout.addLayout(layout)
         return line_edit
 
+    def create_text_edit(self, text: str, label: str) -> QTextEdit:
+        layout = QHBoxLayout()
+        label_widget = QLabel(label)
+        text_edit = QTextEdit(text)
+        layout.addWidget(label_widget)
+        layout.addWidget(text_edit)
+        self._layout.addLayout(layout)
+        return text_edit
+
     def create_combo_box(self, items: list, current_text: str, label: str) -> QComboBox:
         layout = QHBoxLayout()
         label_widget = QLabel(label)
@@ -199,7 +211,13 @@ class StyleViewer(QDockWidget):
         return combo_box
 
     def create_double_spin_box(
-        self, value: float, label: str, decimals: int
+        self,
+        value: float,
+        label: str,
+        decimals: int,
+        step: float,
+        min_v: float,
+        max_v: float,
     ) -> QDoubleSpinBox:
         layout = QHBoxLayout()
         label_widget = QLabel(label)
@@ -211,10 +229,16 @@ class StyleViewer(QDockWidget):
         self._layout.addLayout(layout)
         return spin_box
 
-    def create_spin_box(self, value: int, label: str, step: int) -> QSpinBox:
+    def create_spin_box(
+        self, value: int, label: str, step: int, min_v: int, max_v: int
+    ) -> QSpinBox:
+        if min_v > max_v:
+            max_v, min_v = min_v, max_v
         layout = QHBoxLayout()
         label_widget = QLabel(label)
         spin_box = QSpinBox()
+        spin_box.setMinimum(min_v)
+        spin_box.setMaximum(max_v)
         spin_box.setValue(value)
         spin_box.setSingleStep(step)
         layout.addWidget(label_widget)
