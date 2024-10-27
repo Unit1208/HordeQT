@@ -850,7 +850,6 @@ class HordeQt(QMainWindow):
             [
                 id,
                 status,
-                prompt,
                 model,
                 (
                     # FIXME: This is hacky, I don't like it.
@@ -865,6 +864,7 @@ class HordeQt(QMainWindow):
                         + (" ago" if eta < 0 else "")
                     )
                 ),
+                prompt,
             ]
         ):
             item = table.item(row, col)

@@ -286,8 +286,6 @@ class JobManagerThread(QThread):
                         if gen["censored"] or rj["faulted"]:
                             self.job_errored.emit(rj)
                         else:
-                            if len("gen_metadata") > 0:
-                                self.job_info.emit(rj)
                             lj.downloadURL = gen["img"]
                             lj.worker_id = gen["worker_id"]
                             lj.worker_name = gen["worker_name"]

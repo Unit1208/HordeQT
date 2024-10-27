@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 from typing import TYPE_CHECKING, List, Sequence, Tuple
 
 from fuzzywuzzy import process
@@ -87,9 +88,15 @@ class StyleBrowser(QDockWidget):
         for style, ranking in best_match_styles:
             s = self._parent.styleLibrary.get_style(style)
             if s is not None and ranking > 10:  # Keep intellisense happy.
-                self.styleListLayout.addWidget(self.create_widget_from_response(s))
+                self.styleListLayout.addWidget(self.create_widget_from_style(s))
+        if len(query) == 0:
+            styles = random.choices(
+                self._parent.styleLibrary.get_available_styles(), k=10
+            )
+            for style in styles:
+                self.styleListLayout.addWidget(self.create_widget_from_style(style))
 
-    def create_widget_from_response(self, style: Style):
+    def create_widget_from_style(self, style: Style):
         styleWidget = QWidget()
         styleWidgetLayout = QHBoxLayout()
         name_label = QLabel(style.name)

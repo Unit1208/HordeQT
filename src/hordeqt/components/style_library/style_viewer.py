@@ -43,14 +43,22 @@ class StyleViewer(QDockWidget):
         new_style = Style(
             name=self.name_data.text().strip(),
             prompt_format=self.prompt_data.toPlainText().strip(),
-            model=self.model_data.currentText(),
-            width=self.width_data.value(),
-            height=self.height_data.value(),
-            steps=self.steps_data.value(),
-            cfg_scale=self.cfg_data.value(),
+            model=(
+                self.model_data.currentText()
+                if self.model_data.currentText() != "None"
+                else None
+            ),
+            width=self.width_data.value() if self.width_data.value() != -1 else None,
+            height=self.height_data.value() if self.height_data.value() != -1 else None,
+            steps=self.steps_data.value() if self.steps_data.value() != -1 else None,
+            cfg_scale=self.cfg_data.value() if self.cfg_data.value() != -1 else None,
+            clip_skip=(
+                self.clip_skip_data.value()
+                if self.clip_skip_data.value() != -1
+                else None
+            ),
             karras=True,  # FIXME: add Karras toggle
             sampler="k_euler",  # FIXME: add sampler spinbox
-            clip_skip=self.clip_skip_data.value(),
             hires_fix=False,  # FIXME: Add Hires fix toggle
             loras=[],  # FIXME: LoRA editor (mini-selectedLoras?)
             is_built_in=False,
@@ -157,8 +165,13 @@ class StyleViewer(QDockWidget):
         self.prompt_data = self.create_text_edit(
             self.style_data.prompt_format, "Prompt"
         )
+        self._layout.addWidget(
+            QLabel('Enter -1 or "None" to leave items at their default value')
+        )
         self.model_data = self.create_combo_box(
-            [_ for _ in self._parent.model_dict.keys()], self.style_data.model, "Model"
+            [_ for _ in self._parent.model_dict.keys()],
+            self.style_data.model or "None",
+            "Model",
         )
         self.cfg_data = self.create_double_spin_box(
             self.style_data.cfg_scale or 5.0, "Guidence", 1, 0.05, 0, 20
@@ -203,13 +216,16 @@ class StyleViewer(QDockWidget):
         self._layout.addLayout(layout)
         return text_edit
 
-    def create_combo_box(self, items: list, current_text: str, label: str) -> QComboBox:
+    def create_combo_box(
+        self, items: list, current_text: Optional[str], label: str
+    ) -> QComboBox:
         layout = QHBoxLayout()
         label_widget = QLabel(label)
         combo_box = QComboBox()
+        combo_box.addItem("None")
         for item in items:
             combo_box.addItem(item)
-        combo_box.setCurrentText(current_text)
+        combo_box.setCurrentText(current_text if current_text else "None")
         layout.addWidget(label_widget)
         layout.addWidget(combo_box)
         self._layout.addLayout(layout)
@@ -217,7 +233,7 @@ class StyleViewer(QDockWidget):
 
     def create_double_spin_box(
         self,
-        value: float,
+        value: Optional[float],
         label: str,
         decimals: int,
         step: float,
@@ -228,26 +244,27 @@ class StyleViewer(QDockWidget):
         label_widget = QLabel(label)
         spin_box = QDoubleSpinBox()
         spin_box.setDecimals(decimals)
-        spin_box.setMinimum(min_v)
+        spin_box.setMinimum(min(-1, min_v))
         spin_box.setMaximum(max_v)
         spin_box.setSingleStep(step)
-        spin_box.setValue(value)
+        spin_box.setValue(value if value is not None else -1)
         layout.addWidget(label_widget)
         layout.addWidget(spin_box)
         self._layout.addLayout(layout)
         return spin_box
 
     def create_spin_box(
-        self, value: int, label: str, step: int, min_v: int, max_v: int
+        self, value: Optional[int], label: str, step: int, min_v: int, max_v: int
     ) -> QSpinBox:
         if min_v > max_v:
             max_v, min_v = min_v, max_v
         layout = QHBoxLayout()
         label_widget = QLabel(label)
         spin_box = QSpinBox()
-        spin_box.setMinimum(min_v)
+        spin_box.setMinimum(min(-1, min_v))
         spin_box.setMaximum(max_v)
-        spin_box.setValue(value)
+        spin_box.setValue(value if value is not None else -1)
+
         spin_box.setSingleStep(step)
         layout.addWidget(label_widget)
         layout.addWidget(spin_box)
@@ -296,11 +313,11 @@ class StyleViewer(QDockWidget):
         self.style_data = new_style
         self.name_data.setText(self.style_data.name)
         self.prompt_data.setText(self.style_data.prompt_format)
-        self.model_data.setCurrentText(self.style_data.model)
-        self.cfg_data.setValue(self.style_data.cfg_scale or 5.0)
-        self.steps_data.setValue(self.style_data.steps or 20)
-        self.width_data.setValue(self.style_data.width or 1024)
-        self.height_data.setValue(self.style_data.height or 1024)
-        self.clip_skip_data.setValue(self.style_data.clip_skip or 1)
+        self.model_data.setCurrentText(self.style_data.model or "None")
+        self.cfg_data.setValue(self.style_data.cfg_scale or -1)
+        self.steps_data.setValue(self.style_data.steps or -1)
+        self.width_data.setValue(self.style_data.width or -1)
+        self.height_data.setValue(self.style_data.height or -1)
+        self.clip_skip_data.setValue(self.style_data.clip_skip or -1)
 
         self.set_ui_enabled(not self.style_data.is_built_in)
