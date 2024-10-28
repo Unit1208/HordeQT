@@ -1,10 +1,11 @@
+import gzip
 import os
 from typing import Dict, List
 
 import jsonpickle
 
 from hordeqt.classes.Style import Style
-from hordeqt.other.consts import SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
+from hordeqt.other.consts import ISDEBUG, SAVED_DATA_DIR_PATH, SAVED_DATA_PATH
 from hordeqt.threads.etc_download_thread import DownloadThread
 from hordeqt.threads.job_download_thread import JobDownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
@@ -82,14 +83,23 @@ class SavedData:
             "notify_after_n": self.notify_after_n,
             "user_saved_styles": self.user_saved_styles,
         }
-        jsondata: str = jsonpickle.encode(d, indent=4)  # type: ignore
-        with open(SAVED_DATA_PATH, "wt") as f:
+        jsondata: str = jsonpickle.encode(d)  # type: ignore
+        with gzip.open(SAVED_DATA_PATH.with_suffix(".json.gz"), "wt") as f:
             f.write(jsondata)
+        if ISDEBUG:
+            with open(SAVED_DATA_PATH.with_suffix(".readable.json"), "wt") as f:
+                f.write(jsonpickle.encode(d, indent=4) or "")
 
     def read(self):
-        if SAVED_DATA_PATH.exists():
+        if SAVED_DATA_PATH.with_suffix(".json.gz").exists():
+            with gzip.open(SAVED_DATA_PATH.with_suffix(".json.gz"), "rt") as f:
+                j: dict = jsonpickle.decode(f.read())  # type: ignore
+        elif SAVED_DATA_PATH.exists():
             with open(SAVED_DATA_PATH, "rt") as f:
                 j: dict = jsonpickle.decode(f.read())  # type: ignore
+            SAVED_DATA_PATH.rename(
+                SAVED_DATA_PATH.with_name("old_" + SAVED_DATA_PATH.name)
+            )
         else:
             j = dict()
         self.api_state = j.get("api_state", {})

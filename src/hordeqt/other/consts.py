@@ -58,13 +58,15 @@ os.makedirs(SAVED_DATA_DIR_PATH, exist_ok=True)
 os.makedirs(SAVED_LOG_PATH, exist_ok=True)
 os.makedirs(SAVED_IMAGE_DIR_PATH, exist_ok=True)
 os.makedirs(CACHE_PATH, exist_ok=True)
-
+ISDEBUG = False
 _imported = False
 if not _imported:
     LOGGER.remove(0)
     if os.environ.get("HORDEQT_DEBUG"):
         LOGGER.add(sys.stdout, backtrace=True, diagnose=True, level="TRACE")
+        ISDEBUG = True
     else:
+
         LOGGER.add(sys.stdout, level="WARNING")
     LOGGER.add(
         SAVED_LOG_PATH / "hordeqtlog_{time}.log",
