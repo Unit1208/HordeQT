@@ -11,3 +11,31 @@ The only requirements to build are: python>=3.10, pip, and venv. `build.py` will
 
 > [!IMPORTANT]
 > When using the pre-built Windows versions, you may encounter a "unverified publisher" warning. This app is safe, I just don't want to go through the whole process of obtaining a code signing certificate.
+
+## Developing HordeQT
+
+TODO: better documentation
+
+### Initializing environment
+
+```sh
+python -m venv venv
+source venv/bin/activate # (or .\venv\Scripts\Activate.ps1)
+pip install -U briefcase pip setuptools wheel pyside6
+python scripts/convert_files.py
+briefcase create linux flatpak # `windows app`, `macOS app` for these on other platforms.
+briefcase update linux flatpak --no-input -r --update-resources
+```
+
+### Running
+
+```sh
+source env.sh
+python src/hordeqt
+```
+
+or
+
+```sh
+briefcase dev
+```

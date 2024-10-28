@@ -50,7 +50,9 @@ def main():
     if is_windows:
         paths = [
             "C:\\Python312-x64\\python.exe",
-            "$env:LOCALAPPDATA\\Local\\Programs\\Python312\\python.exe",  # TODO: FIX
+            os.path.expandvars(
+                "%LOCALAPPDATA%\\Programs\\Python\\Python312\\python.exe"
+            ),
         ]
         py_path = ""
         for p in paths:
