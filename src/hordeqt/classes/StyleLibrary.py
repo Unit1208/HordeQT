@@ -13,10 +13,12 @@ if TYPE_CHECKING:
 
 class StyleLibrary:
     styles: Dict[str, Style] = {}
+    previews: Dict[str, Dict[str, str]]
 
     def __init__(self, styles: List[Style], parent: HordeQt):
         self.add_styles(styles)
         self.parent = parent
+        self.previews = {}
 
     def add_styles(self, styles: List[Style]):
         for s in styles:

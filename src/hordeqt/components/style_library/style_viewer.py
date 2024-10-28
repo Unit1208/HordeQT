@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 import copy
+from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
 from hordeqt.classes.Style import Style
+from hordeqt.components.clickable_label import ClickableLabel
+from hordeqt.components.style_library.image_popup import ImagePopup
 
 if TYPE_CHECKING:
     from hordeqt.app import HordeQt
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QComboBox,
     QDockWidget,
@@ -29,6 +33,7 @@ from hordeqt.other.consts import LOGGER
 
 
 class StyleViewer(QDockWidget):
+
     def save_style(self):
         # TODO: check if saving would overwrite existing style.
 
@@ -188,9 +193,17 @@ class StyleViewer(QDockWidget):
         self.clip_skip_data = self.create_spin_box(
             self.style_data.clip_skip, "CLIP skip", 1, 1, 12
         )
-
-        # Enable/disable UI elements based on style_data
-        self.set_ui_enabled(not self.style_data.is_built_in)
+        self.previews_layout = QHBoxLayout()
+        previews = self._parent.styleLibrary.previews.get(self.style_data.name, None)
+        if previews is None:
+            LOGGER.info(f"No previews for {self.style_data.name}")
+        else:
+            for preview_type in ["person", "place", "thing"]:
+                if (preview_url := previews.get(preview_type)) is not None:
+                    self.create_image(
+                        preview_type.capitalize(), preview_url, QSize(256, 256)
+                    )
+        self._layout.addLayout(self.previews_layout)
 
         # Create and set buttons
         self.create_buttons()
@@ -225,6 +238,7 @@ class StyleViewer(QDockWidget):
         combo_box.addItem("None")
         for item in items:
             combo_box.addItem(item)
+        combo_box.setMaxVisibleItems(10)
         combo_box.setCurrentText(current_text if current_text else "None")
         layout.addWidget(label_widget)
         layout.addWidget(combo_box)
@@ -264,22 +278,33 @@ class StyleViewer(QDockWidget):
         spin_box.setMinimum(min(-1, min_v))
         spin_box.setMaximum(max_v)
         spin_box.setValue(value if value is not None else -1)
-
         spin_box.setSingleStep(step)
         layout.addWidget(label_widget)
         layout.addWidget(spin_box)
         self._layout.addLayout(layout)
         return spin_box
 
-    def set_ui_enabled(self, enabled: bool):
-        self.name_data.setEnabled(enabled)
-        self.prompt_data.setEnabled(enabled)
-        self.model_data.setEnabled(enabled)
-        self.cfg_data.setEnabled(enabled)
-        self.steps_data.setEnabled(enabled)
-        self.width_data.setEnabled(enabled)
-        self.height_data.setEnabled(enabled)
-        self.clip_skip_data.setEnabled(enabled)
+    def create_image(self, name: str, image: str, size: QSize):
+        layout = QVBoxLayout()
+        label_widget = QLabel(name)
+        image_widget = ClickableLabel("Loading preview")
+
+        def set_preview_image(path: Path):
+            im = QPixmap(path)
+            image_widget.setPixmap(
+                im.scaled(
+                    size,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            )
+            image_widget.setText("")
+            image_widget.clicked.connect(lambda: ImagePopup(path, self._parent))
+
+        self._parent.download_thread.download_to_cache(image, set_preview_image)
+        layout.addWidget(label_widget)
+        layout.addWidget(image_widget)
+        self.previews_layout.addLayout(layout)
 
     def create_buttons(self):
         use_button = QPushButton("Use Style")
@@ -319,5 +344,3 @@ class StyleViewer(QDockWidget):
         self.width_data.setValue(self.style_data.width or -1)
         self.height_data.setValue(self.style_data.height or -1)
         self.clip_skip_data.setValue(self.style_data.clip_skip or -1)
-
-        self.set_ui_enabled(not self.style_data.is_built_in)

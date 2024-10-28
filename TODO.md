@@ -127,3 +127,4 @@
 - [ ] Previews for types (list [here](https://github.com/amiantos/AI-Horde-Styles-Previews/blob/main/previews.json))
   - Can hook into existing LoRA preview logic.
 - [ ] "Create new style" button
+- [ ] Notify app on style removal/addition to update kudos cost

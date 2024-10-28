@@ -15,7 +15,7 @@ class LoadThread(QThread):
     progress = Signal(int)
     model_info = Signal(dict)
     style_info = Signal(list)
-
+    style_preview = Signal()
     user_info = Signal(requests.Response)
     horde_info = Signal(type(Tuple[requests.Response, requests.Response]))
 
@@ -29,6 +29,7 @@ class LoadThread(QThread):
             self.reload_horde_info,
             self.load_model_file,
             self.load_style_file,
+            self.load_style_preview,
         ]
         for n in range(len(t)):
             # I don't love this, but it's fine.
@@ -85,6 +86,31 @@ class LoadThread(QThread):
             styles.append(Style.parse_from_json(k, v, True))
 
         self.style_info.emit(styles)
+
+    def load_style_preview(self):
+
+        self.style_preview_cache_path = CACHE_PATH / "style_preview.json"
+        if (
+            not self.style_preview_cache_path.exists()
+        ) or time.time() - self.style_preview_cache_path.stat().st_mtime > 60 * 60:
+            LOGGER.debug(
+                f"Refreshing style preview cache at {self.style_preview_cache_path}"
+            )
+            os.makedirs(self.style_preview_cache_path.parent, exist_ok=True)
+            r = requests.get(
+                "https://raw.githubusercontent.com/amiantos/AI-Horde-Styles-Previews/refs/heads/main/previews.json"
+            )
+            j: dict[str, str] = r.json()
+            with open(self.style_preview_cache_path, "wt") as f:
+                json.dump(j, f)
+        else:
+            LOGGER.debug(
+                f"Style preview cache at {self.style_preview_cache_path} is fresh, not reloading"
+            )
+
+            with open(self.style_preview_cache_path, "rt") as f:
+                j: dict[str, str] = json.load(f)
+        self.style_preview.emit()
 
     def load_model_file(self):
         model_cache_path = CACHE_PATH / "model_ref.json"

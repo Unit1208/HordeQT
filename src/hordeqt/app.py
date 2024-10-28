@@ -1,4 +1,5 @@
 import datetime as dt
+import json
 import os
 import shutil
 import sys
@@ -168,6 +169,7 @@ class HordeQt(QMainWindow):
         self.loading_thread.progress.connect(self.update_progress)
         self.loading_thread.model_info.connect(self.construct_model_dict)
         self.loading_thread.style_info.connect(self.construct_style_info)
+        self.loading_thread.style_preview.connect(self.construct_style_preview)
         self.loading_thread.user_info.connect(self.update_user_info)
         self.loading_thread.horde_info.connect(self.update_horde_info)
         LOGGER.debug("Connecting UI signals")
@@ -700,6 +702,10 @@ class HordeQt(QMainWindow):
         self.styleLibrary.add_styles(self.user_styles)
         self.ui.StyleSelector.clicked.connect(lambda: StyleBrowser(self))
         self.ui.StyleSelector.setEnabled(True)
+
+    def construct_style_preview(self):
+        with open(self.loading_thread.style_preview_cache_path, "rt") as f:
+            self.styleLibrary.previews = json.load(f)
 
     def construct_model_dict(self, mod):
         self.ui.modelComboBox.clear()
