@@ -78,10 +78,12 @@ class JobDownloadThread(QThread):
             lj = self.queued_deletes.pop()
             LOGGER.info(f"Deleting {lj.id}")
             try:
-                self.completed_downloads.pop(self.completed_downloads.index(lj))
+                self.completed_downloads.remove(lj)
                 LOGGER.success(f"Deleted job {lj.id}")
             except ValueError:
                 LOGGER.warning(f"Failed to delete {lj.id}")
+            except AttributeError as e:
+                LOGGER.warning(f"Failed to delete {lj.id} due to AttributeError: {e}")
             if os.path.exists(lj.path):
                 if lj.path.is_file():
                     lj.path.unlink()
