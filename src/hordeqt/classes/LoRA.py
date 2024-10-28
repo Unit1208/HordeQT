@@ -33,12 +33,26 @@ class LoRA:
             "model": self.strength,
             "clip": self.clip_strength,
             "is_version": self.is_version,
+            "_hordeqt_name": self.name,
         }
         if self.inject_trigger is not None:
             self.inject_trigger = self.inject_trigger.strip()
             if self.inject_trigger != "":
                 base["inject_trigger"] = self.inject_trigger
         return base
+
+    @classmethod
+    def from_job_format(cls, v: dict):
+        k = v.get("name", "")
+        return cls(
+            name=v.get("_hordeqt_name", f"Imported LoRA {k}"),
+            version_id=int(k),
+            strength=v.get("strength", 1),
+            clip_strength=v.get("clip", 1),
+            is_version=v.get("is_version"),
+            inject_trigger=v.get("inject_trigger", None),
+            model_version=None,
+        )
 
     def serialize(self) -> dict:
         if self.model_version is not None:

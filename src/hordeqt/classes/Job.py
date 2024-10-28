@@ -140,7 +140,7 @@ class Job:
             model=data.get("models", ["INVALID_MODEL_NAME_HERE"])[0],
             allow_nsfw=data.get("nsfw", False),
             upscale=params.get("upscaler"),
-            loras=params.get("loras"),
+            loras=[LoRA.from_job_format(x) for x in params.get("loras")],
         )
 
     def serialize(self):
