@@ -130,3 +130,4 @@
 - [ ] Notify app on style removal/addition to update kudos cost
 - [ ] Show how big the current cache is in settings
 - [ ] Force-refresh kudos cost button
+- [ ] Detect if connected, disallow generate button (or queue up for later with Toast). Rest of UI can remain functional (mostly)
