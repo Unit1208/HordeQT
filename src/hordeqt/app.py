@@ -65,6 +65,7 @@ class HordeQt(QMainWindow):
     def __init__(self, app: QApplication, parent=None):
         super().__init__(parent)
         LOGGER.debug("Main Window init start")
+        self.fullyloaded = False
         self.savedData = SavedData()
         self.savedData.read()
         LOGGER.debug("Saved data loaded")
@@ -257,6 +258,10 @@ class HordeQt(QMainWindow):
         self.job_download_thread.stop()
         LOGGER.debug("DL thread stopped")
         self.download_thread.stop()
+        if not self.fullyloaded:
+            qCleanupResources()
+            QMainWindow.closeEvent(self, event)
+            return
         LOGGER.debug("Updating saved data")
         self.savedData.update(
             self.api_thread,
@@ -398,6 +403,7 @@ class HordeQt(QMainWindow):
         QTimer.singleShot(500, self.ui.progressBar.hide)
         LOGGER.debug("Starting save thread after 750 ms")
         QTimer.singleShot(750, self.save_thread.start)
+        self.fullyloaded = True
 
     def save_job_config(self):
         return {
