@@ -14,6 +14,7 @@ queued_dl = Tuple[str, requests.Request, Optional[dl_callback]]
 
 class DownloadThread(QThread):
     queued_downloads: List[queued_dl]
+    pause_downloads = False
 
     def __init__(
         self,
@@ -66,7 +67,8 @@ class DownloadThread(QThread):
             if not self.running:
                 self.mutex.unlock()
                 break
-            self.pop_downloads()
+            if not self.pause_downloads:
+                self.pop_downloads()
             self.wait_condition.wait(self.mutex, 100)
             self.mutex.unlock()
 

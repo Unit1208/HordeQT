@@ -54,6 +54,11 @@ from hordeqt.other.consts import (
 from hordeqt.other.job_util import get_horde_metadata_pretty
 from hordeqt.other.prompt_util import create_jobs
 from hordeqt.other.util import size_presets
+from hordeqt.threads.connection_thread import (
+    CheckConnectionThread,
+    OnlineStatus,
+    oc_to_description,
+)
 from hordeqt.threads.etc_download_thread import DownloadThread
 from hordeqt.threads.job_download_thread import JobDownloadThread
 from hordeqt.threads.job_manager_thread import JobManagerThread
@@ -97,6 +102,7 @@ class HordeQt(QMainWindow):
                 "Anonymous API key",
                 "Warning: No API key set. Large generations may fail, and images will take a long time to generate",
             )
+
         self.loading_thread = LoadThread(self.api_key)
         self.hide_api_key()
         LOGGER.debug("Updating generate frame")
@@ -156,6 +162,11 @@ class HordeQt(QMainWindow):
         self.download_thread: DownloadThread = DownloadThread.deserialize(
             self.savedData.download_state
         )
+        self.connection_thread = CheckConnectionThread()
+        self.last_online_status: Optional[OnlineStatus] = None
+        self.online = False
+        LOGGER.debug("Connecting online status signal")
+        self.connection_thread.onlineUpdate.connect(self.on_connection_status_update)
 
         LOGGER.debug("Connecting DL signals")
         self.job_download_thread.completed.connect(self.on_image_fully_downloaded)
@@ -248,16 +259,18 @@ class HordeQt(QMainWindow):
         self.job_download_thread.start()
         self.download_thread.start()
         self.api_thread.start()
+        self.connection_thread.start()
 
     def closeEvent(self, event):
         LOGGER.debug("Close clicked.")
 
+        LOGGER.debug("Stopping threads")
         self.save_thread.stop()
         self.api_thread.stop()
-        LOGGER.debug("Stopping DL thread")
         self.job_download_thread.stop()
-        LOGGER.debug("DL thread stopped")
         self.download_thread.stop()
+        self.connection_thread.stop()
+        LOGGER.debug("Threads stopped")
         if not self.fullyloaded:
             qCleanupResources()
             QMainWindow.closeEvent(self, event)
@@ -285,6 +298,33 @@ class HordeQt(QMainWindow):
         qCleanupResources()
         LOGGER.debug("Closing Main window")
         QMainWindow.closeEvent(self, event)
+
+    def on_connection_status_update(self, value: OnlineStatus):
+        self.online = value.online
+        if self.last_online_status is None:
+            self.last_online_status = value
+        else:
+            if self.last_online_status.online == value.online:
+                pass
+            else:
+                if value.online:
+                    self.show_info_toast(
+                        "Reconnected",
+                        f'HordeQT has reconnected to AI Horde servers after reason: "{oc_to_description(self.last_online_status.offline_comp)}"',
+                    )
+
+                else:
+                    self.show_error_toast(
+                        "Disconnected",
+                        f'HordeQT has disconnected from AI Horde servers. Reason: "{oc_to_description(value.offline_comp)}"',
+                    )
+                self.set_paused_requests(not self.online)
+        self.last_online_status = value
+
+    def set_paused_requests(self, value: bool):
+        self.api_thread.pause_requests = value
+        self.job_download_thread.pause_downloads = value
+        self.download_thread.pause_downloads = value
 
     def update_metadata_save(self):
         self.job_download_thread.use_metadata = self.ui.saveMetadataCheckBox.isChecked()
@@ -789,6 +829,11 @@ class HordeQt(QMainWindow):
             ):
 
                 self.jobs_in_progress += len(jobs)
+            if not self.online:
+                self.show_warn_toast(
+                    "Jobs were created offline",
+                    f"HordeQT is not online. {len(jobs)} were queued.",
+                )
 
     def save_api_key(self):
         self.hide_api_key()

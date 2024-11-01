@@ -17,6 +17,7 @@ class JobDownloadThread(QThread):
     queued_deletes: List[LocalJob]
     completed = Signal(LocalJob)
     use_metadata: bool
+    pause_downloads = False
 
     def __init__(
         self,
@@ -45,7 +46,8 @@ class JobDownloadThread(QThread):
             if not self.running:
                 self.mutex.unlock()
                 break
-            self.pop_downloads()
+            if not self.pause_downloads:
+                self.pop_downloads()
             self.pop_deletes()
             self.wait_condition.wait(self.mutex, 100)
             self.mutex.unlock()

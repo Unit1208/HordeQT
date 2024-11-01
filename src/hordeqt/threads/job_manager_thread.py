@@ -21,6 +21,7 @@ class JobManagerThread(QThread):
     updated = Signal()
     kudos_cost_updated = Signal(type(Optional[float]))
     job_count = 1
+    pause_requests = False
 
     def __init__(self, api_key: str, max_requests: int, parent=None):
         super().__init__(parent)
@@ -53,8 +54,8 @@ class JobManagerThread(QThread):
             if not self.running:
                 self.mutex.unlock()
                 break
-
-            self.handle_queue()
+            if not self.pause_requests:
+                self.handle_queue()
             self.updated.emit()
 
             self.wait_condition.wait(self.mutex, 1000)
