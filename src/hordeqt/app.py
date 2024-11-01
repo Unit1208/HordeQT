@@ -53,7 +53,7 @@ from hordeqt.other.consts import (
 )
 from hordeqt.other.job_util import get_horde_metadata_pretty
 from hordeqt.other.prompt_util import create_jobs
-from hordeqt.other.util import size_presets
+from hordeqt.other.util import get_time_str, size_presets
 from hordeqt.threads.connection_thread import (
     CheckConnectionThread,
     OnlineStatus,
@@ -304,6 +304,12 @@ class HordeQt(QMainWindow):
         if self.last_online_status is None:
             self.last_online_status = value
         else:
+            LOGGER.debug(
+                "Horde is "
+                + ("online" if value.online else "offline")
+                + " @ "
+                + get_time_str()
+            )
             if self.last_online_status.online == value.online:
                 pass
             else:
@@ -846,56 +852,53 @@ class HordeQt(QMainWindow):
         # Is this confusing to the user? Would they expect the copy to copy what's currently in the api key, or the last saved value?
         self.clipboard.setText(self.api_key)
 
+    def show_toast(
+        self, title: str, message: str, preset_type: str, log_level=None, duration=5000
+    ):
+        toast = Toast(self)
+        toast.setDuration(duration)
+        toast.setTitle(title)
+        toast.setText(message)
+
+        # Determine the correct preset based on style hints and toast type
+        preset_map = {
+            "success": (ToastPreset.SUCCESS, ToastPreset.SUCCESS_DARK),
+            "info": (ToastPreset.INFORMATION, ToastPreset.INFORMATION_DARK),
+            "error": (ToastPreset.ERROR, ToastPreset.ERROR_DARK),
+            "warning": (ToastPreset.WARNING, ToastPreset.WARNING_DARK),
+        }
+        light_preset, dark_preset = preset_map.get(preset_type.lower(), (None, None))
+        if light_preset is None or dark_preset is None:
+            LOGGER.debug("Invalid preset id.")
+        else:
+            toast.applyPreset(
+                light_preset
+                if APP.styleHints() == Qt.ColorScheme.Light
+                else dark_preset
+            )
+
+            toast.show()
+
+        # Log message if log level is specified
+        if log_level:
+            log_func = getattr(LOGGER, log_level)
+            log_func(f"{title}: {message}")
+
     def show_success_toast(self, title: str, message: str, duration=5000):
-        success_toast = Toast(self)
-        success_toast.setDuration(duration)
-        success_toast.setTitle(title)
-        success_toast.setText(message)
-        success_toast.applyPreset(
-            ToastPreset.SUCCESS
-            if APP.styleHints() == Qt.ColorScheme.Light
-            else ToastPreset.SUCCESS_DARK
+        self.show_toast(
+            title, message, "success", log_level="success", duration=duration
         )
-        success_toast.show()
 
     def show_info_toast(self, title: str, message: str, duration=5000):
-        info_toast = Toast(self)
-        info_toast.setDuration(duration)
-        info_toast.setTitle(title)
-        info_toast.setText(message)
-        info_toast.applyPreset(
-            ToastPreset.INFORMATION
-            if APP.styleHints() == Qt.ColorScheme.Light
-            else ToastPreset.INFORMATION_DARK
-        )
-        info_toast.show()
-        LOGGER.info(f"{title}: {message}")
+        self.show_toast(title, message, "info", log_level="info", duration=duration)
 
     def show_error_toast(self, title: str, message: str, duration=5000):
-        error_toast = Toast(self)
-        error_toast.setDuration(duration)
-        error_toast.setTitle(title)
-        error_toast.setText(message)
-        error_toast.applyPreset(
-            ToastPreset.ERROR
-            if APP.styleHints() == Qt.ColorScheme.Light
-            else ToastPreset.ERROR_DARK
-        )
-        error_toast.show()
-        LOGGER.error(f"{title}: {message}")
+        self.show_toast(title, message, "error", log_level="error", duration=duration)
 
     def show_warn_toast(self, title: str, message: str, duration=5000):
-        warn_toast = Toast(self)
-        warn_toast.setDuration(duration)
-        warn_toast.setTitle(title)
-        warn_toast.setText(message)
-        warn_toast.applyPreset(
-            ToastPreset.WARNING
-            if APP.styleHints() == Qt.ColorScheme.Light
-            else ToastPreset.WARNING_DARK
+        self.show_toast(
+            title, message, "warning", log_level="warning", duration=duration
         )
-        warn_toast.show()
-        LOGGER.warning(f"{title}: {message}")
 
     def update_row(
         self, row, id: str, status: str, prompt: str, model: str, eta: float

@@ -1,3 +1,4 @@
+import datetime
 import hashlib
 import importlib.metadata
 import sys
@@ -104,3 +105,7 @@ def get_headers(api_key: str, include_api_key: bool = True):
     if include_api_key:
         t["apikey"] = api_key
     return t
+
+
+def get_time_str():
+    return datetime.datetime.now().isoformat(" ")

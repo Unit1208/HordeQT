@@ -100,7 +100,6 @@ class CheckConnectionThread(QThread):
         if not b.get("message", {}) == "OK":
             LOGGER.warning("Horde is offline.")
             return OnlineStatus(False, OfflineComponent.HordeOffline)
-
         return OnlineStatus(True, None)  # If everything is okay, return online status
 
     def stop(self):
