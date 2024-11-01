@@ -13,7 +13,6 @@ class OfflineComponent(IntEnum):
     HordeOffline = auto()
     InvalidHordeResponse = auto()
     RequestError = auto()
-    DeviceOffline = auto()
     ConnectTimeout = auto()
     HTTPError = auto()
     ConnectionError = auto()
@@ -35,8 +34,6 @@ def oc_to_description(oc: Optional[OfflineComponent]) -> str:
             )
         case OfflineComponent.RequestError:
             return "There was an error processing the request."
-        case OfflineComponent.DeviceOffline:
-            return "The device is currently offline. Ensure that it is connected to the network."
         case OfflineComponent.ConnectTimeout:
             return (
                 "The connection attempt timed out. Please check your network settings."
@@ -44,7 +41,7 @@ def oc_to_description(oc: Optional[OfflineComponent]) -> str:
         case OfflineComponent.HTTPError:
             return "An HTTP error occurred while attempting to connect."
         case OfflineComponent.ConnectionError:
-            return "A connection error occurred. Please check your network connection and try again."
+            return "A connection error occurred, or this device is currently offline."
         case None:
             return "No error occurred."
 
