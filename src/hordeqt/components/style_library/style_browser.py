@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, List, Sequence, Tuple
 
 from fuzzywuzzy import process
 from PySide6.QtCore import QRect, Qt
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QAbstractScrollArea,
     QDockWidget,
@@ -28,6 +29,29 @@ if TYPE_CHECKING:
 
 
 class StyleBrowser(QDockWidget):
+    def create_new_style(self):
+        style = Style(
+            "New Style",
+            "{p}###{np}",
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            None,
+            False,
+        )
+        style.name = "New Style"
+        n = 0
+        while self._parent.styleLibrary.get_style(style.name) is not None:
+            n += 1
+            style.name = f"New Style ({n})"
+        StyleViewer(style, self._parent)
+
     def __init__(self, parent: HordeQt):
         super().__init__("Style Browser", parent)
         self._parent = parent
@@ -38,6 +62,12 @@ class StyleBrowser(QDockWidget):
         self.query_box.setClearButtonEnabled(True)
         self.query_box.setPlaceholderText("Search for Styles")
         self.query_box.textEdited.connect(self.search_for_styles)
+        self.create_style_button = QPushButton()
+        self.create_style_button.setText("Create new Style")
+        self.create_style_button.setIcon(
+            QIcon(QIcon.fromTheme(QIcon.ThemeIcon.DocumentNew))
+        )
+        self.create_style_button.clicked.connect(self.create_new_style)
         self.scrollArea = QScrollArea()
         self.scrollArea.setObjectName("scrollArea")
         self.scrollArea.setGeometry(QRect(10, 10, 951, 901))
@@ -57,13 +87,16 @@ class StyleBrowser(QDockWidget):
         self.styleListLayout = QVBoxLayout()
         self.styleList.setLayout(self.styleListLayout)
         self.scrollArea.setWidget(self.styleList)
-        self.formWidget = QWidget()
-        self.formWidgetLayout = QVBoxLayout()
-        self.formWidgetLayout.addWidget(self.query_box)
-        self.formWidgetLayout.addWidget(self.scrollArea)
+        formWidget = QWidget()
+        formWidgetLayout = QVBoxLayout()
+        bar = QHBoxLayout()
+        bar.addWidget(self.query_box)
+        bar.addWidget(self.create_style_button)
+        formWidgetLayout.addLayout(bar)
+        formWidgetLayout.addWidget(self.scrollArea)
 
-        self.formWidget.setLayout(self.formWidgetLayout)
-        self.setWidget(self.formWidget)
+        formWidget.setLayout(formWidgetLayout)
+        self.setWidget(formWidget)
         self.setFloating(True)
         self.show()
         self.resize(400, 400)

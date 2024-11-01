@@ -61,6 +61,7 @@ os.makedirs(CACHE_PATH, exist_ok=True)
 ISDEBUG = False
 _imported = False
 if not _imported:
+    LOGGER.remove()
     if os.environ.get("HORDEQT_DEBUG"):
         LOGGER.add(sys.stdout, backtrace=True, diagnose=True, level="TRACE")
         ISDEBUG = True
