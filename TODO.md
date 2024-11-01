@@ -132,3 +132,4 @@
 - [ ] Force-refresh kudos cost button
 - [x] Detect if connected, disallow generate button (or queue up for later with Toast). Rest of UI can remain functional (mostly)
 - [ ] Fix copying All/Prompt when style is used.
+- [ ] Allow Specifying different configs/stored data locations or names- WINEPREFIX style.
