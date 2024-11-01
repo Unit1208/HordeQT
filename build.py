@@ -144,17 +144,38 @@ def main():
                 "--no-input",
             ]
         )
-        subprocess.run(
-            [
-                str(new_python),
-                briefcase_exec,
-                "package",
-                briefcase_platform,
-                f,
-                "--no-input",
-                *additional_args,
-            ]
-        )
+        if is_windows:
+            # Cursed
+            for n in range(2):
+                subprocess.run(
+                    [
+                        str(new_python),
+                        briefcase_exec,
+                        "package",
+                        briefcase_platform,
+                        f,
+                        "--no-input",
+                        *additional_args,
+                    ]
+                )
+
+                additional_args.append("-p")
+                additional_args.append("zip")
+
+        else:
+
+            subprocess.run(
+                [
+                    str(new_python),
+                    briefcase_exec,
+                    "package",
+                    briefcase_platform,
+                    f,
+                    "--no-input",
+                    *additional_args,
+                ]
+            )
+
     if ISDEBUG or is_windows:
         shutil.move(gitignore_tmp_path, gitignore_path)
 
