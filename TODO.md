@@ -69,7 +69,7 @@
 - [x] Resize images to fit screen on popup
 - [ ] LoRAs/TIs
   - [ ] Search result pages
-  - [ ] Persist selected LoRAs
+  - [x] Persist selected LoRAs
   - [ ] Don't allow duplicate LoRAs
 - [ ] Warning when trying to use a Pony model incorrectly.
   - [ ] "" for Flux
@@ -93,6 +93,7 @@
 - [x] Add "open in native viewer" to image popup
 - [x] Horde stats page
 - [ ] Local stats page
+  - [ ] Total images genned, size of all genned images, etc.
 - [ ] Proper horde batching
 - [ ] img2img
 - [ ] Shared key creation
@@ -113,6 +114,7 @@
 - [x] [Notifications for finishing long-running tasks](https://doc.qt.io/qtforpython-6.6/PySide6/QtWidgets/QSystemTrayIcon.html)
   - [x] Load icon for use here (And other places in the code)
 - [ ] Persistent Kudos display at top right.
+- [ ] Show # of jobs being created. Inc. Prompt matrix, etc. 
 - [x] Turn job queue into a priority queue to check jobs with a closer ETA more often
 - [x] Deduplicate job ids
 - [ ] Documentation
