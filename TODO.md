@@ -92,8 +92,8 @@
 - [ ] Cancel button on in-progress images
 - [x] Add "open in native viewer" to image popup
 - [x] Horde stats page
-- [ ] Local stats page
-  - [ ] Total images genned, size of all genned images, etc.
+- [x] Local stats page
+  - [x] Total images genned, size of all genned images, etc.
 - [ ] Proper horde batching
 - [ ] img2img
 - [ ] Shared key creation
@@ -114,7 +114,7 @@
 - [x] [Notifications for finishing long-running tasks](https://doc.qt.io/qtforpython-6.6/PySide6/QtWidgets/QSystemTrayIcon.html)
   - [x] Load icon for use here (And other places in the code)
 - [ ] Persistent Kudos display at top right.
-- [ ] Show # of jobs being created. Inc. Prompt matrix, etc. 
+- [ ] Show # of jobs being created. Inc. Prompt matrix, etc.
 - [x] Turn job queue into a priority queue to check jobs with a closer ETA more often
 - [x] Deduplicate job ids
 - [ ] Documentation
@@ -136,4 +136,8 @@
 - [ ] Fix copying All/Prompt when style is used.
 - [ ] Allow Specifying different configs/stored data locations or names- WINEPREFIX style.
 - [ ] Use new AI Horde [Style API](https://github.com/Haidra-Org/AI-Horde/wiki/Styles)
-- [ ] [QTConcurrentMap](https://doc.qt.io/qtforpython-6/overviews/qtconcurrentmap.html)
+  - [ ] Allow `customizer` users to directly create and upload styles.
+
+- [ ] [QTConcurrentMap](https://doc.qt.io/qtforpython-6/overviews/qtconcurrentmap.html) for image loading (?).
+  - May be obsolete after pagination.
+- [ ] Rewrite all static display values to use QLabel rather than QSpinbox, etc.

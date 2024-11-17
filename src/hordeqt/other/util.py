@@ -1,6 +1,7 @@
 import datetime
 import hashlib
 import importlib.metadata
+import os
 import sys
 import uuid
 from typing import Tuple
@@ -39,6 +40,19 @@ def get_bucketized_cache_path(s: str):
     npdir = bdir / pdir
     npdir.mkdir(parents=True, exist_ok=True)
     return npdir / cfile
+
+
+def get_size(start_path="."):
+    # https://stackoverflow.com/a/1392549 CC BY-SA 4.0
+    total_size = 0
+    for dirpath, dirnames, filenames in os.walk(start_path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            # skip if it is symbolic link
+            if not os.path.islink(fp):
+                total_size += os.path.getsize(fp)
+
+    return total_size
 
 
 def horde_model_to_civit_baseline(model: Model) -> BaseModel:

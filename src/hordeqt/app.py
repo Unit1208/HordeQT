@@ -33,6 +33,7 @@ from hordeqt.classes.StyleLibrary import StyleLibrary
 from hordeqt.components.gallery.image_gallery_widget import ImageGalleryWidget
 from hordeqt.components.gallery.image_popup import ImagePopup
 from hordeqt.components.gallery.image_widget import ImageWidget
+from hordeqt.components.localstats.local_stats import LocalStats
 from hordeqt.components.loras.lora_browser import LoraBrowser
 from hordeqt.components.loras.lora_item import LoRAItem
 from hordeqt.components.loras.selected_loras import SelectedLoRAs
@@ -216,6 +217,10 @@ class HordeQt(QMainWindow):
         self.ui.imagesSpinBox.valueChanged.connect(self.update_images_created)
         self.ui.karrasCheckBox.checkStateChanged.connect(self.update_kudos_preview)
         self.ui.highResFixCheckBox.checkStateChanged.connect(self.update_kudos_preview)
+
+        localStatsLayout = QVBoxLayout()
+        localStatsLayout.addWidget(LocalStats(self))
+        self.ui.LocalStats_tab.setLayout(localStatsLayout)
         self.ui.progressBar.setValue(0)
         self.preset_being_updated = False
         self.last_job_config: Optional[Dict] = None

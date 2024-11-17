@@ -1932,19 +1932,14 @@
         </layout>
        </widget>
       </widget>
-      <widget class="QWidget" name="About_tab">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
+      <widget class="QWidget" name="LocalStats_tab">
+
        <attribute name="icon">
         <iconset>
          <normaloff>resources/IconSmaller.png</normaloff>resources/IconSmaller.png</iconset>
        </attribute>
        <attribute name="title">
-        <string>About</string>
+        <string>Local Stats</string>
        </attribute>
       </widget>
      </widget>
