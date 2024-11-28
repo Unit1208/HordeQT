@@ -129,6 +129,7 @@
 - [x] Previews for types (list [here](https://github.com/amiantos/AI-Horde-Styles-Previews/blob/main/previews.json))
   - Can hook into existing LoRA preview logic.
 - [x] "Create new style" button
+- [ ] Style collections
 - [ ] Notify app on style removal/addition to update kudos cost
 - [ ] Show how big the current cache is in settings
 - [ ] Force-refresh kudos cost button
