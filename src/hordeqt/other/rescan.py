@@ -36,3 +36,4 @@ def rescan_jobs(current_jobs: list[LocalJob]):
             LOGGER.warning(
                 f'Unknown or invalid image type in image directory: "{str(possible_path)}"'
             )
+    return new_data

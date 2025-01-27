@@ -54,6 +54,7 @@ from hordeqt.other.consts import (
 )
 from hordeqt.other.job_util import get_horde_metadata_pretty
 from hordeqt.other.prompt_util import create_jobs
+from hordeqt.other.rescan import rescan_jobs
 from hordeqt.other.util import get_time_str, size_presets
 from hordeqt.threads.connection_thread import (
     CheckConnectionThread,
@@ -158,6 +159,9 @@ class HordeQt(QMainWindow):
                 "completed_downloads": self.savedData.current_images,
                 "queued_downloads": self.savedData.queued_downloads,
             },
+        )
+        self.job_download_thread.completed_downloads = rescan_jobs(
+            self.job_download_thread.completed_downloads
         )
         self.save_thread = SaveThread(self)
         self.download_thread: DownloadThread = DownloadThread.deserialize(
