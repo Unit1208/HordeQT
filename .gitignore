@@ -64,3 +64,4 @@ logs/
 .vscode/settings.json
 
 dbg/
+.aider*
