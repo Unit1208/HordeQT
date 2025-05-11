@@ -75,7 +75,9 @@ class JobManagerThread(QThread):
         valid_error: dict = response.json()
         rc = valid_error.get("rc")
         message = valid_error.get("message")
-        errors = ", ".join(valid_error.get("errors", {}).items())
+        errors = ", ".join(
+            f"{k}: {v}" for k, v in valid_error.get("errors", {}).items()
+        )
         LOGGER.error(f'Job {job.job_id} failed validation: "{rc}" {message}. {errors}')
 
     def _get_kudos_cost(self):
